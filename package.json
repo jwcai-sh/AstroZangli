@@ -1,0 +1,36 @@
+{
+  "name": "astrozangli-ai",
+  "version": "1.0.0",
+  "description": "AstroZangli AI - 天文历法AI应用",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "backend/venv/bin/python backend/run.py",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": "backend/venv/bin/python backend/check_syntax.py",
+    "check": "npm run check:frontend && npm run test:backend",
+    "check:frontend": "npm --prefix frontend run check",
+    "test:backend": "cd backend && PYTHONDONTWRITEBYTECODE=1 PYTHONWARNINGS=ignore::DeprecationWarning venv/bin/python -m unittest discover -s tests -v",
+    "install:all": "npm install && python3 -m venv backend/venv && backend/venv/bin/python -m pip install -r backend/requirements.txt",
+    "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+    "start:frontend": "npm --prefix frontend run start",
+    "start:backend": "cd backend && venv/bin/gunicorn -b 0.0.0.0:${PORT:-5001} wsgi:app"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "astrology",
+    "calendar",
+    "ai",
+    "nextjs",
+    "typescript"
+  ],
+  "author": "AstroZangli Team",
+  "license": "MIT"
+}

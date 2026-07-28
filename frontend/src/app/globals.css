@@ -1,0 +1,840 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* 自定义动画 */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.8); }
+}
+
+/* 星空背景动画 */
+.star {
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+.star:nth-child(odd) {
+  animation-delay: 1s;
+}
+
+.star:nth-child(3n) {
+  animation-delay: 2s;
+}
+
+/* 浮动效果 */
+.float-animation {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* 发光效果 */
+.glow-effect {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* 更深的星空背景与多层渐变 */
+.starfield-bg {
+  background: #000000;
+}
+
+/* 深蓝色渐变背景（无星空装饰） */
+.deep-blue-bg {
+  background: linear-gradient(180deg, #0B1B3B 0%, #08142C 100%);
+}
+
+/* 多尺寸星点与微光 */
+.star--sm { width: 1.5px; height: 1.5px; }
+.star--md { width: 2.5px; height: 2.5px; }
+.star--lg { width: 3.5px; height: 3.5px; box-shadow: 0 0 10px rgba(255, 255, 255, 0.9); }
+
+.star--cold { background: rgba(190, 210, 255, 1); }
+.star--neutral { background: rgba(255, 255, 255, 1); }
+.star--warm { background: rgba(255, 230, 200, 1); }
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* 玻璃态效果 */
+.glass-effect {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* 渐变背景 */
+.gradient-bg {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+}
+
+/* ========== Frosted Calendar Styles ========== */
+.frosted-surface {
+  /* Frosted Glass: bg blur 8px + white overlay 40% */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* 通用毛玻璃卡片（深色环境） */
+.frosted-card {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background:
+    radial-gradient(140% 120% at 10% 0%, rgba(255,255,255,0.06), transparent 50%),
+    radial-gradient(120% 120% at 90% 0%, rgba(102, 198, 255, 0.08), transparent 60%),
+    rgba(255,255,255,0.06);
+}
+
+/* Generic Sans-Serif font stack for calendar */
+.calendar-sans {
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    "Noto Sans",
+    Ubuntu,
+    Cantarell,
+    Arial,
+    sans-serif;
+  font-weight: 600; /* 加粗日历字体 */
+}
+
+/* Calendar gradient (TL -> BR), cool dark, opacity high->low */
+.calendar-gradient-neo {
+  /* Optional subtle halos for cyberpunk atmosphere (<=5%) */
+  background-image:
+    radial-gradient(420px 300px at 0% 0%, rgba(26, 214, 247, 0.05), transparent 60%),
+    radial-gradient(380px 260px at 100% 100%, rgba(120, 234, 255, 0.03), transparent 65%),
+    /* Subtle light/shadow noise (<5%) */
+    repeating-linear-gradient(45deg,
+      rgba(255,255,255,0.02) 0px,
+      rgba(255,255,255,0.02) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    /* Main diagonal gradient: greener mint 60% -> deep purple-black 5% */
+    linear-gradient(135deg,
+      rgba(47, 143, 216, 0.25) 0%,  /* 偏绿薄荷蓝，60% 不透明度 */
+      rgba(42, 34, 77, 0.05) 100% /* 深紫黑，较低不透明度 */
+    );
+  background-blend-mode: screen, screen, normal, normal;
+}
+
+/* 渐变描边边框：与截图相近的青紫渐变 */
+.gradient-border {
+  position: relative;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.7px; /* 边框粗细更接近截图 */
+  background: linear-gradient(135deg,
+    rgba(167, 247, 223, 0.85) 10%,    /* 左上更实 */
+    rgba(160, 254, 193, 0.28) 45%,    /* 中段降低透明度 */
+    rgba(188, 150, 255, 0.28) 55%,    /* 中段继续轻薄 */
+    rgba(188, 150, 255, 0.85) 90%     /* 右下更实 */
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* 渐变边框 A/B 变体（起止色与角度对比） */
+.gradient-border.gradient-border--a::before {
+  background: linear-gradient(135deg,
+    rgba(160, 254, 234, 0.85) 10%,
+    rgba(160, 254, 193, 0.18) 45%,
+    rgba(188, 150, 255, 0.18) 55%,
+    rgba(188, 150, 255, 0.85) 90%
+  );
+}
+.gradient-border.gradient-border--b::before {
+  background: linear-gradient(160deg, #7EE8FA 0%, #EEC0FF 100%);
+}
+
+/* 浅紫色边框样式 */
+.light-purple-border {
+  border: 1.5px solid rgba(111, 109, 165, 0.8) !important;
+}
+
+/* 透明紫蓝色渐变背景 */
+.transparent-purple-blue-gradient {
+  background: linear-gradient(135deg, 
+    rgba(147, 51, 234, 0.1) 0%, 
+    rgba(79, 70, 229, 0.15) 50%, 
+    rgba(59, 130, 246, 0.1) 100%
+  );
+}
+
+/* ===== DateEventsCard 五行样式 ===== */
+/* 注意：AstrologicalTableCard 现在也使用这些样式，特别是藏历信息框的样式 */
+
+/* 自定义节日框背景色 */
+.bg-custom-gray {
+  background-color: #c9c7c74e;
+}
+
+/* DateEventsCard渐变背景：从左到右从透明到紫蓝色50%透明 */
+/* 现在也被 AstrologicalTableCard 使用，保持两个卡片的外观一致性 */
+.dateevents-gradient-bg {
+  background: linear-gradient(to right, 
+    transparent 0%, 
+    rgba(87, 34, 223, 0.292) 100%
+  );
+}
+
+/* 下面四个可滑动小卡片的紫色纯色边框样式 */
+/* 被 DateEventsCard、AstrologicalTableCard、MoonPhaseCard、PlanetaryChartCard 四个组件共同使用 */
+.widget-card-border {
+  border: 1px solid rgba(119, 89, 238, 0.703); /* 紫色纯色边框，可调整颜色和粗细 */
+  border-radius: 16px; /* 圆角 */
+  position: relative;
+}
+
+
+
+/* 第1行：农历信息行 - 圆形标签 + 细长矩形背景 */
+.dateevents-row-lunar {
+  position: relative;
+  width: 100%;
+  height: 36px; /* 高度减少4px：从40px改为36px */
+  margin-bottom: 12px;/*从16px改为12px，减少第一行与第二行之间的间距*/
+}
+.dateevents-lunar-circle {
+  position: absolute;
+  left: 5%;
+  width: 30px;  /*圆形大小*/
+  height: 30px; /*圆形大小*/
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  background-color: rgba(44, 61, 122, 0.8); /* #2C3D7A 80%透明度 */
+}
+.dateevents-lunar-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8); /* FFFFFF 80%透明度 */
+}
+.dateevents-lunar-rect {
+  position: absolute;
+  left: 27%;
+  width: 70%;/*右端到哪里*/
+  height: 30px;
+  border-radius: 12px;/*四个角圆滑程度*/
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  background-color: rgba(44, 61, 122, 0.8); /* #2C3D7A 80%透明度 */
+}
+.dateevents-lunar-rect-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8); /* FFFFFF 80%透明度 */
+}
+
+/* 第2行：公历信息行 - 圆形标签 + 细长矩形背景 */
+.dateevents-row-solar {
+  position: relative;
+  width: 100%;
+  height: 36px; /* 高度减少4px：从40px改为36px */
+  margin-bottom: 12px;/*从16px改为12px，减少第二行与第三行之间的间距*/
+}
+.dateevents-solar-circle {
+  position: absolute;
+  left: 5%;
+  width: 30px;  /*圆形大小*/
+  height: 30px; /*圆形大小*/
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  background-color: #5A3369; /* 100%透明度 */
+}
+.dateevents-solar-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8); /* FFFFFF 80%透明度 */
+}
+.dateevents-solar-rect {
+  position: absolute;
+  left: 27%;
+  width: 70%;/*右端到哪里*/
+  height: 30px;
+  border-radius: 12px;/*四个角圆滑程度*/
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  background-color: #5A3369; /* 100%透明度 */
+}
+.dateevents-solar-rect-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8); /* FFFFFF 80%透明度 */
+}
+
+/* 第3行：藏历信息行 - 圆形标签 + 细长矩形背景 */
+/* 此样式被 DateEventsCard 和 AstrologicalTableCard 两个组件共同使用 */
+/* 粉色系配色方案：圆形和矩形背景都使用粉色系，透明度为89%和90% */
+/* 字体大小16px，字重500，文字颜色为白色75%透明度 */
+
+/* AstrologicalTableCard专用：居中显示的藏历矩形框 */
+/* 不使用绝对定位，而是通过flex布局实现居中 */
+.astro-tibetan-rect-centered {
+  width: 70%; /* 与第一页三个框长度一致 */
+  height: 30px;
+  border-radius: 12px; /* 四个角圆滑程度 */
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  /* 使用!important确保背景色不被覆盖 */
+  background-color: rgba(84, 76, 158, 0.8) !important; /* #544C9E 80%透明度 */
+  background: rgba(84, 76, 158, 0.8) !important; /* #544C9E 80%透明度 */
+}
+
+/* MoonPhaseCard专用：居中显示的蓝色矩形框 */
+/* 使用与农历信息相同的蓝色系配色 */
+.astro-lunar-rect-centered {
+  width: 70%; /* 与第一页三个框长度一致 */
+  height: 30px;
+  border-radius: 12px; /* 四个角圆滑程度 */
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  /* 使用!important确保背景色不被覆盖 */
+  background-color: rgba(44, 61, 122, 0.8) !important; /* #2C3D7A 80%透明度 */
+  background: rgba(44, 61, 122, 0.8) !important; /* #2C3D7A 80%透明度 */
+}
+
+/* PlanetaryChartCard专用：居中显示的紫色矩形框 */
+/* 使用与公历信息相同的紫色系配色 */
+.astro-solar-rect-centered {
+  width: 70%; /* 与第一页三个框长度一致 */
+  height: 30px;
+  border-radius: 12px; /* 四个角圆滑程度 */
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  /* 使用!important确保背景色不被覆盖 */
+  background-color: #5A3369 !important; /* 100%透明度 */
+  background: #5A3369 !important; /* 100%透明度 */
+}
+
+/* AstrologicalTableCard专用：紧凑表格样式 */
+/* 缩短行间距，改善排版对齐，使表格更紧凑 */
+.astro-table-compact {
+  /* 表格整体样式 */
+  border-collapse: collapse;
+  table-layout: fixed; /* 固定列宽，确保对齐 */
+}
+
+/* 设置各列的宽度，避免文字重合 */
+.astro-table-compact th:nth-child(1),
+.astro-table-compact td:nth-child(1) {
+  width: 15%; /* 定曜列 */
+}
+
+.astro-table-compact th:nth-child(2),
+.astro-table-compact td:nth-child(2) {
+  width: 30%; /* 太阳日月宿列 - 给更多空间 */
+}
+
+.astro-table-compact th:nth-child(3),
+.astro-table-compact td:nth-child(3) {
+  width: 15%; /* 定日列 */
+}
+
+.astro-table-compact th:nth-child(4),
+.astro-table-compact td:nth-child(4) {
+  width: 25%; /* 会合列 */
+}
+
+.astro-table-compact th:nth-child(5),
+.astro-table-compact td:nth-child(5) {
+  width: 20%; /* 作用列 - 给更多空间显示中文 */
+}
+
+.astro-table-compact th {
+  /* 表头样式：缩短垂直间距，居中对齐 */
+  padding: 8px 4px !important; /* py-2 px-1 对应 */
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(209, 213, 219, 0.9); /* text-gray-300 */
+  border-bottom: 1px solid rgba(107, 114, 128, 0.5); /* border-gray-500/50 */
+  white-space: nowrap; /* 确保表头文字不换行 */
+}
+
+.astro-table-compact td {
+  /* 表格单元格样式：缩短垂直间距，居中对齐 */
+  padding: 6px 4px !important; /* py-1.5 px-1 对应 */
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(229, 231, 235, 0.9); /* text-gray-200 */
+  border-bottom: 1px solid rgba(75, 85, 99, 0.3); /* border-gray-600/30 */
+}
+
+.astro-table-compact tr:last-child td {
+  /* 最后一行不显示底部边框 */
+  border-bottom: none;
+}
+
+.astro-table-compact tr:hover td {
+  /* 悬停效果：轻微的背景色变化 */
+  background-color: rgba(31, 41, 55, 0.2); /* hover:bg-gray-800/20 */
+}
+.dateevents-row-tibetan {
+  position: relative;
+  width: 100%;
+  height: 36px; /* 高度减少4px：从40px改为36px */
+  margin-bottom: 8px; /* 从16px改为8px，减少第三行与第四行之间的间距 */
+}
+.dateevents-tibetan-circle {
+  position: absolute;
+  left: 5%;
+  width: 30px;  /*圆形大小*/
+  height: 30px; /*圆形大小*/
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  background-color: rgba(84, 76, 158, 0.8); /* #544C9E 80%透明度 */
+}
+.dateevents-tibetan-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8); /* FFFFFF 80%透明度 */
+}
+.dateevents-tibetan-rect {
+  position: absolute;
+  left: 27%;
+  width: 70%;/*右端到哪里*/
+  height: 30px;
+  border-radius: 12px;/*四个角圆滑程度*/
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  background-color: rgba(84, 76, 158, 0.8); /* #544C9E 80%透明度 */
+}
+.dateevents-tibetan-rect-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8); /* FFFFFF 80%透明度 */
+}
+
+/* 第4行：第一个节日倒计时 - 细长灰色背景条 */
+.dateevents-row-holiday1 {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* 添加居中设置 */
+  gap: 12px;
+  margin-bottom: 15px; /* 灰色框间距：从10px增加到15px，让框之间距离变大一点点 */
+}
+.dateevents-holiday1-bar {
+  width: 95%; /* 灰色框长度：从flex: 1改为85%，让框变短一点点 */
+  height: 35px;/*灰色框高度*/
+  border-radius: 5px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  /* 图标固定在最左侧，文字居中显示 */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+.dateevents-holiday1-icon {
+  width: 20px;/*太阳图标大小*/
+  height: 20px;/*太阳图标大小*/
+  color: white;
+}
+.dateevents-holiday1-text {
+  font-size: 16px;/*节日文字大小*/
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75); /* 透明度75% */
+  flex: 1; /* 占据剩余空间 */
+  text-align: center; /* 文字居中显示 */
+  margin-left: 8px; /* 与图标的间距 */
+}
+
+/* 第5行：第二个节日倒计时 - 细长灰色背景条 */
+.dateevents-row-holiday2 {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* 添加居中设置 */
+  gap: 12px;
+  margin-bottom: 15px; /* 灰色框间距：从10px增加到15px，让框之间距离变大一点点 */
+}
+.dateevents-holiday2-bar {
+  width: 95%; /* 灰色框长度：从flex: 1改为85%，让框变短一点点 */
+  height: 35px;/*灰色框高度*/
+  border-radius: 5px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  /* 图标固定在最左侧，文字居中显示 */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+.dateevents-holiday2-icon {
+  width: 20px;/*月亮图标大小*/
+  height: 20px;/*月亮图标大小*/
+  color: white;
+}
+.dateevents-holiday2-text {
+  font-size: 16px;/*节日文字大小*/
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75); /* 透明度75% */
+  flex: 1; /* 占据剩余空间 */
+  text-align: center; /* 文字居中显示 */
+  margin-left: 8px; /* 与图标的间距 */
+}
+
+/* 第6行：第三个节日倒计时 - 细长灰色背景条 */
+.dateevents-row-holiday3 {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* 添加居中设置 */
+  gap: 12px;
+  margin-bottom: 0px; /* 第六行是最后一行，不需要底部间距 */
+}
+.dateevents-holiday3-bar {
+  width: 95%; /* 灰色框长度：从flex: 1改为85%，让框变短一点点 */
+  height: 35px;/*灰色框高度*/
+  border-radius: 5px;
+  padding: 1 12px;
+  display: flex;
+  align-items: center;
+  /* 图标固定在最左侧，文字居中显示 */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+.dateevents-holiday3-icon {
+  width: 20px;/*星星图标大小*/
+  height: 20px;/*星星图标大小*/
+  color: white;
+}
+.dateevents-holiday3-text {
+  font-size: 16px;/*节日文字大小*/
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75); /* 透明度75% */
+  flex: 1; /* 占据剩余空间 */
+  text-align: center; /* 文字居中显示 */
+  margin-left: 8px; /* 与图标的间距 */
+}
+
+/* 圆角半径变体，用于 AB 对比 */
+.rounded-16 { border-radius: 16px; }
+.rounded-20 { border-radius: 20px; }
+
+/* 选中圆尺寸/阴影强度变体（通过 CSS 变量控制） */
+.selected-26 { --selected-size: 26px; --selected-shadow: 0 2px 6px rgba(255, 107, 53, 0.45); }
+.selected-30 { --selected-size: 30px; --selected-shadow: 0 3px 10px rgba(255, 107, 53, 0.6); }
+
+.rounded-curve {
+  border-radius: 12px; /* 大圆角曲线边框 */
+}
+
+.glow-border {
+  position: relative;
+  border: 2px solid rgba(102, 198, 255, 0.3); /* #66C6FF 30% */
+  box-shadow:
+    0 0 0 1px rgba(102, 198, 255, 0.15) inset,
+    0 0 12px rgba(102, 198, 255, 0.25),
+    0 0 24px rgba(102, 198, 255, 0.15);
+  background-image: radial-gradient(1200px 600px at 50% 0%, rgba(102, 198, 255, 0.08), transparent 60%);
+}
+
+.frosted-calendar-container {
+  /* 深邃星空底，点缀细微星光粒子 */
+  background:
+    radial-gradient(1200px 800px at 50% -20%, rgba(50, 120, 200, 0.15), transparent 60%),
+    radial-gradient(800px 600px at 80% 0%, rgba(140, 60, 240, 0.12), transparent 60%),
+    #000814; /* 深色底 */
+  color: #fff;
+}
+
+/* 顶部城市选择 */
+.city-pill {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 8px;
+  border: 1px solid rgba(102, 198, 255, 0.6);
+  background: rgba(255, 255, 255, 0.7);
+  padding: 8px 12px;
+}
+.city-pill.is-open {
+  box-shadow: 0 0 12px rgba(102, 198, 255, 0.35);
+}
+.city-pill__label {
+  font-size: 14px;
+  line-height: 1;
+  color: #ffffff;
+}
+.city-pill__chevron {
+  width: 16px;
+  height: 16px;
+}
+.city-dropdown {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  margin-top: 8px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(102, 198, 255, 0.6);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(6px);
+}
+.city-item {
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #ffffff;
+  background: transparent;
+}
+.city-item:hover {
+  background: rgba(102, 198, 255, 0.25);
+}
+.city-item--active {
+  background: rgba(102, 198, 255, 0.8);
+}
+
+/* 导航与月份 */
+.nav-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  position: relative;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.nav-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  transform: rotate(-45deg);
+}
+.nav-btn--next::before {
+  transform: rotate(135deg);
+}
+.month-label {
+  font-size: 15px;
+  color: #ffffff;
+  opacity: 0.9;
+  white-space: nowrap; /* 月份与年份不换行 */
+  font-weight: 580; /* 略微更粗 */
+}
+
+/* 星期行 */
+.week-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+  margin-top: 6px;  /* 与上方月份的距离更大 */
+  margin-bottom: 8px; /* 与下方日期网格的距离更大 */
+}
+.week-cell {
+  text-align: center;
+  font-size: 8px; /* 很小的字号 */
+  letter-spacing: 1px; /* 字母更紧凑 */
+  color: #ffffff;
+  opacity: 0.9;
+  font-weight: 600; /* 星期标题略加粗 */
+}
+
+/* 日期网格 6x7 */
+.day-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  column-gap: 10px; /* 横向间距 */
+  row-gap: 10px;     /* 纵向行间距稍加大 */
+}
+.day-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 28px; /* 略微降低高度，整体更紧凑 */
+  border-radius: 12px;
+  color: #ffffff;
+  background: transparent;
+  /* 去除过大的字间距，保持居中 */
+}
+.day-cell:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.day-number {
+  font-size: 15px; /* 日期数字更小（可调） */
+  line-height: 1.2; /* 提升可读性与竖直间距感 */
+  font-weight: 500; /* 数字粗细 */
+}
+.day-cell--special .day-number {
+  color: #FF6B35; /* 橙色 */
+}
+.selected-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--selected-size, 28px); /* 选中圆形直径 */
+  height: var(--selected-size, 28px);
+  border-radius: 9999px;
+  background: #FF6B35; /* 红橙色实心圆，更贴近截图 */
+  color: #ffffff;
+  box-shadow: var(--selected-shadow, 0 2px 8px rgba(255, 107, 53, 0.5));
+}
+.orange-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #FF6B35;
+  margin-top: 4px; /* 数字正下方 8px 直径小圆点 */
+}
+
+/* 底部信息卡片 */
+.info-card {
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 10px 12px;
+}
+.tags-row {
+  display: flex;
+  gap: 8px;
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #ffffff;
+  opacity: 0.95;
+}
+.tag--blue { background: rgba(64, 156, 255, 0.7); }
+.tag--purple { background: rgba(180, 100, 255, 0.7); }
+.tag--pink { background: rgba(255, 128, 170, 0.7); }
+
+.info-card--lunar {
+  background: rgba(220, 200, 255, 0.6); /* 浅紫色半透明 */
+}
+.lunar-text {
+  font-size: 14px;
+  letter-spacing: 4px;
+  color: #ffffff;
+}
+.countdown-text {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #CCCCCC;
+}
+
+/* DateEventsCard 样式框架 - 可自定义 */
+.date-events-card {
+  /* 边框样式 */
+  border: 1px solid rgba(196, 181, 253, 0.5); /* 淡紫色边框，50%透明度 */
+  
+  /* 渐变背景 - 从左到右：透明到紫色50%透明 */
+  background: linear-gradient(to right, 
+    transparent 0%, 
+    rgba(126, 112, 236, 0.32) 100%
+  );
+  
+  /* 阴影效果 */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+              0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  
+  /* 过渡动画 */
+  transition: all 0.3s ease;
+}
+
+/* 悬停效果 */
+.date-events-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 
+              0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* 自定义变量 - 方便修改颜色 */
+.date-events-card {
+  --border-color: rgba(196, 181, 253, 0.5);
+  --gradient-start: transparent;
+  --gradient-end: rgba(139, 92, 246, 0.5);
+  --border-width: 1px;
+}
+
