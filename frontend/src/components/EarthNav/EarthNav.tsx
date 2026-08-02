@@ -1,33 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 interface EarthNavProps {
     currentPage?: string;
 }
 
 export default function EarthNav({ currentPage }: EarthNavProps) {
-    const pathname = usePathname();
-
-    // 根据当前路径确定激活状态
-    const getActiveTab = () => {
-        if (pathname.includes("zodiac")) return "十二宫";
-        if (pathname.includes("seven-stars")) return "七星轨迹";
-        if (pathname.includes("tibetan-cycle")) return "藏历绕迥纪年";
-        return currentPage || "十二宫";
-    };
-
-    const activeTab = getActiveTab();
+    const activeTab = currentPage || "十二宫图";
 
     const tabs = [
         { name: "十二宫图", path: "/earth?tab=zodiac" },
         { name: "七星轨迹", path: "/earth?tab=seven-stars" },
+        { name: "周年视运动（地心坐标）", path: "/earth?tab=annual-motion" },
         { name: "藏历绕迥纪年", path: "/earth?tab=tibetan-cycle" },
     ];
 
     return (
-        <div className="flex justify-center space-x-10 p-6 whitespace-nowrap">
+        <div className="flex flex-wrap justify-center gap-4 p-6 whitespace-nowrap">
             {tabs.map((tab) => (
                 <Link
                     key={tab.name}

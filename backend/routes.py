@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, Response, jsonify, request
 from datetime import datetime, timedelta
 from astronomy import (
     get_planets_data,
@@ -124,6 +124,39 @@ def get_planets_api():
                 "details": str(e)
             }
         }), 500
+
+
+@api_bp.route('/annual-motion-view', methods=['GET'])
+def annual_motion_view():
+    try:
+        from annual_motion import render_annual_motion_html
+
+        latitude = float(request.args.get('lat', '31.2304'))
+        longitude = float(request.args.get('lon', '121.4737'))
+        tz_name = request.args.get('tz', 'Asia/Shanghai')
+        city_name = request.args.get('city', 'Shanghai')
+        year = int(request.args.get('year', datetime.now().year))
+        sample_hour = int(request.args.get('hour', '12'))
+
+        html = render_annual_motion_html(
+            latitude=latitude,
+            longitude=longitude,
+            tz_name=tz_name,
+            city_label=city_name,
+            year=year,
+            sample_hour=sample_hour,
+        )
+        return Response(html, mimetype='text/html')
+    except Exception as e:
+        return Response(
+            (
+                "<html><body style='background:#000;color:#ff6b6b;font-family:sans-serif;padding:24px'>"
+                "<h3>周年视运动加载失败</h3>"
+                f"<pre>{str(e)}</pre></body></html>"
+            ),
+            mimetype='text/html',
+            status=500,
+        )
 
 @api_bp.route('/chat', methods=['POST'])
 def chat_with_rag():

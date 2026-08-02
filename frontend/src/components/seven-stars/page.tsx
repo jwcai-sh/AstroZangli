@@ -1273,18 +1273,46 @@
 //         </div>
 //     );
 // }
-import React from "react";
+import React, { useMemo, useState } from "react";
+
+import WorldCityPicker, { type WorldCity } from "@/components/earth/WorldCityPicker";
+
+const DEFAULT_CITY: WorldCity = {
+    id: 1796236,
+    name: "Shanghai",
+    country: "China",
+    admin1: "Shanghai",
+    timezone: "Asia/Shanghai",
+    latitude: 31.2304,
+    longitude: 121.4737,
+    elevation: 4,
+};
 
 const ZodiacEmbed: React.FC = () => {
+    const [city, setCity] = useState<WorldCity>(DEFAULT_CITY);
+    const iframeSrc = useMemo(() => {
+        const params = new URLSearchParams({
+            lat: String(city.latitude),
+            lon: String(city.longitude),
+            city: city.name,
+            tz: city.timezone ?? "Asia/Shanghai",
+        });
+        if (typeof city.elevation === "number") params.set("alt", String(city.elevation));
+        return `/js/moon.html?${params.toString()}`;
+    }, [city]);
+
     return (
-        <div style={{ width: "100%", height: "100vh", overflow: "hidden" }}>
+        <div style={{ width: "100%", height: "100vh", overflow: "hidden", position: "relative" }}>
+            <WorldCityPicker side="left" value={city} onSelect={setCity} />
             <iframe
-                src="/js/moon.html"
+                key={iframeSrc}
+                src={iframeSrc}
                 title="qixingguiji"
                 style={{
                     width: "100%",
                     height: "100%",
                     border: "none",
+                    background: "#000",
                 }}
             />
         </div>

@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import SevenStars from "@/components/seven-stars/page";
 import SevenData from "@/components/seven-data/page";
 import Zodiac from "@/components/zodiac/page";
+import AnnualMotion from "@/components/annual-motion/page";
 import TibetanCycle from "@/components/tibetan-cycle/page";
 import WidgetCarousel from "@/components/widgets/WidgetCarousel";
 import EarthNav from "@/components/EarthNav/EarthNav";
@@ -18,7 +19,8 @@ export default function EarthPageClient() {
 
   const getInitialPage = useCallback(() => {
     if (tabParam === "seven-stars") return 1;
-    if (tabParam === "tibetan-cycle") return 2;
+    if (tabParam === "annual-motion") return 2;
+    if (tabParam === "tibetan-cycle") return 3;
     return 0;
   }, [tabParam]);
 
@@ -37,12 +39,14 @@ export default function EarthPageClient() {
     setCurrentPage(index);
     if (index === 0) router.push("/earth?tab=zodiac");
     if (index === 1) router.push("/earth?tab=seven-stars");
-    if (index === 2) router.push("/earth?tab=tibetan-cycle");
+    if (index === 2) router.push("/earth?tab=annual-motion");
+    if (index === 3) router.push("/earth?tab=tibetan-cycle");
   };
 
   const items = [
     <Zodiac key="zodiac" />,
     showSevenData ? <SevenData key="seven-data" /> : <SevenStars key="seven-stars" />,
+    <AnnualMotion key="annual-motion" />,
     <TibetanCycle key="tibetan-cycle" />,
   ];
 
@@ -56,6 +60,8 @@ export default function EarthPageClient() {
               currentPage={
                 tabParam === "seven-stars"
                   ? "七星轨迹"
+                  : tabParam === "annual-motion"
+                    ? "周年视运动（地心坐标）"
                   : tabParam === "tibetan-cycle"
                     ? "藏历绕迥纪年"
                     : "十二宫图"

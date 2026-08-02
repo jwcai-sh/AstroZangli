@@ -14,6 +14,9 @@ pyswisseph
 ephem==4.1.5
 zhdate
 numpy==1.24.3
+plotly==6.3.0
+skyfield==1.53
+tzdata==2026.1
 
 # RAG Dependencies
 jieba==0.42.1
