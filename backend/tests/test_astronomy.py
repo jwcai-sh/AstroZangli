@@ -5,6 +5,7 @@ from unittest.mock import patch
 from astronomy import (
     TIBETAN_CALENDAR_END,
     TIBETAN_CALENDAR_START,
+    calculate_five_elements,
     get_planets_data,
     get_zangli,
 )
@@ -36,3 +37,15 @@ class PlanetContractTests(TestCase):
 
         self.assertEqual(result["Mercury"]["transit"], "12:02:03")
         self.assertEqual(result["Mercury"]["declination"], "12.345679")
+
+
+class FiveElementsContractTests(TestCase):
+    def test_calculate_five_elements_uses_runtime_compatible_lunar_partner_values(self):
+        result = calculate_five_elements(2026, 9, 12)
+
+        self.assertEqual(result["积月"], 487)
+        self.assertEqual(result["闰余"], 36)
+        self.assertEqual(result["定曜"], [0, 1, 42, 3, 48, 239])
+        self.assertEqual(result["月伴星宿"], [10, 51, 8, 1, 43, 468])
+        self.assertEqual(result["太阳日月宿"], [10, 51, 8, 1, 43, 468])
+        self.assertEqual(result["作用"], ["不净", "枝稍"])

@@ -1,5 +1,6 @@
 from flask import Blueprint, Response, jsonify, request
 from datetime import datetime, timedelta
+import requests
 from astronomy import (
     get_planets_data,
     get_tibetan_lunar_info,
@@ -11,6 +12,7 @@ from astronomy import (
     TIBETAN_CALENDAR_START,
     TIBETAN_CALENDAR_END,
 )
+from five_elements_compare import build_five_elements_month_compare
 from rag_processor_optimized import process_query_with_rag_optimized as process_query_with_rag_and_api
 
 # 创建API蓝图
@@ -36,6 +38,102 @@ CITY_COORDINATES = {
 # 默认城市坐标（上海）
 DEFAULT_CITY = '上海市'
 DEFAULT_COORDINATES = CITY_COORDINATES[DEFAULT_CITY]
+
+
+def build_five_elements_table_data(five_elements):
+    ding_yao = five_elements.get('定曜', [0, 0, 0, 0, 0, 0])
+    taiyang_riyuexiu = five_elements.get('太阳日月宿', [0, 0, 0, 0, 0, 0])
+    ding_sun = five_elements.get('定日', [0, 0, 0, 0, 0])
+    huihe = five_elements.get('会合', [0, 0, 0, 0, 0, 0])
+    zuoyong = five_elements.get('作用', ['', ''])
+
+    return [
+        {
+            "fixedWeekday": ding_yao[0] if len(ding_yao) > 0 else 0,
+            "solarLunar": taiyang_riyuexiu[0] if len(taiyang_riyuexiu) > 0 else 0,
+            "fixedDay": ding_sun[0] if len(ding_sun) > 0 else 0,
+            "conjunction": huihe[0] if len(huihe) > 0 else 0,
+            "effect": zuoyong[0] if len(zuoyong) > 0 else ""
+        },
+        {
+            "fixedWeekday": ding_yao[1] if len(ding_yao) > 1 else 0,
+            "solarLunar": taiyang_riyuexiu[1] if len(taiyang_riyuexiu) > 1 else 0,
+            "fixedDay": ding_sun[1] if len(ding_sun) > 1 else 0,
+            "conjunction": huihe[1] if len(huihe) > 1 else 0,
+            "effect": zuoyong[1] if len(zuoyong) > 1 else ""
+        },
+        {
+            "fixedWeekday": ding_yao[2] if len(ding_yao) > 2 else 0,
+            "solarLunar": taiyang_riyuexiu[2] if len(taiyang_riyuexiu) > 2 else 0,
+            "fixedDay": ding_sun[2] if len(ding_sun) > 2 else 0,
+            "conjunction": huihe[2] if len(huihe) > 2 else 0,
+            "effect": ""
+        },
+        {
+            "fixedWeekday": ding_yao[3] if len(ding_yao) > 3 else 0,
+            "solarLunar": taiyang_riyuexiu[3] if len(taiyang_riyuexiu) > 3 else 0,
+            "fixedDay": ding_sun[3] if len(ding_sun) > 3 else 0,
+            "conjunction": huihe[3] if len(huihe) > 3 else 0,
+            "effect": ""
+        },
+        {
+            "fixedWeekday": ding_yao[4] if len(ding_yao) > 4 else 0,
+            "solarLunar": taiyang_riyuexiu[4] if len(taiyang_riyuexiu) > 4 else 0,
+            "fixedDay": ding_sun[4] if len(ding_sun) > 4 else 0,
+            "conjunction": huihe[4] if len(huihe) > 4 else 0,
+            "effect": ""
+        },
+        {
+            "fixedWeekday": ding_yao[5] if len(ding_yao) > 5 else 0,
+            "solarLunar": taiyang_riyuexiu[5] if len(taiyang_riyuexiu) > 5 else 0,
+            "fixedDay": "",
+            "conjunction": huihe[5] if len(huihe) > 5 else 0,
+            "effect": ""
+        }
+    ]
+
+
+def build_five_elements_daily_rows(five_elements):
+    lunar_partner = five_elements.get(
+        '月伴星宿',
+        five_elements.get('太阳日月宿', [0, 0, 0, 0, 0, 0]),
+    )
+    ding_yao = five_elements.get('定曜', [0, 0, 0, 0, 0, 0])
+    ding_sun = five_elements.get('定日', [0, 0, 0, 0, 0])
+    huihe = five_elements.get('会合', [0, 0, 0, 0, 0, 0])
+    zuoyong = five_elements.get('作用', ['', ''])
+
+    rows = []
+    for index in range(6):
+        rows.append({
+            "fixedWeekday": ding_yao[index] if len(ding_yao) > index else 0,
+            "lunarPartner": lunar_partner[index] if len(lunar_partner) > index else 0,
+            "fixedDay": ding_sun[index] if len(ding_sun) > index else "",
+            "conjunction": huihe[index] if len(huihe) > index else 0,
+            "effect": zuoyong[index] if len(zuoyong) > index else "",
+        })
+
+    return rows
+
+
+def find_tibetan_month_dates(tibetan_year, tibetan_month):
+    search_start = max(TIBETAN_CALENDAR_START, datetime(tibetan_year, 1, 1))
+    search_end = min(TIBETAN_CALENDAR_END, datetime(tibetan_year + 1, 3, 31))
+    current_date = search_start
+    matches = []
+
+    while current_date <= search_end:
+        tibetan_info = get_tibetan_lunar_info(current_date)
+        if (
+            isinstance(tibetan_info, dict)
+            and tibetan_info.get("value") != "error"
+            and tibetan_info.get("tibetan_year") == tibetan_year
+            and tibetan_info.get("tibetan_month") == tibetan_month
+        ):
+            matches.append((current_date, tibetan_info))
+        current_date += timedelta(days=1)
+
+    return matches
 
 
 @api_bp.route('/health', methods=['GET'])
@@ -311,63 +409,7 @@ def get_calendar_comprehensive_data():
                 '作用': ['', '']
             }
         
-        # 提取数据并构建表格
-        # 定曜 (fixedWeekday)
-        ding_yao = five_elements.get('定曜', [0, 0, 0, 0, 0, 0])
-        # 太阳日月宿 (solarLunar)
-        taiyang_riyuexiu = five_elements.get('太阳日月宿', [0, 0, 0, 0, 0, 0])
-        # 定日 (fixedDay)
-        ding_sun = five_elements.get('定日', [0, 0, 0, 0, 0])
-        # 会合 (conjunction)
-        huihe = five_elements.get('会合', [0, 0, 0, 0, 0, 0])
-        # 作用 (effect)
-        zuoyong = five_elements.get('作用', ['', ''])
-        
-        # 构建六行数据（根据API文档示例）
-        table_data = [
-            {
-                "fixedWeekday": ding_yao[0] if len(ding_yao) > 0 else 0,
-                "solarLunar": taiyang_riyuexiu[0] if len(taiyang_riyuexiu) > 0 else 0,
-                "fixedDay": ding_sun[0] if len(ding_sun) > 0 else 0,
-                "conjunction": huihe[0] if len(huihe) > 0 else 0,
-                "effect": zuoyong[0] if len(zuoyong) > 0 else ""
-            },
-            {
-                "fixedWeekday": ding_yao[1] if len(ding_yao) > 1 else 0,
-                "solarLunar": taiyang_riyuexiu[1] if len(taiyang_riyuexiu) > 1 else 0,
-                "fixedDay": ding_sun[1] if len(ding_sun) > 1 else 0,
-                "conjunction": huihe[1] if len(huihe) > 1 else 0,
-                "effect": zuoyong[1] if len(zuoyong) > 1 else ""
-            },
-            {
-                "fixedWeekday": ding_yao[2] if len(ding_yao) > 2 else 0,
-                "solarLunar": taiyang_riyuexiu[2] if len(taiyang_riyuexiu) > 2 else 0,
-                "fixedDay": ding_sun[2] if len(ding_sun) > 2 else 0,
-                "conjunction": huihe[2] if len(huihe) > 2 else 0,
-                "effect": ""
-            },
-            {
-                "fixedWeekday": ding_yao[3] if len(ding_yao) > 3 else 0,
-                "solarLunar": taiyang_riyuexiu[3] if len(taiyang_riyuexiu) > 3 else 0,
-                "fixedDay": ding_sun[3] if len(ding_sun) > 3 else 0,
-                "conjunction": huihe[3] if len(huihe) > 3 else 0,
-                "effect": ""
-            },
-            {
-                "fixedWeekday": ding_yao[4] if len(ding_yao) > 4 else 0,
-                "solarLunar": taiyang_riyuexiu[4] if len(taiyang_riyuexiu) > 4 else 0,
-                "fixedDay": ding_sun[4] if len(ding_sun) > 4 else 0,
-                "conjunction": huihe[4] if len(huihe) > 4 else 0,
-                "effect": ""
-            },
-            {
-                "fixedWeekday": ding_yao[5] if len(ding_yao) > 5 else 0,
-                "solarLunar": taiyang_riyuexiu[5] if len(taiyang_riyuexiu) > 5 else 0,
-                "fixedDay": "",  # ding_sun只有5个元素
-                "conjunction": huihe[5] if len(huihe) > 5 else 0,
-                "effect": ""
-            }
-        ]
+        table_data = build_five_elements_table_data(five_elements)
         
         astrological_table = {
             "tibetanDate": tibetan_text,
@@ -447,3 +489,260 @@ def get_calendar_comprehensive_data():
                 "details": str(e)
             }
         }), 500
+
+
+@api_bp.route('/five-elements/monthly-overview', methods=['POST'])
+def get_monthly_five_elements_overview():
+    try:
+        data = request.get_json() or {}
+        year = int(data.get('year'))
+        month = int(data.get('month'))
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "error": {
+                "code": "INVALID_MONTH",
+                "message": "月份参数错误",
+                "details": "year 和 month 必须为整数"
+            }
+        }), 400
+
+    if month < 1 or month > 12:
+        return jsonify({
+            "success": False,
+            "error": {
+                "code": "INVALID_MONTH",
+                "message": "月份参数错误",
+                "details": "month 必须介于 1 到 12"
+            }
+        }), 400
+
+    month_dates = find_tibetan_month_dates(year, month)
+    monthly_days = []
+    month_summary = None
+
+    for current_date, tibetan_info in month_dates:
+        five_elements = calculate_five_elements(
+            current_date.year,
+            current_date.month,
+            current_date.day,
+        )
+        tibetan_date = tibetan_info.get("zangli_date", "")
+
+        if month_summary is None:
+            zero_base = five_elements.get('整零数', [0, 0])
+            month_summary = {
+                "tibetanDateLabel": f"{tibetan_info.get('year_name', '')}年 {tibetan_info.get('month_label', '')}".strip(),
+                "accumulativeMonth": five_elements.get('积月', 0),
+                "leapRemainder": five_elements.get('闰余', 0),
+                "weekdayBase": five_elements.get('曜基数', [0, 0, 0, 0, 0]),
+                "zeroBase": {
+                    "integer": zero_base[0] if len(zero_base) > 0 else 0,
+                    "fractional": zero_base[1] if len(zero_base) > 1 else 0,
+                },
+                "solarBase": five_elements.get('太阳基数', [0, 0, 0, 0, 0]),
+                "isLeapMonth": bool(five_elements.get('是否闰月', 0)),
+            }
+
+        lunar_partner = five_elements.get(
+            '月伴星宿',
+            five_elements.get('太阳日月宿', [0, 0, 0, 0, 0, 0]),
+        )
+        ding_yao = five_elements.get('定曜', [0, 0, 0, 0, 0, 0])
+        ding_sun = five_elements.get('定日', [0, 0, 0, 0, 0])
+        huihe = five_elements.get('会合', [0, 0, 0, 0, 0, 0])
+        zuoyong = five_elements.get('作用', ['', ''])
+
+        rows = []
+        for index in range(6):
+            rows.append({
+                "fixedWeekday": ding_yao[index] if len(ding_yao) > index else 0,
+                "lunarPartner": lunar_partner[index] if len(lunar_partner) > index else 0,
+                "fixedDay": ding_sun[index] if len(ding_sun) > index else "",
+                "conjunction": huihe[index] if len(huihe) > index else 0,
+                "effect": zuoyong[index] if len(zuoyong) > index else "",
+            })
+
+        monthly_days.append({
+            "day": tibetan_info.get("tibetan_day", 0),
+            "gregorianDate": current_date.strftime("%Y-%m-%d"),
+            "tibetanDate": tibetan_date,
+            "rows": rows,
+        })
+
+    if month_summary is None:
+        return jsonify({
+            "success": False,
+            "error": {
+                "code": "TIBETAN_MONTH_NOT_FOUND",
+                "message": "未找到对应的藏历月份数据",
+                "details": (
+                    f"请检查藏历年份 {year} 与月份 {month} 是否在当前数据范围内"
+                )
+            }
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "data": {
+            "year": year,
+            "month": month,
+            "monthSummary": month_summary,
+            "days": monthly_days,
+            "dailyInteractive": {
+                "available": True,
+                "message": "已支持按藏历年月日查看单日五要素"
+            }
+        }
+    })
+
+
+@api_bp.route('/five-elements/daily-detail', methods=['POST'])
+def get_daily_five_elements_detail():
+    try:
+        data = request.get_json() or {}
+        year = int(data.get('year'))
+        month = int(data.get('month'))
+        day = int(data.get('day'))
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "error": {
+                "code": "INVALID_DAY",
+                "message": "日期参数错误",
+                "details": "year、month、day 必须为整数"
+            }
+        }), 400
+
+    if month < 1 or month > 12:
+        return jsonify({
+            "success": False,
+            "error": {
+                "code": "INVALID_MONTH",
+                "message": "月份参数错误",
+                "details": "month 必须介于 1 到 12"
+            }
+        }), 400
+
+    if day < 1 or day > 30:
+        return jsonify({
+            "success": False,
+            "error": {
+                "code": "INVALID_DAY",
+                "message": "日期参数错误",
+                "details": "day 必须介于 1 到 30"
+            }
+        }), 400
+
+    matching_dates = [
+        (current_date, tibetan_info)
+        for current_date, tibetan_info in find_tibetan_month_dates(year, month)
+        if tibetan_info.get("tibetan_day") == day
+    ]
+
+    if not matching_dates:
+        return jsonify({
+            "success": False,
+            "error": {
+                "code": "TIBETAN_DAY_NOT_FOUND",
+                "message": "未找到对应的藏历日期",
+                "details": f"藏历 {year} 年 {month} 月 {day} 日在当前数据范围内不存在"
+            }
+        }), 400
+
+    current_date, tibetan_info = matching_dates[0]
+    five_elements = calculate_five_elements(
+        current_date.year,
+        current_date.month,
+        current_date.day,
+    )
+    zero_base = five_elements.get('整零数', [0, 0])
+
+    return jsonify({
+        "success": True,
+        "data": {
+            "year": year,
+            "month": month,
+            "day": day,
+            "tibetanDateLabel": tibetan_info.get("zangli_date", ""),
+            "gregorianDates": [
+                matched_date.strftime("%Y-%m-%d")
+                for matched_date, _ in matching_dates
+            ],
+            "monthSummary": {
+                "tibetanDateLabel": f"{tibetan_info.get('year_name', '')}年 {tibetan_info.get('month_label', '')}".strip(),
+                "accumulativeMonth": five_elements.get('积月', 0),
+                "leapRemainder": five_elements.get('闰余', 0),
+                "weekdayBase": five_elements.get('曜基数', [0, 0, 0, 0, 0]),
+                "zeroBase": {
+                    "integer": zero_base[0] if len(zero_base) > 0 else 0,
+                    "fractional": zero_base[1] if len(zero_base) > 1 else 0,
+                },
+                "solarBase": five_elements.get('太阳基数', [0, 0, 0, 0, 0]),
+                "isLeapMonth": bool(five_elements.get('是否闰月', 0)),
+            },
+            "rows": build_five_elements_daily_rows(five_elements),
+        }
+    })
+
+
+@api_bp.route('/five-elements/monthly-compare', methods=['GET', 'POST'])
+def get_monthly_five_elements_compare():
+    try:
+        data = request.args if request.method == 'GET' else (request.get_json(silent=True) or {})
+        year = int(data.get('year'))
+        month = int(data.get('month'))
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "error": {
+                "code": "INVALID_MONTH",
+                "message": "月份参数错误",
+                "details": "year 和 month 必须为整数"
+            }
+        }), 400
+
+    if month < 1 or month > 12:
+        return jsonify({
+            "success": False,
+            "error": {
+                "code": "INVALID_MONTH",
+                "message": "月份参数错误",
+                "details": "month 必须介于 1 到 12"
+            }
+        }), 400
+
+    try:
+        compare_data = build_five_elements_month_compare(year, month)
+    except requests.exceptions.RequestException:
+        return jsonify({
+            "success": False,
+            "error": {
+                "code": "REFERENCE_WEBSITE_UNAVAILABLE",
+                "message": "参考网站暂时不可用",
+                "details": "参考网站连接超时或暂时不可达，请稍后重试",
+            }
+        }), 503
+    except (FileNotFoundError, ValueError) as error:
+        return jsonify({
+            "success": False,
+            "error": {
+                "code": "COMPARE_SOURCE_UNAVAILABLE",
+                "message": "对照数据暂不可用",
+                "details": str(error),
+            }
+        }), 400
+    except Exception as error:
+        return jsonify({
+            "success": False,
+            "error": {
+                "code": "SERVER_ERROR",
+                "message": "服务器内部错误",
+                "details": str(error),
+            }
+        }), 500
+
+    return jsonify({
+        "success": True,
+        "data": compare_data,
+    })

@@ -8,6 +8,7 @@ import numpy as np
 from zhdate import ZhDate
 import math
 import ephem
+from kalachakra_runtime import build_day_record, build_month_summary
 BEIJING_UTC_OFFSET = timedelta(hours=8)
 BEIJING_TIMEZONE = timezone(BEIJING_UTC_OFFSET)
 TIBETAN_CALENDAR_START = datetime(1951, 1, 8)
@@ -389,11 +390,19 @@ def get_tibetan_lunar_info(d: datetime):
     month_idx = (zang_month - 1) % 12
     day_idx = (zang_day - 1) % 30
 
-    zangli_full = f"{year_name}年 {month_names_cn[month_idx]}月{day_names_cn[day_idx]}"
+    month_label = f"{month_names_cn[month_idx]}月"
+    day_label = day_names_cn[day_idx]
+    zangli_full = f"{year_name}年 {month_label}{day_label}"
 
     result = {
         "zangli_date": zangli_full,
         "t_month_name": t_month_names[month_idx],
+        "tibetan_year": zang_year,
+        "tibetan_month": zang_month,
+        "tibetan_day": zang_day,
+        "year_name": year_name,
+        "month_label": month_label,
+        "day_label": day_label,
     }
     return result
 
@@ -440,246 +449,47 @@ def get_lunar_day(dt: datetime) -> int:
 
 
 def calculate_five_elements(year0, month0, day0):
-    dates = get_zangli(datetime(year0, month0, day0))
+    tibetan_info = get_tibetan_lunar_info(datetime(year0, month0, day0))
 
-    # 检查是否返回错误（日期超出范围1951-2051时返回 {"value": "error"}）
-    if isinstance(dates, dict) and dates.get("value") == "error":
-        # 返回默认值，避免崩溃
+    if isinstance(tibetan_info, dict) and tibetan_info.get("value") == "error":
         return {
             '定曜': [0, 0, 0, 0, 0, 0],
             '太阳日月宿': [0, 0, 0, 0, 0, 0],
+            '月伴星宿': [0, 0, 0, 0, 0, 0],
+            '太阴日月宿': [0, 0, 0, 0, 0, 0],
             '定日': [0, 0, 0, 0, 0],
             '会合': [0, 0, 0, 0, 0, 0],
-            '作用': ['', '']
+            '作用': ['', ''],
+            '积月': 0,
+            '闰余': 0,
+            '曜基数': [0, 0, 0, 0, 0],
+            '整零数': [0, 0],
+            '太阳基数': [0, 0, 0, 0, 0],
+            '是否闰月': 0,
         }
 
-    year = dates[0]
-    month = dates[1]
-    day = dates[2]
+    tibetan_year = tibetan_info['tibetan_year']
+    tibetan_month = tibetan_info['tibetan_month']
+    tibetan_day = tibetan_info['tibetan_day']
 
-    dates0 = [year, month]  # 年、月
-
-    # 初始胜生周年
-    start_y = 1027
-    # 当前公历年
-    now_y = dates0[0]
-
-    # 入年月数, 即当前月距离初始月份的月数
-    dates0[1] - 3
-
-    # 计算积月
-    jiyue0 = (now_y - start_y) % 60 * 12 + (dates0[1] - 3) % 12 + 0  # mark_runyue 设为 0
-    jiyue = jiyue0 + (jiyue0 * 2 // 65)
-    # 计算闰余
-    runyu = (jiyue0 * 2) % 65
-
-    # 根据闰余可判断本月是否为闰月
-    mark_runyue = 0
-    if runyu == 48 or runyu == 49:
-        mark_runyue = 1
-
-    # 计算当月的曜基数和太阳基数
-    yao_base0 = [jiyue * 1 + 3, jiyue * 31 + 11, jiyue * 50 + 27, jiyue * 0 + 2, jiyue * 480 + 332]
-    moon_periods = [7, 60, 60, 6, 707]  # 漏刻系统的进位换算表
-    yao_base = reduction(yao_base0, moon_periods)  # 曜基数
-
-    sun_base0 = [jiyue * 2, jiyue * 10, jiyue * 58, jiyue * 1, jiyue * 17]
-    sun_periods = [27, 60, 60, 6, 67]  # 弧刻系统的进位换算表
-    sun_base = reduction(sun_base0, sun_periods)  # 太阳基数
-
-    # 计算当月的rewo+qiaxi 数，或称之为 整零数
-    temp_rem = reduction([jiyue * 2 + 21, jiyue * 1 + 90], [28, 126])
-    rewo = temp_rem[0]  # 整数
-    qiaxi = temp_rem[1]  # 零数
-
-    # 表格
-    t1 = [[0, 59, 3, 4, 16], [0, 4, 21, 5, 43]]
-    add_m = [0, 59, 3, 4, 16]  # 一太阴日的时间长度，以漏刻表示
-    # 太阴日平行时间表，单位：曜、刻、分、息、707
-    m_rem = []
-    for i in range(1, 31):
-        m_rem.append(reduction([t1[0][j] + (i - 1) * add_m[j] for j in range(5)], moon_periods))
-
-    # 太阳日平行弧长表，单位：(星)宿、刻、分、息、67
-    add_s = [0, 4, 21, 5, 43]  # 太阳在一太阴日所走过的弧度，以弧刻表示
-    s_rem = []
-    for i in range(1, 31):
-        s_rem.append(reduction([t1[1][j] + (i - 1) * add_s[j] for j in range(5)], sun_periods))
-
-    # 计算整月中曜
-    mid_yao = []
-    for i in range(30):
-        mid_yao.append(reduction([yao_base[j] + m_rem[i][j] for j in range(5)], moon_periods))
-
-    # 计算整月中日
-    mid_sun = []
-    for i in range(30):
-        mid_sun.append(reduction([sun_base[j] + s_rem[i][j] for j in range(5)], sun_periods))
-
-    # 计算五要素
-    date = day
-    quo_rewo = (rewo + date) // 14
-    rem_rewo = (rewo + date) % 14
-
-    if quo_rewo % 2 != 0:
-        l = 'o'  # 'odd' 不等级
-    else:
-        l = 'e'  # 'even' 等级
-
-    # 根据余数rem_rewo，查月离步表格
-    m_jiao = np.zeros((14, 3), dtype=int)
-    m_jiao[:, 0] = np.arange(1, 15) % 14
-    m_jiao[:, 1] = [5, 5, 5, 4, 3, 2, 1, 1, 2, 3, 4, 5, 5, 5]
-    m_jiao[:, 2] = [5, 10, 15, 19, 22, 24, 25, 24, 22, 19, 15, 10, 5, 0]
-
-    if 1 <= rem_rewo <= 6 or rem_rewo == 0:
-        jiao = 'q'  # 'qian jiao' 前脚
-    else:
-        jiao = 'h'  # 'hou jiao' 后脚
-
-    m_mul_num = m_jiao[rem_rewo, 1]
-    add_index = rem_rewo
-    if rem_rewo == 0:
-        add_index = 14
-    m_add_num = m_jiao[add_index - 1, 2]
-
-    # 计算月净行刻等等，除数为126
-    periods = [1, m_mul_num, 60, 6, 707]
-    moon_jinxinke = [m_add_num]
-    temp_m = qiaxi
-    for i in range(1, 5):
-        moon_jinxinke.append((temp_m * periods[i]) // 126)
-        temp_m = (temp_m * periods[i]) % 126
-
-    # 计算曜脚刻
-    yao_jiaoke0 = np.zeros(4)
-
-    if jiao == 'q':  # 'qian jiao'
-        yao_jiaoke0[0] = moon_jinxinke[0] + moon_jinxinke[1]
-        yao_jiaoke0[1:4] = moon_jinxinke[2:5]
-    else:  # jiao == 'h' %'hou jiao'
-        yao_jiaoke0[0] = moon_jinxinke[0] - moon_jinxinke[1] - 1
-        yao_jiaoke0[1:4] = reduction(np.array([60 - 1, 6 - 1, 707]) - moon_jinxinke[2:5], [60, 6, 707])
-
-    yao_jiaoke = reduction(yao_jiaoke0, [60, 60, 6, 707])
-
-    yao_jiaokee=[0]+yao_jiaoke
-    # 计算半定曜数
-    if l == 'o':  # odd 不等级
-        bandingyao = reduction([mid_yao[date - 1][j] - yao_jiaokee[j] for j in range(5)], moon_periods)
-    else:  # 等级
-        bandingyao = reduction([mid_yao[date - 1][j] + yao_jiaokee[j] for j in range(5)], moon_periods)
-
-    # 计算半定曜六数
-    bandingyao_6 = bandingyao[:4] + [bandingyao[4] * 67 // 707, bandingyao[4] * 67 % 707]
-
-    # 计算日脚刻
-    sun_birth_yao = 6
-    sun_birth_ke = 45
-    temp = [mid_sun[date - 1][j] - [sun_birth_yao, sun_birth_ke, 0, 0, 0][j] for j in range(5)]
-    temp_rem0 = reduction(temp, sun_periods)
-
-    mark = 0
-    # 判断是否过半圈
-    if temp_rem0[0] > 13.5:
-        temp_rem1 = reduction([temp_rem0[j] - [13, 30, 0, 0, 0][j] for j in range(5)], sun_periods)
-        mark = 1  # 标记此处减过
-    elif temp_rem0[0] == 13 and temp_rem0[1] >= 30:
-        temp_rem1 = reduction([temp_rem0[j] - [13, 30, 0, 0, 0][j] for j in range(5)], sun_periods)
-        mark = 1  # 标记此处减过
-    else:
-        temp_rem1 = temp_rem0
-
-    # 漏刻合并，计算其 mod 135 的商+余数
-    quo_s = (temp_rem1[1] + temp_rem1[0] * 60) // 135
-    rem_s = (temp_rem1[1] + temp_rem1[0] * 60) % 135
-    if quo_s == 6:
-        quo_s = 0
-
-    # 根据上面的商数，查日脚表
-    sun_jiao = np.zeros((6, 3), dtype=int)
-    sun_jiao[:, 0] = np.arange(1, 7) % 6
-    sun_jiao[:, 1] = [6, 4, 1, 1, 4, 6]
-    sun_jiao[:, 2] = [6, 10, 11, 10, 6, 0]
-
-    if 1 <= quo_s <= 2 or quo_s == 0:
-        s_jiao = 'q'  # 'qian jiao' 前脚
-    else:
-        s_jiao = 'h'  # 'hou jiao' 后脚
-
-    s_mul_num = sun_jiao[quo_s, 1]
-    s_add_index = quo_s
-    if quo_s == 0:
-        s_add_index = 6
-    s_add_num = sun_jiao[s_add_index - 1, 2]
-
-    # 计算日净行刻等等，除数为135
-    sun_v = [rem_s] + temp_rem1[2:]
-    v_quo, value = s_jiaoke([sun_v[j] * s_mul_num for j in range(len(sun_v))], [60, 60, 6, 67])
-
-    sun_jinxinke = [s_add_num] + v_quo
-
-    # 计算日脚刻
-    if s_jiao == 'q':  # 'qian jiao' 前脚
-        sun_jiaoke0 = [sun_jinxinke[0] + sun_jinxinke[1]] + sun_jinxinke[2:]
-    else:  # 后脚
-        sun_jiaoke0 = [sun_jinxinke[0] - sun_jinxinke[1] - 1] + (np.array([60 - 1, 6 - 1, 67]) - np.array(sun_jinxinke[2:])).tolist()
-    sun_jiaoke = reduction(sun_jiaoke0, [60, 60, 6, 67])
-
-    # 计算曜脚刻
-    if jiao == 'q':  # 'qian jiao'
-        yao_jiaoke0 = [moon_jinxinke[0] + moon_jinxinke[1]] + moon_jinxinke[2:]
-    else:  # 'hou jiao'
-        yao_jiaoke0 = [moon_jinxinke[0] - moon_jinxinke[1] - 1] + reduction([([60 - 1, 6 - 1, 707][j] - moon_jinxinke[2:][j])for j in range(3)], [60, 6, 707])
-    yao_jiaoke = reduction(yao_jiaoke0, [60, 60, 6, 707])
-
-    # 计算定曜和定日
-    if mark == 1:  # 之前减过
-        # 定曜 = 半定曜 + 日脚刻
-        ding_yao = reduction(np.array(bandingyao_6) + np.array([0] + sun_jiaoke + [0]), [7, 60, 60, 6, 67, 707])
-        # 定日 = 中日 + 日脚刻
-        ding_sun = reduction(np.array(mid_sun[date - 1]) + np.array([0] + sun_jiaoke), sun_periods)
-    else:  # 之前未减
-        # 定曜 = 半定曜 - 日脚刻
-        ding_yao = reduction(np.array(bandingyao_6) - np.array([0] + sun_jiaoke + [0]), [7, 60, 60, 6, 67, 707])
-        # 定日 = 中日 - 日脚刻
-        ding_sun = reduction(np.array(mid_sun[date - 1]) - np.array([0] + sun_jiaoke), sun_periods)
-
-    # 计算太阴日月宿 = 定日 + 日走过的弧刻数
-    t3 = np.zeros((30, 2), dtype=int)
-    t3[0, :] = [0, 54]
-    for i in range(2, 31):
-        t3[i-1, :] = [54 * i // 60, 54 * i % 60]
-
-    taiyin_riyuexiu = reduction([ding_sun[j] + [t3[date - 1, 0], t3[date - 1, 1], 0, 0, 0][j] for j in range(5)], sun_periods)
-    taiyin_riyuexiu = taiyin_riyuexiu + [0]
-    # 计算太阳日月宿 = 太阴日月宿 - 定曜
-    taiyang_riyuexiu = reduction([taiyin_riyuexiu[j] - [0, ding_yao[1], ding_yao[2], ding_yao[3], ding_yao[4], ding_yao[5]][j] for j in range(6)], sun_periods + [707])
-    # 计算会合 = 太阳日月宿 + 定日
-    huihe = reduction([taiyang_riyuexiu[j] + [ding_sun[0], ding_sun[1], ding_sun[2], ding_sun[3], ding_sun[4], 0][j] for j in range(6)], sun_periods + [707])
-    # 计算作用
-    zuoyong_dict = {1: '枝稍', 2: '孺蜜', 3: '贵种', 4: '捣麻', 5: '家生', 6: '商贾', 0: '毗支', 7: '吉祥', 8: '四足',
-                    9: '蛟龙', 10: '不净'}
-    if date == 1:
-        zuoyong1 = 10
-        zuoyong2 = 1
-    elif date == 29:
-        zuoyong1 = 0
-        zuoyong2 = 7
-    elif date == 30:
-        zuoyong1 = 8
-        zuoyong2 = 9
-    else:
-        zuoyong1 = ((2 * date - 1) % 7 - 1) % 7
-        zuoyong2 = (2 * date - 1) % 7
+    month_summary = build_month_summary(tibetan_year, tibetan_month)
+    day_record = build_day_record(tibetan_year, tibetan_month, tibetan_day)
+    lunar_partner = day_record['月伴星宿']
 
     return {
-        '定曜': ding_yao,
-        '太阳日月宿': taiyang_riyuexiu,
-        '定日': ding_sun,
-        '会合': huihe,
-        '太阴日月宿': taiyin_riyuexiu,
-        '作用': [zuoyong_dict[zuoyong1],zuoyong_dict[zuoyong2]]
+        '定曜': day_record['定曜'],
+        '太阳日月宿': lunar_partner,
+        '月伴星宿': lunar_partner,
+        '定日': day_record['定日'],
+        '会合': day_record['会合'],
+        '太阴日月宿': day_record['定日'] + [0],
+        '作用': day_record['作用'],
+        '积月': month_summary['积月闰余'][0],
+        '闰余': month_summary['积月闰余'][1],
+        '曜基数': month_summary['曜基数'],
+        '整零数': month_summary['整零数'],
+        '太阳基数': month_summary['太阳基数'],
+        '是否闰月': int(month_summary['isLeapMonth']),
     }
 
 

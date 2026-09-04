@@ -38,6 +38,8 @@ pids
 *.pid
 *.seed
 *.pid.lock
+backend/data/*.sqlite3
+backend/data/*.sqlite3-*
 
 # Coverage directory used by tools like istanbul
 coverage/
