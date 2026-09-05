@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -46,7 +47,8 @@ def read_month(sheet) -> dict:
     return {"summary": summary, "days": days}
 
 
-def export(output_dir: Path, output_path: Path) -> None:
+def export(output_dir: Path, output_path: Path, source_mode: str,
+           source_program: str = "shilun_calendar_months12_compare_final_v1.m") -> None:
     years = {}
     for workbook_path in sorted(output_dir.glob("*年时轮历-check.xlsx")):
         match = YEAR_FILE_PATTERN.match(workbook_path.name)
@@ -68,7 +70,10 @@ def export(output_dir: Path, output_path: Path) -> None:
             raise ValueError(f"{workbook_path.name} has no complete monthly sheets")
         years[str(year)] = {
             "sourceFile": workbook_path.name,
-            "sourceMode": "current_local",
+            "sourceProgram": source_program,
+            "sourcePath": str(workbook_path.resolve()),
+            "sourceSha256": hashlib.sha256(workbook_path.read_bytes()).hexdigest(),
+            "sourceMode": source_mode,
             "excludedMonths": excluded_months,
             "months": {str(month): months[month] for month in sorted(months)},
         }
@@ -79,7 +84,7 @@ def export(output_dir: Path, output_path: Path) -> None:
 
     payload = {
         "schemaVersion": 1,
-        "sourcePolicy": "程序-时轮历/输出/*年时轮历-check.xlsx; check0 and non-check variants excluded",
+        "sourcePolicy": f"{output_dir}; exported by {source_program}",
         "years": years,
     }
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -89,10 +94,21 @@ def export(output_dir: Path, output_path: Path) -> None:
 def main() -> int:
     project_root = Path(__file__).resolve().parents[3]
     parser = argparse.ArgumentParser()
-    parser.add_argument("--output-dir", type=Path, default=project_root / "程序-时轮历" / "输出")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=(
+            project_root
+            / "程序-时轮历"
+            / "输出"
+            / "shilun_calendar_months12_compare_final_v1.m 的输出"
+        ),
+    )
     parser.add_argument("--output", type=Path, default=Path(__file__).resolve().parents[1] / "data" / "matlab_oracle.json")
+    parser.add_argument("--source-mode", default="candidate_leap_transition")
+    parser.add_argument("--source-program", default="shilun_calendar_months12_compare_final_v1.m")
     args = parser.parse_args()
-    export(args.output_dir, args.output)
+    export(args.output_dir, args.output, args.source_mode, args.source_program)
     print(f"exported {args.output}")
     return 0
 

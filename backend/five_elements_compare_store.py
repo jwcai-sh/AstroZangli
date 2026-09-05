@@ -55,6 +55,18 @@ class FiveElementsCompareStore:
             return None
         return json.loads(row[0])
 
+    def has_month_source(self, year: int, month: int, source: str) -> bool:
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT 1
+                FROM five_elements_month_sources
+                WHERE year = ? AND month = ? AND source = ?
+                """,
+                (year, month, source),
+            ).fetchone()
+        return row is not None
+
     def save_month_source(self, year: int, month: int, source: str, payload: dict[str, Any]) -> None:
         updated_at = datetime.now(timezone.utc).isoformat()
         with self._connect() as connection:

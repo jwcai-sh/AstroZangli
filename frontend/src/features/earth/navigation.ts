@@ -7,12 +7,13 @@ export type EarthTab =
 export type SevenStarsSubtab =
   | "seven-stars"
   | "seven-data"
+  | "five-elements-sphere"
   | "five-elements";
 
 export function resolveSevenStarsSubtab(
   subtab: string | null | undefined
 ): SevenStarsSubtab {
-  if (subtab === "seven-data" || subtab === "five-elements") {
+  if (subtab === "seven-data" || subtab === "five-elements" || subtab === "five-elements-sphere") {
     return subtab;
   }
   return "seven-stars";

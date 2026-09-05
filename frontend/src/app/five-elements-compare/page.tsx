@@ -4,13 +4,18 @@ import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { fetchMonthlyFiveElementsCompare } from "@/services/fiveElementsApi";
+import {
+  fetchMonthlyFiveElementsCompare,
+  fetchYearlyFiveElementsCompare,
+} from "@/services/fiveElementsApi";
 
 const YEAR_OPTIONS = Array.from({ length: 16 }, (_, index) => 2020 + index);
 const MONTH_OPTIONS = Array.from({ length: 12 }, (_, index) => index + 1);
 const DAILY_FIELD_KEYS = ["fixedWeekday", "lunarPartner", "fixedDay", "conjunction"] as const;
 type DailyFieldKey = (typeof DAILY_FIELD_KEYS)[number];
 type DailySourceValues = Record<DailyFieldKey, Array<number | string | null>>;
+type CompareSourceId = "python" | "matlab" | "website";
+type SourceVisibility = Record<CompareSourceId, boolean>;
 const FIELD_LABELS: Record<DailyFieldKey, string> = {
   fixedWeekday: "定曜",
   lunarPartner: "月伴星宿",
@@ -26,8 +31,10 @@ function clampMonth(month: number): number {
   return MONTH_OPTIONS.includes(month) ? month : 7;
 }
 
-function buildUrl(year: number, month: number): string {
-  return `/five-elements-compare?year=${year}&month=${month}`;
+function buildUrl(year: number, month: number, onlyDiffs = false): string {
+  const query = new URLSearchParams({ year: String(year), month: String(month) });
+  if (onlyDiffs) query.set("onlyDiffs", "1");
+  return `/five-elements-compare?${query.toString()}`;
 }
 
 function renderValue(values: Array<number | string | null>): string {
@@ -53,6 +60,28 @@ function dailySourcesEqual(left: DailySourceValues, right: DailySourceValues): b
 
 function dailyDiffFields(left: DailySourceValues, right: DailySourceValues): string[] {
   return DAILY_FIELD_KEYS.filter((field) => !valuesEqual(left[field], right[field]));
+}
+
+function allDailySourcesMatch(
+  python: DailySourceValues,
+  matlab: DailySourceValues,
+  website: DailySourceValues
+): boolean {
+  return dailySourcesEqual(python, matlab) && dailySourcesEqual(python, website);
+}
+
+function allDailyDiffFields(
+  python: DailySourceValues,
+  matlab: DailySourceValues,
+  website: DailySourceValues
+): string[] {
+  return Array.from(
+    new Set([
+      ...dailyDiffFields(python, matlab),
+      ...dailyDiffFields(python, website),
+      ...dailyDiffFields(matlab, website),
+    ])
+  );
 }
 
 function diffValueClass(isDifferent: boolean): string {
@@ -112,17 +141,27 @@ function FiveElementsCompareContent(): React.JSX.Element {
     () => clampMonth(Number(searchParams.get("month")) || 7),
     [searchParams]
   );
+  const parsedOnlyDiffs = searchParams.get("onlyDiffs") === "1";
 
   const [selection, setSelection] = useState({ year: parsedYear, month: parsedMonth });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showOnlyDiffs, setShowOnlyDiffs] = useState(false);
+  const [showOnlyDiffs, setShowOnlyDiffs] = useState(parsedOnlyDiffs);
+  const [sourceVisibility, setSourceVisibility] = useState<SourceVisibility>({
+    python: true,
+    matlab: true,
+    website: true,
+  });
+  const [yearlyData, setYearlyData] = useState<Awaited<ReturnType<typeof fetchYearlyFiveElementsCompare>> | null>(null);
+  const [yearlyLoading, setYearlyLoading] = useState(false);
+  const [yearlyError, setYearlyError] = useState<string | null>(null);
   const [compareData, setCompareData] =
     useState<Awaited<ReturnType<typeof fetchMonthlyFiveElementsCompare>> | null>(null);
 
   useEffect(() => {
     setSelection({ year: parsedYear, month: parsedMonth });
-  }, [parsedMonth, parsedYear]);
+    setShowOnlyDiffs(parsedOnlyDiffs);
+  }, [parsedMonth, parsedOnlyDiffs, parsedYear]);
 
   useEffect(() => {
     let cancelled = false;
@@ -161,7 +200,7 @@ function FiveElementsCompareContent(): React.JSX.Element {
     if (compareData.sources.websiteAvailable === false) return compareData.days;
     if (!showOnlyDiffs) return compareData.days;
     return compareData.days.filter(
-      (day) => !dailySourcesEqual(day.matlabOracle, day.website)
+      (day) => !allDailySourcesMatch(day.python, day.matlabOracle, day.website)
     );
   }, [compareData, showOnlyDiffs]);
 
@@ -169,10 +208,53 @@ function FiveElementsCompareContent(): React.JSX.Element {
     const nextYear = next.year ?? selection.year;
     const nextMonth = next.month ?? selection.month;
     setSelection({ year: nextYear, month: nextMonth });
-    router.push(buildUrl(nextYear, nextMonth));
+    router.push(buildUrl(nextYear, nextMonth, showOnlyDiffs));
+  };
+
+  const handleShowOnlyDiffsChange = (checked: boolean) => {
+    setShowOnlyDiffs(checked);
+    router.push(buildUrl(selection.year, selection.month, checked));
+  };
+
+  const loadYearlyDifferences = async () => {
+    setYearlyLoading(true);
+    setYearlyError(null);
+    try {
+      setYearlyData(await fetchYearlyFiveElementsCompare(selection.year));
+    } catch (cause) {
+      setYearlyError(cause instanceof Error ? cause.message : "年度差异加载失败");
+    } finally {
+      setYearlyLoading(false);
+    }
   };
 
   const websiteAvailable = compareData?.sources.websiteAvailable !== false;
+  const visibleSourceIds = (Object.keys(sourceVisibility) as CompareSourceId[]).filter(
+    (source) => sourceVisibility[source]
+  );
+  const visibleYearlyDifferences = yearlyData?.differentMonths.flatMap((item) => {
+    const differenceReasons = item.differenceReasons.filter((reason) => {
+      if (reason === "Python / MATLAB") {
+        return sourceVisibility.python && sourceVisibility.matlab;
+      }
+      if (reason === "Python / 网站") {
+        return sourceVisibility.python && sourceVisibility.website;
+      }
+      if (reason === "MATLAB / 网站") {
+        return sourceVisibility.matlab && sourceVisibility.website;
+      }
+      return false;
+    });
+
+    return differenceReasons.length > 0 ? [{ ...item, differenceReasons }] : [];
+  }) ?? [];
+
+  const toggleSource = (source: CompareSourceId) => {
+    setSourceVisibility((current) => {
+      if (current[source] && visibleSourceIds.length === 1) return current;
+      return { ...current, [source]: !current[source] };
+    });
+  };
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#1b1b1b_0%,#080808_55%,#020202_100%)] px-4 py-8 text-[#2f2418] sm:px-6">
@@ -187,7 +269,7 @@ function FiveElementsCompareContent(): React.JSX.Element {
                 五要素结果对照
               </h1>
               <p className="mt-3 text-sm leading-6 text-[#5f4a35] sm:text-base">
-                该页面逐项并排展示 MATLAB 代码输出（年度 Excel）与参考网站结果，并对两方差异做红色高亮标记。
+                该页面逐项并排展示 Python 推导、MATLAB 最终脚本输出与参考网站结果，并对任意两方差异做红色高亮标记。
               </p>
             </div>
 
@@ -229,10 +311,18 @@ function FiveElementsCompareContent(): React.JSX.Element {
               <input
                 type="checkbox"
                 checked={showOnlyDiffs}
-                onChange={(event) => setShowOnlyDiffs(event.target.checked)}
+                onChange={(event) => handleShowOnlyDiffsChange(event.target.checked)}
               />
               仅看存在差异的日期
             </label>
+            <button
+              type="button"
+              onClick={loadYearlyDifferences}
+              disabled={yearlyLoading}
+              className="rounded-full border border-[#d0b79c] bg-[#fff8ef] px-4 py-2 transition hover:bg-[#f6eadc] disabled:cursor-wait disabled:opacity-60"
+            >
+              {yearlyLoading ? "正在汇总年度差异..." : "查看年度差异月份"}
+            </button>
             <Link
               href="/earth?tab=seven-stars&subtab=five-elements"
               className="rounded-full border border-[#d0b79c] bg-[#fff8ef] px-4 py-2 transition hover:bg-[#f6eadc]"
@@ -240,7 +330,74 @@ function FiveElementsCompareContent(): React.JSX.Element {
               返回五要素展示页
             </Link>
           </div>
+          <Link href="/five-elements-range" className="mt-4 inline-block rounded-full border border-[#d0b79c] bg-[#fff8ef] px-4 py-2 text-sm">Python / 网站：公元 1–2500 年区间对照</Link>
+          <fieldset className="mt-4 flex flex-wrap items-center gap-3 text-sm text-[#6d5440]">
+            <legend className="mr-1 font-medium text-[#4f3a27]">结果来源</legend>
+            {([
+              ["python", "Python 推导"],
+              ["matlab", "MATLAB 最终脚本"],
+              ["website", "参考网站"],
+            ] as const).map(([source, label]) => (
+              <label
+                key={source}
+                className="inline-flex items-center gap-2 rounded-full border border-[#d0b79c] bg-[#fff8ef] px-4 py-2"
+              >
+                <input
+                  type="checkbox"
+                  checked={sourceVisibility[source]}
+                  onChange={() => toggleSource(source)}
+                  disabled={sourceVisibility[source] && visibleSourceIds.length === 1}
+                />
+                {label}
+              </label>
+            ))}
+          </fieldset>
         </section>
+
+        {yearlyError ? (
+          <section className="rounded-[24px] border border-[#e7a084] bg-[#fff0ea] px-5 py-4 text-sm text-[#b34d3e]">
+            年度差异加载失败：{yearlyError}
+          </section>
+        ) : yearlyData ? (
+          <section className="rounded-[28px] border border-[#d7c3ac] bg-[linear-gradient(180deg,#f8efe3_0%,#efe1cf_100%)] px-5 py-5 shadow-[0_18px_60px_rgba(0,0,0,0.16)]">
+            <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[#dcc7ae] pb-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.28em] text-[#8e6b47]">Yearly Diff Map</p>
+                <h2 className="mt-1 text-xl font-semibold">{yearlyData.year} 年所选来源逐日差异月份</h2>
+              </div>
+              <p className="text-sm text-[#6d5440]">
+                {visibleYearlyDifferences.length} 个月有差异
+                {yearlyData.stats.unavailableMonthCount > 0
+                  ? `，${yearlyData.stats.unavailableMonthCount} 个月暂不可用`
+                  : ""}
+              </p>
+            </div>
+            {visibleSourceIds.length < 2 ? (
+              <p className="mt-4 text-sm text-[#6d5440]">请选择至少两个结果来源以比较年度差异。</p>
+            ) : visibleYearlyDifferences.length > 0 ? (
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {visibleYearlyDifferences.map((item) => (
+                  <button
+                    key={item.month}
+                    type="button"
+                    onClick={() => router.push(buildUrl(yearlyData.year, item.month, true))}
+                    className="rounded-[18px] border border-[#e7a084] bg-[#fff0ea] px-4 py-4 text-left transition hover:-translate-y-0.5 hover:bg-[#ffe5dc]"
+                  >
+                    <span className="text-lg font-semibold">{item.month} 月</span>
+                    <span className="mt-2 block text-sm text-[#8f4b3d]">
+                      {item.differenceReasons.join("、")}差异
+                    </span>
+                    <span className="mt-1 block text-xs text-[#8b7259]">
+                      逐日 {item.differentDayCount} 天
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-4 text-sm text-[#6d5440]">所选结果来源在该年份没有已确认的逐日差异。</p>
+            )}
+          </section>
+        ) : null}
 
         {loading ? (
           <section className="rounded-[28px] border border-[#d7c3ac] bg-[linear-gradient(180deg,#f8efe3_0%,#efe1cf_100%)] px-6 py-16 text-center text-[#6d5440] shadow-[0_18px_60px_rgba(0,0,0,0.18)]">
@@ -257,19 +414,21 @@ function FiveElementsCompareContent(): React.JSX.Element {
                 <p className="text-lg font-semibold text-[#2f2418]">
                   {compareData.sources.websiteLabel}
                 </p>
+                <p>Python 推导：{compareData.sources.pythonAlgorithm}</p>
                 <p>
-                  MATLAB 代码输出（Excel）：{compareData.sources.matlabOracleFile}（{compareData.sources.matlabOracleMode}）
+                  MATLAB 最终脚本输出（Excel）：{compareData.sources.matlabOracleFile}（{compareData.sources.matlabOracleMode}）
                 </p>
                 {!compareData.sources.matlabOracleAvailable ? (
                   <p className="font-semibold text-[#c83b32]">
-                    当前年份没有完整的 MATLAB 代码输出 Excel，无法完成两方对照。
+                    当前年份没有完整的 MATLAB 最终脚本输出 Excel，无法完成三方对照。
                   </p>
                 ) : null}
                 <p>网站来源：{compareData.sources.websiteUrl}</p>
                 {websiteAvailable ? (
                   <p>
-                    MATLAB / 网站：月头 {compareData.stats.differentMatlabWebsiteSummaryCount} 项，逐日{" "}
-                    {compareData.stats.differentMatlabWebsiteDayCount} 天
+                    Python / MATLAB：月头 {compareData.stats.differentPythonMatlabSummaryCount} 项，逐日 {compareData.stats.differentPythonMatlabDayCount} 天；
+                    Python / 网站：月头 {compareData.stats.differentPythonWebsiteSummaryCount} 项，逐日 {compareData.stats.differentPythonWebsiteDayCount} 天；
+                    MATLAB / 网站：月头 {compareData.stats.differentMatlabWebsiteSummaryCount} 项，逐日 {compareData.stats.differentMatlabWebsiteDayCount} 天
                   </p>
                 ) : (
                   <p className="font-semibold text-[#c83b32]">
@@ -279,7 +438,7 @@ function FiveElementsCompareContent(): React.JSX.Element {
               </div>
             </section>
 
-            <section className="overflow-hidden rounded-[28px] border border-[#d7c3ac] bg-[linear-gradient(180deg,#f8efe3_0%,#efe1cf_100%)] shadow-[0_18px_60px_rgba(0,0,0,0.16)]">
+            {!showOnlyDiffs ? <section className="overflow-hidden rounded-[28px] border border-[#d7c3ac] bg-[linear-gradient(180deg,#f8efe3_0%,#efe1cf_100%)] shadow-[0_18px_60px_rgba(0,0,0,0.16)]">
               <div className="border-b border-[#dcc7ae] px-5 py-4">
                 <h2 className="text-xl font-semibold">月头数据对照</h2>
               </div>
@@ -288,17 +447,19 @@ function FiveElementsCompareContent(): React.JSX.Element {
                   <thead className="bg-[#f6eadb] text-[#6b513a]">
                     <tr>
                       <th className="px-4 py-3 font-semibold">项目</th>
-                      <th className="px-4 py-3 font-semibold">MATLAB 代码输出（Excel）</th>
-                      <th className="px-4 py-3 font-semibold">网站</th>
+                      {sourceVisibility.python ? <th className="px-4 py-3 font-semibold">Python 推导</th> : null}
+                      {sourceVisibility.matlab ? <th className="px-4 py-3 font-semibold">MATLAB 最终脚本（Excel）</th> : null}
+                      {sourceVisibility.website ? <th className="px-4 py-3 font-semibold">网站</th> : null}
                       <th className="px-4 py-3 font-semibold">状态</th>
                     </tr>
                   </thead>
                   <tbody>
                     {compareData.summary.map((row) => (
                       (() => {
-                        const sourcesMatch = websiteAvailable && valuesEqual(row.matlabOracle, row.website);
-                        const matlabDiffers = websiteAvailable && !sourcesMatch;
-                        const websiteDiffers = websiteAvailable && !sourcesMatch;
+                        const sourcesMatch = websiteAvailable && valuesEqual(row.python, row.matlabOracle) && valuesEqual(row.python, row.website);
+                        const pythonDiffers = !valuesEqual(row.python, row.matlabOracle) || (websiteAvailable && !valuesEqual(row.python, row.website));
+                        const matlabDiffers = !valuesEqual(row.python, row.matlabOracle) || (websiteAvailable && !valuesEqual(row.matlabOracle, row.website));
+                        const websiteDiffers = websiteAvailable && (!valuesEqual(row.python, row.website) || !valuesEqual(row.matlabOracle, row.website));
 
                         return (
                           <tr
@@ -308,14 +469,23 @@ function FiveElementsCompareContent(): React.JSX.Element {
                             }`}
                           >
                         <td className="px-4 py-3 font-medium">{row.label}</td>
-                        <td className={`px-4 py-3 ${diffValueClass(matlabDiffers)}`}>
-                          {renderValue(row.matlabOracle)}
-                        </td>
-                        <td className={`px-4 py-3 ${diffValueClass(websiteDiffers)}`}>
-                          {websiteAvailable ? renderValue(row.website) : "暂不可用"}
-                        </td>
+                        {sourceVisibility.python ? (
+                          <td className={`px-4 py-3 ${diffValueClass(pythonDiffers)}`}>
+                            {renderValue(row.python)}
+                          </td>
+                        ) : null}
+                        {sourceVisibility.matlab ? (
+                          <td className={`px-4 py-3 ${diffValueClass(matlabDiffers)}`}>
+                            {renderValue(row.matlabOracle)}
+                          </td>
+                        ) : null}
+                        {sourceVisibility.website ? (
+                          <td className={`px-4 py-3 ${diffValueClass(websiteDiffers)}`}>
+                            {websiteAvailable ? renderValue(row.website) : "暂不可用"}
+                          </td>
+                        ) : null}
                         <td className={`px-4 py-3 ${diffValueClass(!sourcesMatch)}`}>
-                          {websiteAvailable ? (sourcesMatch ? "两方一致" : "两方差异") : "等待网站数据"}
+                          {websiteAvailable ? (sourcesMatch ? "三方一致" : "存在三方差异") : "等待网站数据"}
                         </td>
                           </tr>
                         );
@@ -324,12 +494,14 @@ function FiveElementsCompareContent(): React.JSX.Element {
                   </tbody>
                 </table>
               </div>
-            </section>
+            </section> : null}
 
             <section className="grid gap-4 lg:grid-cols-2">
               {filteredDays.map((day) => {
-                const diffFields = websiteAvailable ? dailyDiffFields(day.matlabOracle, day.website) : [];
-                const sourcesMatch = websiteAvailable && diffFields.length === 0;
+                const diffFields = websiteAvailable
+                  ? allDailyDiffFields(day.python, day.matlabOracle, day.website)
+                  : dailyDiffFields(day.python, day.matlabOracle);
+                const sourcesMatch = websiteAvailable && allDailySourcesMatch(day.python, day.matlabOracle, day.website);
 
                 return (
                   <article
@@ -367,20 +539,25 @@ function FiveElementsCompareContent(): React.JSX.Element {
                   <div className="mt-4 grid gap-4">
                     {[
                       {
-                        label: "MATLAB 代码输出（Excel）",
+                        id: "python" as const,
+                        label: "Python 推导",
+                        data: day.python,
+                      },
+                      {
+                        id: "matlab" as const,
+                        label: "MATLAB 最终脚本输出（Excel）",
                         data: day.matlabOracle,
-                        peers: websiteAvailable ? [day.website] : [],
                       },
                       ...(websiteAvailable
                         ? [
                             {
+                              id: "website" as const,
                               label: "网站",
                               data: day.website,
-                              peers: [day.matlabOracle],
                             },
                           ]
                         : []),
-                    ].map((source) => (
+                    ].filter((source) => sourceVisibility[source.id]).map((source, _, visibleSources) => (
                       <div
                         key={source.label}
                         className="overflow-x-auto rounded-[18px] border border-[#e0ccb6] bg-[#fff8ef]/72"
@@ -397,10 +574,12 @@ function FiveElementsCompareContent(): React.JSX.Element {
                               <p className="mb-3 font-semibold text-[#4f3a27]">
                                 {FIELD_LABELS[field]}
                               </p>
-                              {renderVectorValues(
-                                source.data[field],
-                                source.peers.map((peer) => peer[field])
-                              )}
+                                {renderVectorValues(
+                                  source.data[field],
+                                  visibleSources
+                                    .filter((peer) => peer.id !== source.id)
+                                    .map((peer) => peer.data[field])
+                                )}
                             </div>
 	                    ))}
                     {!websiteAvailable ? (
@@ -410,7 +589,7 @@ function FiveElementsCompareContent(): React.JSX.Element {
                     ) : null}
                   </div>
                         <div className="border-t border-[#e8d7c2] px-4 py-3 text-sm text-[#8b7259]">
-                          作用：MATLAB 代码与网站未提供
+                          作用：{renderValue(day.python.effect)}（仅 Python 推导提供；MATLAB Excel 与网站未提供）
                         </div>
                       </div>
                     ))}

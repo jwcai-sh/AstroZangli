@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import SevenStars from "@/components/seven-stars/page";
 import SevenData from "@/components/seven-data/page";
 import FiveElementsSubtab from "@/components/seven-stars/FiveElementsSubtab";
+import FiveElementsSphere from "@/components/seven-stars/FiveElementsSphere";
 import SevenStarsSubnav from "@/components/seven-stars/SevenStarsSubnav";
 import Zodiac from "@/components/zodiac/page";
 import AnnualMotion from "@/components/annual-motion/page";
@@ -48,6 +49,8 @@ export default function EarthPageClient() {
   const sevenStarsItem =
     currentSubtab === "seven-data"
       ? <SevenData key="seven-data" />
+      : currentSubtab === "five-elements-sphere"
+        ? <FiveElementsSphere key="five-elements-sphere" />
       : currentSubtab === "five-elements"
         ? <FiveElementsSubtab key="five-elements" />
         : <SevenStars key="seven-stars" />;

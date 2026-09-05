@@ -45,7 +45,11 @@ class WebsiteFetchTests(TestCase):
         side_effect=requests.exceptions.ReadTimeout("reference timeout"),
     )
     def test_compare_builds_partial_result_when_reference_site_times_out(self, mocked_fetch):
-        result = five_elements_compare.build_five_elements_month_compare(2027, 3)
+        result = five_elements_compare.build_five_elements_month_compare(
+            2027,
+            3,
+            store=FiveElementsCompareStore(":memory:"),
+        )
 
         self.assertEqual(result["year"], 2027)
         self.assertEqual(result["month"], 3)
@@ -114,7 +118,7 @@ class FiveElementsCompareStoreTests(TestCase):
             "sourceMode": "current_local",
         }
         store.save_month_source(2027, 3, "website", website_month)
-        store.save_month_source(2027, 3, "matlab_oracle", oracle_month)
+        store.save_month_source(2027, 3, "matlab_final", oracle_month)
 
         with patch("five_elements_compare.load_oracle_month") as mocked_load:
             result = five_elements_compare.build_five_elements_month_compare(2027, 3, store=store)
@@ -122,6 +126,44 @@ class FiveElementsCompareStoreTests(TestCase):
         self.assertEqual(result["sources"]["matlabOracleFile"], "cached-oracle.xlsx")
         self.assertEqual(result["sources"]["matlabOracleCacheStatus"], "hit")
         mocked_load.assert_not_called()
+
+
+class YearlyFiveElementsCompareTests(TestCase):
+    def test_yearly_compare_marks_only_matlab_website_difference_months(self):
+        def monthly_result(year, month, store=None):
+            return {
+                "year": year,
+                "month": month,
+                "stats": {
+                    "differentPythonMatlabSummaryCount": 0,
+                    "differentPythonWebsiteSummaryCount": 0,
+                    "differentMatlabWebsiteSummaryCount": 1 if month in (3, 4) else 0,
+                    "differentPythonMatlabDayCount": 0,
+                    "differentPythonWebsiteDayCount": 0,
+                    "differentMatlabWebsiteDayCount": 2 if month == 3 else 0,
+                },
+                "sources": {
+                    "websiteAvailable": True,
+                    "websiteError": "",
+                },
+            }
+
+        with patch(
+            "five_elements_compare.build_five_elements_month_compare",
+            side_effect=monthly_result,
+        ):
+            result = five_elements_compare.build_five_elements_year_compare(
+                2027,
+                store=FiveElementsCompareStore(":memory:"),
+            )
+
+        self.assertEqual(result["year"], 2027)
+        self.assertEqual([item["month"] for item in result["months"]], list(range(1, 13)))
+        self.assertEqual([item["month"] for item in result["differentMonths"]], [3])
+        self.assertEqual(result["months"][2]["status"], "difference")
+        self.assertEqual(result["months"][2]["differenceReasons"], ["MATLAB / 网站"])
+        self.assertEqual(result["months"][3]["status"], "match")
+        self.assertEqual(result["stats"]["differentMonthCount"], 1)
 
 
 if __name__ == "__main__":

@@ -36,6 +36,9 @@ def load_oracle_month(year: int, month: int, path: Path = DEFAULT_ORACLE_PATH) -
         "month": month,
         "sourceFile": year_data["sourceFile"],
         "sourceMode": year_data.get("sourceMode", "current_local"),
+        "sourceProgram": year_data.get("sourceProgram", ""),
+        "sourcePath": year_data.get("sourcePath", ""),
+        "sourceSha256": year_data.get("sourceSha256", ""),
         "summary": month_data["summary"],
         "days": month_data["days"],
     }

@@ -213,7 +213,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
               五要素
             </h2>
             <p className="mt-3 text-sm leading-6 text-[#5f4a35] sm:text-base">
-              当前支持按藏历年、月查看月度总览，也支持按藏历年、月、日进入单日交互式可视化；两者都统一使用本地 Python 运行时算法口径。
+              当前支持按藏历年、月查看月度总览，也支持按藏历年、月、日进入单日交互式可视化；两者都读取数据库中的 Python final 预计算结果。
             </p>
           </div>
 
@@ -493,7 +493,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                     </div>
                     <div className="rounded-[18px] border border-[#dbc7b0] bg-[#fbf4ea] px-4 py-3">
                       <p className="text-xs uppercase tracking-[0.24em] text-[#8e6b47]">算法口径</p>
-                      <p className="mt-2 font-medium">本地 Python 运行时</p>
+                      <p className="mt-2 font-medium">Python final 预计算缓存</p>
                     </div>
                   </div>
                 </div>

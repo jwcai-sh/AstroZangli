@@ -123,6 +123,37 @@ export interface MonthlyFiveElementsCompareResponse {
   };
 }
 
+export interface YearlyFiveElementsCompareResponse {
+  year: number;
+  months: Array<{
+    month: number;
+    status: "match" | "difference" | "unavailable";
+    hasDifferences: boolean;
+    differentSummaryCount: number;
+    differentDayCount: number;
+    differenceReasons: string[];
+    websiteAvailable: boolean;
+    matlabOracleAvailable: boolean;
+    websiteError: string;
+  }>;
+  differentMonths: Array<{
+    month: number;
+    status: "difference";
+    hasDifferences: boolean;
+    differentSummaryCount: number;
+    differentDayCount: number;
+    differenceReasons: string[];
+    websiteAvailable: boolean;
+    matlabOracleAvailable: boolean;
+    websiteError: string;
+  }>;
+  stats: {
+    differentMonthCount: number;
+    availableMonthCount: number;
+    unavailableMonthCount: number;
+  };
+}
+
 interface ApiEnvelope<T> {
   success: boolean;
   data?: T;
@@ -167,6 +198,26 @@ export async function fetchMonthlyFiveElementsCompare(params: {
   });
 
   const json = (await response.json()) as ApiEnvelope<MonthlyFiveElementsCompareResponse>;
+  if (!response.ok) {
+    const detail = json.error?.details ? `：${json.error.details}` : "";
+    throw new Error((json.error?.message || `HTTP ${response.status}`) + detail);
+  }
+
+  if (!json.success || !json.data) {
+    throw new Error(json.error?.message || "请求失败");
+  }
+
+  return json.data;
+}
+
+export async function fetchYearlyFiveElementsCompare(year: number): Promise<YearlyFiveElementsCompareResponse> {
+  const response = await fetch("/api/five-elements/yearly-compare", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ year }),
+  });
+
+  const json = (await response.json()) as ApiEnvelope<YearlyFiveElementsCompareResponse>;
   if (!response.ok) {
     const detail = json.error?.details ? `：${json.error.details}` : "";
     throw new Error((json.error?.message || `HTTP ${response.status}`) + detail);

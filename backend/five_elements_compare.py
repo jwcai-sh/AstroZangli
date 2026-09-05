@@ -6,11 +6,11 @@ import requests
 import urllib3
 
 from matlab_oracle import load_oracle_month
-from matlab_v2_runtime import build_month_records as build_python_month_records
+from matlab_final_runtime import build_month_records as build_python_month_records
 from five_elements_compare_store import FiveElementsCompareStore
 
 
-WEBSITE_BASE_URL = "https://astro.xzzzqzyy.com/dba/twlsdata/per/wysz/search"
+WEBSITE_BASE_URL = "http://astro.xzzzqzyy.com/dba/twlsdata/per/wysz/search"
 TOP_GROUP_NAMES = ["积月闰余", "曜基数", "整零数", "太阳基数"]
 DAY_GROUP_NAMES = ["定曜", "月伴星宿", "定日", "会合"]
 
@@ -87,6 +87,8 @@ def parse_website_month_html(year: int, month: int, html: str) -> tuple[str, dic
 
 
 def read_local_month(year: int, month: int) -> dict:
+    # Keep this independently computed from the Excel oracle. The adapter
+    # invokes the user-selected shilun_calendar_months12_compare_final.py.
     return build_python_month_records(year, month)
 
 
@@ -146,13 +148,13 @@ def build_five_elements_month_compare(
     python_month = read_local_month(year, month)
     matlab_oracle_cache_status = "miss"
     try:
-        cached_matlab_oracle = store.load_month_source(year, month, "matlab_oracle")
+        cached_matlab_oracle = store.load_month_source(year, month, "matlab_final")
         if cached_matlab_oracle is not None:
             matlab_oracle = cached_matlab_oracle
             matlab_oracle_cache_status = "hit"
         else:
             matlab_oracle = load_oracle_month(year, month)
-            store.save_month_source(year, month, "matlab_oracle", matlab_oracle)
+            store.save_month_source(year, month, "matlab_final", matlab_oracle)
     except FileNotFoundError:
         matlab_oracle = None
 
@@ -267,9 +269,98 @@ def build_five_elements_month_compare(
             "localAlgorithm": python_month["engineLabel"],
             "localAlgorithmId": python_month["engine"],
             "matlabOracleFile": matlab_oracle["sourceFile"] if matlab_oracle else "未提供正确 Excel Oracle",
-            "matlabOracleMode": matlab_oracle["sourceMode"] if matlab_oracle else "missing",
+            "matlabOracleMode": " / ".join(filter(None, [matlab_oracle["sourceMode"], matlab_oracle.get("sourceProgram")])) if matlab_oracle else "missing",
             "matlabOracleAvailable": oracle_available,
             "matlabOracleCacheStatus": matlab_oracle_cache_status,
             "websiteHtmlLength": len(website_html),
+        },
+    }
+
+
+def build_five_elements_year_compare(
+    year: int,
+    store: FiveElementsCompareStore | None = None,
+) -> dict:
+    """Summarize MATLAB-oracle versus reference-site differences for one year."""
+    store = store or FiveElementsCompareStore()
+    months = []
+
+    for month in range(1, 13):
+        try:
+            monthly = build_five_elements_month_compare(year, month, store=store)
+            sources = monthly.get("sources", {})
+            website_available = sources.get("websiteAvailable", True)
+            matlab_available = sources.get("matlabOracleAvailable", True)
+            available = website_available and matlab_available
+            website_error = sources.get("websiteError", "")
+            if not available:
+                item = {
+                    "month": month,
+                    "status": "unavailable",
+                    "hasDifferences": False,
+                    "differentSummaryCount": 0,
+                    "differentDayCount": 0,
+                    "differenceReasons": [],
+                    "websiteAvailable": website_available,
+                    "matlabOracleAvailable": matlab_available,
+                    "websiteError": website_error,
+                }
+            else:
+                stats = monthly["stats"]
+                # The yearly map intentionally ignores month-head differences.
+                # max() keeps the existing compact response contract without
+                # falsely summing the same calendar day across source pairs.
+                different_summary_count = max(
+                    stats["differentPythonMatlabSummaryCount"],
+                    stats["differentPythonWebsiteSummaryCount"],
+                    stats["differentMatlabWebsiteSummaryCount"],
+                )
+                different_day_count = max(
+                    stats["differentPythonMatlabDayCount"],
+                    stats["differentPythonWebsiteDayCount"],
+                    stats["differentMatlabWebsiteDayCount"],
+                )
+                difference_reasons = []
+                if stats["differentPythonMatlabDayCount"]:
+                    difference_reasons.append("Python / MATLAB")
+                if stats["differentPythonWebsiteDayCount"]:
+                    difference_reasons.append("Python / 网站")
+                if stats["differentMatlabWebsiteDayCount"]:
+                    difference_reasons.append("MATLAB / 网站")
+                item = {
+                    "month": month,
+                    "status": "difference" if difference_reasons else "match",
+                    "hasDifferences": bool(difference_reasons),
+                    "differentSummaryCount": different_summary_count,
+                    "differentDayCount": different_day_count,
+                    "differenceReasons": difference_reasons,
+                    "websiteAvailable": website_available,
+                    "matlabOracleAvailable": matlab_available,
+                    "websiteError": website_error,
+                }
+        except (FileNotFoundError, ValueError, requests.exceptions.RequestException) as error:
+            item = {
+                "month": month,
+                "status": "unavailable",
+                "hasDifferences": False,
+                "differentSummaryCount": 0,
+                "differentDayCount": 0,
+                "differenceReasons": [],
+                "websiteAvailable": False,
+                "matlabOracleAvailable": False,
+                "websiteError": str(error),
+            }
+
+        months.append(item)
+
+    different_months = [item for item in months if item["status"] == "difference"]
+    return {
+        "year": year,
+        "months": months,
+        "differentMonths": different_months,
+        "stats": {
+            "differentMonthCount": len(different_months),
+            "availableMonthCount": sum(item["status"] != "unavailable" for item in months),
+            "unavailableMonthCount": sum(item["status"] == "unavailable" for item in months),
         },
     }

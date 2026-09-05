@@ -12,7 +12,11 @@ from astronomy import (
     TIBETAN_CALENDAR_START,
     TIBETAN_CALENDAR_END,
 )
-from five_elements_compare import build_five_elements_month_compare
+from five_elements_compare import (
+    build_five_elements_month_compare,
+    build_five_elements_year_compare,
+)
+from five_elements_compare_store import FiveElementsCompareStore
 from rag_processor_optimized import process_query_with_rag_optimized as process_query_with_rag_and_api
 
 # 创建API蓝图
@@ -134,6 +138,70 @@ def find_tibetan_month_dates(tibetan_year, tibetan_month):
         current_date += timedelta(days=1)
 
     return matches
+
+
+def load_python_final_month(year, month):
+    """Load the precomputed Python-final month used by the five-elements page."""
+    payload = FiveElementsCompareStore().load_month_source(year, month, 'python_final')
+    if payload is None:
+        raise FileNotFoundError(
+            f"Python final cache not found for Tibetan month {year}-{month:02d}"
+        )
+
+    summary_shapes = {
+        '积月闰余': 2,
+        '曜基数': 5,
+        '整零数': 2,
+        '太阳基数': 5,
+    }
+    summary = payload.get('summary')
+    days = payload.get('days')
+    if not isinstance(summary, dict) or not isinstance(days, list):
+        raise ValueError(f"Python final cache is malformed for Tibetan month {year}-{month:02d}")
+    for field, size in summary_shapes.items():
+        values = summary.get(field)
+        if not isinstance(values, list) or len(values) != size:
+            raise ValueError(
+                f"Python final cache field {field} is malformed for Tibetan month {year}-{month:02d}"
+            )
+    if len(days) != 30 or [day.get('day') for day in days] != list(range(1, 31)):
+        raise ValueError(f"Python final daily cache is incomplete for Tibetan month {year}-{month:02d}")
+
+    return payload
+
+
+def build_python_final_month_summary(payload, tibetan_info):
+    summary = payload['summary']
+    zero_base = summary['整零数']
+    accumulative_month, leap_remainder = summary['积月闰余']
+    return {
+        "tibetanDateLabel": f"{tibetan_info.get('year_name', '')}年 {tibetan_info.get('month_label', '')}".strip(),
+        "accumulativeMonth": accumulative_month,
+        "leapRemainder": leap_remainder,
+        "weekdayBase": summary['曜基数'],
+        "zeroBase": {
+            "integer": zero_base[0],
+            "fractional": zero_base[1],
+        },
+        "solarBase": summary['太阳基数'],
+        # python_final currently does not persist a separate leap-month flag.
+        "isLeapMonth": bool(payload.get('isLeapMonth', False)),
+    }
+
+
+def get_python_final_day(payload, tibetan_day):
+    return next(day for day in payload['days'] if day['day'] == tibetan_day)
+
+
+def python_final_unavailable_response(year, month, error):
+    return jsonify({
+        "success": False,
+        "error": {
+            "code": "PYTHON_FINAL_UNAVAILABLE",
+            "message": "Python final 五要素数据不可用",
+            "details": f"藏历 {year} 年 {month} 月：{error}",
+        },
+    }), 503
 
 
 @api_bp.route('/health', methods=['GET'])
@@ -517,57 +585,30 @@ def get_monthly_five_elements_overview():
             }
         }), 400
 
+    try:
+        python_month = load_python_final_month(year, month)
+    except (FileNotFoundError, ValueError) as error:
+        return python_final_unavailable_response(year, month, error)
+
     month_dates = find_tibetan_month_dates(year, month)
     monthly_days = []
     month_summary = None
 
     for current_date, tibetan_info in month_dates:
-        five_elements = calculate_five_elements(
-            current_date.year,
-            current_date.month,
-            current_date.day,
+        five_elements = get_python_final_day(
+            python_month,
+            tibetan_info['tibetan_day'],
         )
         tibetan_date = tibetan_info.get("zangli_date", "")
 
         if month_summary is None:
-            zero_base = five_elements.get('整零数', [0, 0])
-            month_summary = {
-                "tibetanDateLabel": f"{tibetan_info.get('year_name', '')}年 {tibetan_info.get('month_label', '')}".strip(),
-                "accumulativeMonth": five_elements.get('积月', 0),
-                "leapRemainder": five_elements.get('闰余', 0),
-                "weekdayBase": five_elements.get('曜基数', [0, 0, 0, 0, 0]),
-                "zeroBase": {
-                    "integer": zero_base[0] if len(zero_base) > 0 else 0,
-                    "fractional": zero_base[1] if len(zero_base) > 1 else 0,
-                },
-                "solarBase": five_elements.get('太阳基数', [0, 0, 0, 0, 0]),
-                "isLeapMonth": bool(five_elements.get('是否闰月', 0)),
-            }
-
-        lunar_partner = five_elements.get(
-            '月伴星宿',
-            five_elements.get('太阳日月宿', [0, 0, 0, 0, 0, 0]),
-        )
-        ding_yao = five_elements.get('定曜', [0, 0, 0, 0, 0, 0])
-        ding_sun = five_elements.get('定日', [0, 0, 0, 0, 0])
-        huihe = five_elements.get('会合', [0, 0, 0, 0, 0, 0])
-        zuoyong = five_elements.get('作用', ['', ''])
-
-        rows = []
-        for index in range(6):
-            rows.append({
-                "fixedWeekday": ding_yao[index] if len(ding_yao) > index else 0,
-                "lunarPartner": lunar_partner[index] if len(lunar_partner) > index else 0,
-                "fixedDay": ding_sun[index] if len(ding_sun) > index else "",
-                "conjunction": huihe[index] if len(huihe) > index else 0,
-                "effect": zuoyong[index] if len(zuoyong) > index else "",
-            })
+            month_summary = build_python_final_month_summary(python_month, tibetan_info)
 
         monthly_days.append({
             "day": tibetan_info.get("tibetan_day", 0),
             "gregorianDate": current_date.strftime("%Y-%m-%d"),
             "tibetanDate": tibetan_date,
-            "rows": rows,
+            "rows": build_five_elements_daily_rows(five_elements),
         })
 
     if month_summary is None:
@@ -634,6 +675,11 @@ def get_daily_five_elements_detail():
             }
         }), 400
 
+    try:
+        python_month = load_python_final_month(year, month)
+    except (FileNotFoundError, ValueError) as error:
+        return python_final_unavailable_response(year, month, error)
+
     matching_dates = [
         (current_date, tibetan_info)
         for current_date, tibetan_info in find_tibetan_month_dates(year, month)
@@ -650,13 +696,8 @@ def get_daily_five_elements_detail():
             }
         }), 400
 
-    current_date, tibetan_info = matching_dates[0]
-    five_elements = calculate_five_elements(
-        current_date.year,
-        current_date.month,
-        current_date.day,
-    )
-    zero_base = five_elements.get('整零数', [0, 0])
+    _, tibetan_info = matching_dates[0]
+    five_elements = get_python_final_day(python_month, day)
 
     return jsonify({
         "success": True,
@@ -669,18 +710,7 @@ def get_daily_five_elements_detail():
                 matched_date.strftime("%Y-%m-%d")
                 for matched_date, _ in matching_dates
             ],
-            "monthSummary": {
-                "tibetanDateLabel": f"{tibetan_info.get('year_name', '')}年 {tibetan_info.get('month_label', '')}".strip(),
-                "accumulativeMonth": five_elements.get('积月', 0),
-                "leapRemainder": five_elements.get('闰余', 0),
-                "weekdayBase": five_elements.get('曜基数', [0, 0, 0, 0, 0]),
-                "zeroBase": {
-                    "integer": zero_base[0] if len(zero_base) > 0 else 0,
-                    "fractional": zero_base[1] if len(zero_base) > 1 else 0,
-                },
-                "solarBase": five_elements.get('太阳基数', [0, 0, 0, 0, 0]),
-                "isLeapMonth": bool(five_elements.get('是否闰月', 0)),
-            },
+            "monthSummary": build_python_final_month_summary(python_month, tibetan_info),
             "rows": build_five_elements_daily_rows(five_elements),
         }
     })
@@ -740,6 +770,53 @@ def get_monthly_five_elements_compare():
                 "message": "服务器内部错误",
                 "details": str(error),
             }
+        }), 500
+
+    return jsonify({
+        "success": True,
+        "data": compare_data,
+    })
+
+
+@api_bp.route('/five-elements/range-compare', methods=['GET'])
+def get_range_five_elements_compare():
+    from five_elements_range import compare_range
+    try:
+        start = int(request.args.get('start', ''))
+        end = int(request.args.get('end', ''))
+        month = int(request.args['month']) if 'month' in request.args else None
+        return jsonify(success=True, data=compare_range(start, end, month))
+    except (TypeError, ValueError) as error:
+        return jsonify(success=False, error={'message': str(error)}), 400
+    except Exception:
+        return jsonify(success=False, error={'message': '本地对照数据读取失败，请重试'}), 500
+
+
+@api_bp.route('/five-elements/yearly-compare', methods=['GET', 'POST'])
+def get_yearly_five_elements_compare():
+    try:
+        data = request.args if request.method == 'GET' else (request.get_json(silent=True) or {})
+        year = int(data.get('year'))
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "error": {
+                "code": "INVALID_YEAR",
+                "message": "年份参数错误",
+                "details": "year 必须为整数",
+            },
+        }), 400
+
+    try:
+        compare_data = build_five_elements_year_compare(year)
+    except Exception as error:
+        return jsonify({
+            "success": False,
+            "error": {
+                "code": "SERVER_ERROR",
+                "message": "年度对照数据加载失败",
+                "details": str(error),
+            },
         }), 500
 
     return jsonify({

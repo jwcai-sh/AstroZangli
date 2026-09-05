@@ -74,14 +74,14 @@ class ApiContractTests(TestCase):
                     "lunarPartner": 10,
                     "fixedDay": 9,
                     "conjunction": 20,
-                    "effect": "不净",
+                    "effect": "1",
                 },
                 {
                     "fixedWeekday": 1,
                     "lunarPartner": 51,
                     "fixedDay": 58,
                     "conjunction": 49,
-                    "effect": "枝稍",
+                    "effect": "",
                 },
                 {
                     "fixedWeekday": 42,
@@ -197,6 +197,52 @@ class ApiContractTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(payload["error"]["code"], "INVALID_MONTH")
 
+    @patch("routes.build_five_elements_year_compare")
+    def test_yearly_five_elements_compare_returns_difference_months(self, mocked_build):
+        mocked_build.return_value = {
+            "year": 2027,
+            "months": [
+                {
+                    "month": 3,
+                    "status": "difference",
+                    "hasDifferences": True,
+                    "differentSummaryCount": 1,
+                    "differentDayCount": 2,
+                    "differenceReasons": ["月头", "逐日"],
+                    "websiteAvailable": True,
+                    "websiteError": "",
+                }
+            ],
+            "differentMonths": [{"month": 3, "status": "difference"}],
+            "stats": {
+                "differentMonthCount": 1,
+                "availableMonthCount": 1,
+                "unavailableMonthCount": 0,
+            },
+        }
+
+        response = self.client.post(
+            "/api/five-elements/yearly-compare",
+            json={"year": 2027},
+        )
+        payload = response.get_json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(payload["success"])
+        self.assertEqual(payload["data"]["year"], 2027)
+        self.assertEqual(payload["data"]["differentMonths"][0]["month"], 3)
+        mocked_build.assert_called_once_with(2027)
+
+    def test_yearly_five_elements_compare_rejects_missing_year(self):
+        response = self.client.post(
+            "/api/five-elements/yearly-compare",
+            json={},
+        )
+        payload = response.get_json()
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(payload["error"]["code"], "INVALID_YEAR")
+
     @patch(
         "routes.build_five_elements_month_compare",
     )
@@ -230,7 +276,7 @@ class ApiContractTests(TestCase):
                 "differentMatlabWebsiteDayCount": 0,
             },
             "sources": {
-                "websiteUrl": "https://astro.xzzzqzyy.com/dba/twlsdata/per/wysz/search?year=2027&month=3",
+                "websiteUrl": "http://astro.xzzzqzyy.com/dba/twlsdata/per/wysz/search?year=2027&month=3",
                 "websiteLabel": "公元2027年藏历3月",
                 "websiteAvailable": False,
                 "websiteError": "参考网站连接超时或暂时不可达，请稍后重试",
@@ -274,7 +320,7 @@ class ApiContractTests(TestCase):
         self.assertIn("参考网站", payload["error"]["message"])
         mocked_build.assert_called_once_with(2027, 1)
 
-    def test_daily_five_elements_detail_returns_runtime_rows_for_tibetan_date(self):
+    def test_daily_five_elements_detail_returns_python_final_rows_for_tibetan_date(self):
         response = self.client.post(
             "/api/five-elements/daily-detail",
             json={"year": 2026, "month": 8, "day": 3},
@@ -296,14 +342,14 @@ class ApiContractTests(TestCase):
                     "lunarPartner": 12,
                     "fixedDay": 10,
                     "conjunction": 22,
-                    "effect": "捣麻",
+                    "effect": "5",
                 },
                 {
                     "fixedWeekday": 1,
                     "lunarPartner": 48,
                     "fixedDay": 7,
                     "conjunction": 55,
-                    "effect": "家生",
+                    "effect": "",
                 },
                 {
                     "fixedWeekday": 18,
