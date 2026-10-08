@@ -11,9 +11,9 @@ export default function EarthNav({ currentPage }: EarthNavProps) {
 
     const tabs = [
         { name: "十二宫图", path: "/earth?tab=zodiac" },
+        { name: "天文历算基本数据", path: "/earth?tab=five-elements&data=five-elements" },
         { name: "七星轨迹", path: "/earth?tab=seven-stars" },
         { name: "周年视运动（地心坐标）", path: "/earth?tab=annual-motion" },
-        { name: "藏历绕迥纪年", path: "/earth?tab=tibetan-cycle" },
     ];
 
     return (

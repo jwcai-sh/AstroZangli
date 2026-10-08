@@ -49,6 +49,19 @@ class ApiContractTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(payload["error"]["code"], "INVALID_DATE_FORMAT")
 
+    def test_calendar_response_exposes_structured_tibetan_date_for_frontend_conversion(self):
+        response = self.client.post(
+            "/api/calendar/date-comprehensive-data",
+            json={"date": "2026-09-14", "cityName": "上海市"},
+        )
+        payload = response.get_json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            payload["data"]["tibetanDate"],
+            {"year": 2026, "month": 8, "day": 3, "label": "火马年 八月初三"},
+        )
+
     def test_monthly_five_elements_overview_uses_tibetan_month_days(self):
         response = self.client.post(
             "/api/five-elements/monthly-overview",
@@ -383,6 +396,32 @@ class ApiContractTests(TestCase):
         )
         self.assertEqual(payload["data"]["monthSummary"]["accumulativeMonth"], 487)
         self.assertEqual(payload["data"]["monthSummary"]["weekdayBase"], [6, 35, 12, 3, 75])
+
+    def test_daily_five_elements_detail_returns_values_and_missing_marker_for_missing_day(self):
+        response = self.client.post(
+            "/api/five-elements/daily-detail",
+            json={"year": 2024, "month": 4, "day": 2},
+        )
+        payload = response.get_json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(payload["success"])
+        self.assertEqual(payload["data"]["dayStatus"], "missing")
+        self.assertEqual(payload["data"]["tibetanDateLabel"], "木龙年 四月初二")
+        self.assertEqual(payload["data"]["gregorianDates"], [])
+        self.assertEqual(len(payload["data"]["rows"]), 6)
+
+    def test_daily_five_elements_detail_marks_duplicate_day_and_returns_both_dates(self):
+        response = self.client.post(
+            "/api/five-elements/daily-detail",
+            json={"year": 2024, "month": 4, "day": 8},
+        )
+        payload = response.get_json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(payload["success"])
+        self.assertEqual(payload["data"]["dayStatus"], "duplicate")
+        self.assertEqual(payload["data"]["gregorianDates"], ["2024-05-15", "2024-05-16"])
 
     def test_daily_five_elements_detail_rejects_invalid_day(self):
         response = self.client.post(

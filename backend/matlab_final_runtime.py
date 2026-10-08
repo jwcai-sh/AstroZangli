@@ -1,4 +1,4 @@
-"""Adapter for the Python reproduction of the final MATLAB program."""
+"""Adapter for V3 AD 1 month numbering with unchanged E1987 calculations."""
 
 from __future__ import annotations
 
@@ -11,7 +11,8 @@ from types import ModuleType
 FINAL_SOURCE_PATH = (
     Path(__file__).resolve().parents[2]
     / "程序-时轮历"
-    / "shilun_calendar_months12_compare_final.py"
+    / "五要素-网站对照版python算法"
+    / "shilun_calendar_months12_compare_final_v3.py"
 )
 
 
@@ -20,7 +21,7 @@ def _load_final_module() -> ModuleType:
     if not FINAL_SOURCE_PATH.exists():
         raise FileNotFoundError(f"final calculation program not found: {FINAL_SOURCE_PATH}")
 
-    spec = importlib.util.spec_from_file_location("shilun_calendar_months12_compare_final", FINAL_SOURCE_PATH)
+    spec = importlib.util.spec_from_file_location(FINAL_SOURCE_PATH.stem, FINAL_SOURCE_PATH)
     if spec is None or spec.loader is None:
         raise ImportError(f"cannot load final calculation program: {FINAL_SOURCE_PATH}")
 
@@ -33,8 +34,8 @@ def build_month_records(year: int, month: int) -> dict:
     module = _load_final_module()
     result = module.calculate_month(year, month, 0)
     return {
-        "engine": "shilun_calendar_months12_compare_final",
-        "engineLabel": "Python final（shilun_calendar_months12_compare_final.py）",
+        "engine": FINAL_SOURCE_PATH.stem,
+        "engineLabel": "Python final v3（公元1年藏历三月积月编号；1987配套计算基数）",
         "summary": {
             "积月闰余": [int(result["jiyue"]), int(result["runyu"])],
             "曜基数": list(result["yao_base"]),

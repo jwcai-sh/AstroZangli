@@ -8,6 +8,7 @@ from astronomy import (
     get_lunar_text,
     calculate_five_elements,
     get_moon_phase_info,
+    get_monthly_astronomy_events,
     get_solar_planetary_chart,
     TIBETAN_CALENDAR_START,
     TIBETAN_CALENDAR_END,
@@ -441,6 +442,7 @@ def get_calendar_comprehensive_data():
         solar_text = f"{year}年{month}月{day}日 {weekday}"
 
         # 藏历信息
+        tibetan_info = {"value": "error"}
         try:
             tibetan_info = get_tibetan_lunar_info(selected_datetime)
             tibetan_text = tibetan_info.get('zangli_date', '') if isinstance(tibetan_info, dict) and tibetan_info.get('value') != 'error' else ''
@@ -535,6 +537,12 @@ def get_calendar_comprehensive_data():
                     "altitude": altitude
                 },
                 "dateEvents": date_events,
+                "tibetanDate": {
+                    "year": tibetan_info.get("tibetan_year"),
+                    "month": tibetan_info.get("tibetan_month"),
+                    "day": tibetan_info.get("tibetan_day"),
+                    "label": tibetan_text,
+                } if isinstance(tibetan_info, dict) and tibetan_info.get("value") != "error" else None,
                 "astrologicalTable": astrological_table,
                 "moonPhase": moon_phase,
                 "planetaryChart": planetary_chart
@@ -556,6 +564,27 @@ def get_calendar_comprehensive_data():
                 "message": "服务器内部错误",
                 "details": str(e)
             }
+        }), 500
+
+
+@api_bp.route('/calendar/monthly-astronomy-events', methods=['POST'])
+def get_monthly_astronomy_events_api():
+    """List new/full moons and eclipse types for a Gregorian month."""
+    try:
+        data = request.get_json(silent=True) or {}
+        year = int(data.get('year'))
+        month = int(data.get('month'))
+        events = get_monthly_astronomy_events(year, month)
+        return jsonify({"success": True, "data": {"year": year, "month": month, "events": events}})
+    except (TypeError, ValueError) as error:
+        return jsonify({
+            "success": False,
+            "error": {"code": "INVALID_MONTH", "message": "月份参数错误", "details": str(error)},
+        }), 400
+    except Exception as error:
+        return jsonify({
+            "success": False,
+            "error": {"code": "ASTRONOMY_EVENTS_UNAVAILABLE", "message": "天文事件暂不可用", "details": str(error)},
         }), 500
 
 
@@ -680,23 +709,36 @@ def get_daily_five_elements_detail():
     except (FileNotFoundError, ValueError) as error:
         return python_final_unavailable_response(year, month, error)
 
+    month_dates = find_tibetan_month_dates(year, month)
     matching_dates = [
         (current_date, tibetan_info)
-        for current_date, tibetan_info in find_tibetan_month_dates(year, month)
+        for current_date, tibetan_info in month_dates
         if tibetan_info.get("tibetan_day") == day
     ]
 
-    if not matching_dates:
+    if not month_dates:
         return jsonify({
             "success": False,
             "error": {
-                "code": "TIBETAN_DAY_NOT_FOUND",
-                "message": "未找到对应的藏历日期",
-                "details": f"藏历 {year} 年 {month} 月 {day} 日在当前数据范围内不存在"
+                "code": "TIBETAN_MONTH_NOT_FOUND",
+                "message": "未找到对应的藏历月份",
+                "details": f"藏历 {year} 年 {month} 月在当前数据范围内不存在"
             }
         }), 400
 
-    _, tibetan_info = matching_dates[0]
+    tibetan_info = matching_dates[0][1] if matching_dates else month_dates[0][1]
+    month_summary = build_python_final_month_summary(python_month, tibetan_info)
+    day_names_cn = [
+        "初一", "初二", "初三", "初四", "初五", "初六", "初七", "初八", "初九", "初十",
+        "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十",
+        "廿一", "廿二", "廿三", "廿四", "廿五", "廿六", "廿七", "廿八", "廿九", "三十",
+    ]
+    day_status = "missing" if not matching_dates else "duplicate" if len(matching_dates) > 1 else "normal"
+    tibetan_date_label = (
+        f"{month_summary['tibetanDateLabel']}{day_names_cn[day - 1]}"
+        if not matching_dates
+        else tibetan_info.get("zangli_date", "")
+    )
     five_elements = get_python_final_day(python_month, day)
 
     return jsonify({
@@ -705,12 +747,13 @@ def get_daily_five_elements_detail():
             "year": year,
             "month": month,
             "day": day,
-            "tibetanDateLabel": tibetan_info.get("zangli_date", ""),
+            "dayStatus": day_status,
+            "tibetanDateLabel": tibetan_date_label,
             "gregorianDates": [
                 matched_date.strftime("%Y-%m-%d")
                 for matched_date, _ in matching_dates
             ],
-            "monthSummary": build_python_final_month_summary(python_month, tibetan_info),
+            "monthSummary": month_summary,
             "rows": build_five_elements_daily_rows(five_elements),
         }
     })

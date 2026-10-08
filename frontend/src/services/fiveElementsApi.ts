@@ -39,6 +39,7 @@ export interface DailyFiveElementsResponse {
   year: number;
   month: number;
   day: number;
+  dayStatus: "normal" | "duplicate" | "missing";
   tibetanDateLabel: string;
   gregorianDates: string[];
   monthSummary: FiveElementsMonthSummary;

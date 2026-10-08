@@ -88,7 +88,7 @@ def parse_website_month_html(year: int, month: int, html: str) -> tuple[str, dic
 
 def read_local_month(year: int, month: int) -> dict:
     # Keep this independently computed from the Excel oracle. The adapter
-    # invokes the user-selected shilun_calendar_months12_compare_final.py.
+    # invokes the continuous-year shilun_calendar_months12_compare_final_v2.py.
     return build_python_month_records(year, month)
 
 
@@ -307,7 +307,6 @@ def build_five_elements_year_compare(
                 }
             else:
                 stats = monthly["stats"]
-                # The yearly map intentionally ignores month-head differences.
                 # max() keeps the existing compact response contract without
                 # falsely summing the same calendar day across source pairs.
                 different_summary_count = max(
@@ -321,6 +320,8 @@ def build_five_elements_year_compare(
                     stats["differentMatlabWebsiteDayCount"],
                 )
                 difference_reasons = []
+                if different_summary_count:
+                    difference_reasons.append("月头")
                 if stats["differentPythonMatlabDayCount"]:
                     difference_reasons.append("Python / MATLAB")
                 if stats["differentPythonWebsiteDayCount"]:

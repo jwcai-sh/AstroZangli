@@ -37,6 +37,79 @@ def jd_to_utc(jd):
     seconds = (minutes % 1) * 60
     return datetime(year, month, day, int(hour), int(minutes), int(seconds))
 
+
+def get_monthly_astronomy_events(year: int, month: int):
+    """Return lunations and globally occurring eclipses on Beijing civil dates."""
+    if not 1 <= month <= 12:
+        raise ValueError("month must be between 1 and 12")
+
+    month_start = datetime(year, month, 1, tzinfo=BEIJING_TIMEZONE)
+    next_month = (
+        datetime(year + 1, 1, 1, tzinfo=BEIJING_TIMEZONE)
+        if month == 12
+        else datetime(year, month + 1, 1, tzinfo=BEIJING_TIMEZONE)
+    )
+    start_utc = month_start.astimezone(timezone.utc).replace(tzinfo=None)
+    start_jd = swe.julday(
+        start_utc.year, start_utc.month, start_utc.day,
+        start_utc.hour + start_utc.minute / 60,
+    )
+
+    events = []
+
+    def append_event(moment_utc: datetime, event_type: str, label: str):
+        moment = moment_utc.replace(tzinfo=timezone.utc).astimezone(BEIJING_TIMEZONE)
+        if month_start <= moment < next_month:
+            events.append({
+                "date": moment.strftime("%Y-%m-%d"),
+                "type": event_type,
+                "label": label,
+                "time": moment.strftime("%H:%M"),
+            })
+
+    for phase_type, phase_label, phase_getter in (
+        ("new_moon", "新月", ephem.next_new_moon),
+        ("full_moon", "满月", ephem.next_full_moon),
+    ):
+        event = phase_getter(start_utc)
+        while True:
+            moment = ephem.Date(event).datetime()
+            if moment.replace(tzinfo=timezone.utc).astimezone(BEIJING_TIMEZONE) >= next_month:
+                break
+            append_event(moment, phase_type, phase_label)
+            event = phase_getter(event + ephem.minute)
+
+    def add_eclipses(search, label_for_flag):
+        cursor = start_jd
+        while True:
+            flags, times = search(cursor)
+            moment = jd_to_utc(times[0])
+            local = moment.replace(tzinfo=timezone.utc).astimezone(BEIJING_TIMEZONE)
+            if local >= next_month:
+                break
+            append_event(moment, *label_for_flag(flags))
+            cursor = times[0] + 1
+
+    def solar_label(flags):
+        if flags & swe.ECL_TOTAL:
+            return "solar_total", "日全食"
+        if flags & swe.ECL_ANNULAR:
+            return "solar_annular", "日环食"
+        if flags & swe.ECL_ANNULAR_TOTAL:
+            return "solar_hybrid", "日全环食"
+        return "solar_partial", "日偏食"
+
+    def lunar_label(flags):
+        if flags & swe.ECL_TOTAL:
+            return "lunar_total", "月全食"
+        if flags & swe.ECL_PARTIAL:
+            return "lunar_partial", "月偏食"
+        return "lunar_penumbral", "月半影食"
+
+    add_eclipses(swe.sol_eclipse_when_glob, solar_label)
+    add_eclipses(swe.lun_eclipse_when, lunar_label)
+    return sorted(events, key=lambda event: (event["date"], event["time"], event["type"]))
+
 def get_planet_rise_set_transit(year, month, day, hour, minute, longitude, latitude, planet, altitude=0):
     """获取行星的升起、落下和中天时刻"""
     # Rise/set/transit are daily events. Start at midnight of the requested

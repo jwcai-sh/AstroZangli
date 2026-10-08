@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import GregorianTibetanDatePicker from "@/components/seven-stars/GregorianTibetanDatePicker";
+import { SUPPORTED_CITIES, type SupportedCity } from "@/constants/cities";
 import FiveElementsExplorer from "@/components/widgets/FiveElementsExplorer";
 import {
   buildFiveElementPanels,
@@ -49,9 +52,14 @@ function buildNextUrl(
   year: number,
   month: number,
   day: number,
-  mode: FiveElementsViewMode
+  mode: FiveElementsViewMode,
+  gregorianDate?: string,
+  city?: SupportedCity,
 ): string {
-  return `/earth?tab=seven-stars&subtab=five-elements&year=${year}&month=${month}&day=${day}&mode=${mode}`;
+  const query = new URLSearchParams({ tab: "five-elements", data: "five-elements", year: String(year), month: String(month), day: String(day), mode });
+  if (gregorianDate) query.set("gdate", gregorianDate);
+  if (city) query.set("city", city);
+  return `/earth?${query.toString()}`;
 }
 
 export default function FiveElementsSubtab(): React.JSX.Element {
@@ -74,6 +82,9 @@ export default function FiveElementsSubtab(): React.JSX.Element {
     () => resolveFiveElementsViewMode(searchParams.get("mode")),
     [searchParams]
   );
+  const gregorianDate = searchParams.get("gdate") || "2026-09-14";
+  const cityParam = searchParams.get("city");
+  const city: SupportedCity = SUPPORTED_CITIES.includes(cityParam as SupportedCity) ? cityParam as SupportedCity : "上海市";
 
   const [selection, setSelection] = useState({
     year: parsedYear,
@@ -198,7 +209,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
     const nextMonth = next.month ?? selection.month;
     const nextDay = next.day ?? selection.day;
     const nextMode = next.mode ?? mode;
-    router.push(buildNextUrl(nextYear, nextMonth, nextDay, nextMode));
+    router.push(buildNextUrl(nextYear, nextMonth, nextDay, nextMode, gregorianDate, city));
   };
 
   return (
@@ -210,7 +221,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
               Earth / Seven Stars
             </p>
             <h2 className="mt-3 text-2xl font-semibold tracking-wide sm:text-3xl">
-              五要素
+              五要素值
             </h2>
             <p className="mt-3 text-sm leading-6 text-[#5f4a35] sm:text-base">
               当前支持按藏历年、月查看月度总览，也支持按藏历年、月、日进入单日交互式可视化；两者都读取数据库中的 Python final 预计算结果。
@@ -220,7 +231,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
           <div className="flex flex-wrap gap-3">
             {(["monthly", "daily"] as const).map((item) => {
               const isActive = mode === item;
-              const label = item === "monthly" ? "月度总览" : "每日交互";
+              const label = item === "monthly" ? "月度总览" : "每日查询";
               return (
                 <button
                   key={item}
@@ -239,9 +250,31 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                 </button>
               );
             })}
+            {mode === "daily" && (
+              <Link
+                href={`/earth?${new URLSearchParams({ tab: "five-elements", data: "five-elements-sphere", year: String(selection.year), month: String(selection.month), day: String(selection.day), gdate: gregorianDate, city })}`}
+                className="rounded-full border border-[#46a2b4] bg-[#e2f4f5] px-4 py-2 text-sm font-medium text-[#16505b] transition-all hover:bg-[#d2ecee]"
+              >
+                查看天球视角 ↗
+              </Link>
+            )}
+            <Link
+              href="/five-elements-compare"
+              className="rounded-full border border-[#d0b79c] bg-[#fff8ef] px-4 py-2 text-sm text-[#5c4631] transition-all hover:bg-[#f6eadc]"
+            >
+              参考网站对照
+            </Link>
           </div>
         </div>
       </section>
+
+      <GregorianTibetanDatePicker
+        initialDate={gregorianDate}
+        initialCity={city}
+        onResolved={({ gregorianDate: nextGregorianDate, city: nextCity, tibetan }) => {
+          router.push(buildNextUrl(tibetan.year, tibetan.month, tibetan.day, "daily", nextGregorianDate, nextCity));
+        }}
+      />
 
       {mode === "monthly" ? (
         <>
@@ -313,7 +346,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                   {summaryCards.map((card) => (
                     <div
                       key={card.title}
-                      className="rounded-[22px] border border-[#dbc7b0] bg-[#fbf4ea] px-4 py-4"
+                      className="rounded-[22px] border border-[#dbc7b0] bg-[#fbf4ea] px-4 py-4 text-center"
                     >
                       <p className="text-sm font-semibold tracking-wide text-[#6b513a]">
                         {card.title}
@@ -446,7 +479,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
               <div className="rounded-[20px] border border-[#d7c3ac] bg-[#fff8ef] px-5 py-3 text-center shadow-[inset_0_0_0_1px_rgba(215,195,172,0.35)]">
                 <p className="text-sm tracking-[0.2em] text-[#8b7259]">交互说明</p>
                 <p className="mt-2 text-sm text-[#5f4a35]">
-                  若遇藏历缺日，接口会明确提示该日期不存在。
+                  缺日标“缺”并显示当日数值；重日标“重”并列出对应公历日期。
                 </p>
               </div>
             </div>
@@ -470,6 +503,11 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                     </p>
                     <h3 className="mt-3 text-3xl font-semibold">
                       {dailyData.tibetanDateLabel}
+                      {dailyData.dayStatus !== "normal" ? (
+                        <span className="ml-3 inline-flex align-middle rounded-full border border-[#caa984] bg-[#fff8ef] px-3 py-1 text-base font-medium text-[#765638]">
+                          {dailyData.dayStatus === "missing" ? "缺" : "重"}
+                        </span>
+                      ) : null}
                     </h3>
                     <p className="mt-3 text-sm leading-6 text-[#5f4a35]">
                       对应公历：
@@ -479,7 +517,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                     </p>
                     {dailyData.gregorianDates.length > 1 ? (
                       <p className="mt-2 text-xs tracking-[0.08em] text-[#8b7259]">
-                        当前藏历日存在多个公历映射，通常对应闰日或重复日场景。
+                        当前藏历日对应多个公历日期，按重日显示。
                       </p>
                     ) : null}
                   </div>
@@ -504,7 +542,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                   {dailySummaryCards.map((card) => (
                     <div
                       key={card.title}
-                      className="rounded-[22px] border border-[#dbc7b0] bg-[#fbf4ea] px-4 py-4"
+                      className="rounded-[22px] border border-[#dbc7b0] bg-[#fbf4ea] px-4 py-4 text-center"
                     >
                       <p className="text-sm font-semibold tracking-wide text-[#6b513a]">
                         {card.title}

@@ -11,8 +11,6 @@ interface SevenStarsSubnavProps {
 const SUBTABS: Array<{ id: SevenStarsSubtab; label: string }> = [
   { id: "seven-stars", label: "七星轨迹" },
   { id: "seven-data", label: "七星数据" },
-  { id: "five-elements", label: "五要素" },
-  { id: "five-elements-sphere", label: "每日天球" },
 ];
 
 export default function SevenStarsSubnav({

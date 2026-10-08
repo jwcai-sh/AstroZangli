@@ -159,11 +159,12 @@ class YearlyFiveElementsCompareTests(TestCase):
 
         self.assertEqual(result["year"], 2027)
         self.assertEqual([item["month"] for item in result["months"]], list(range(1, 13)))
-        self.assertEqual([item["month"] for item in result["differentMonths"]], [3])
+        self.assertEqual([item["month"] for item in result["differentMonths"]], [3, 4])
         self.assertEqual(result["months"][2]["status"], "difference")
-        self.assertEqual(result["months"][2]["differenceReasons"], ["MATLAB / 网站"])
-        self.assertEqual(result["months"][3]["status"], "match")
-        self.assertEqual(result["stats"]["differentMonthCount"], 1)
+        self.assertEqual(result["months"][2]["differenceReasons"], ["月头", "MATLAB / 网站"])
+        self.assertEqual(result["months"][3]["status"], "difference")
+        self.assertEqual(result["months"][3]["differenceReasons"], ["月头"])
+        self.assertEqual(result["stats"]["differentMonthCount"], 2)
 
 
 if __name__ == "__main__":

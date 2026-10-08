@@ -12,20 +12,31 @@ class RangeTests(unittest.TestCase):
             for d in range(1, 31)]}
 
     def test_missing_is_not_match(self):
-        self.assertTrue(all(m['status'] == 'unavailable' for m in compare_range(1, 1, store=self.store)['years'][0]['months']))
+        response = compare_range(1, 1, store=self.store)
+        self.assertTrue(all(m['status'] == 'unavailable' for m in response['years'][0]['months']))
+        self.assertEqual(response['stats']['unavailableMonths'], 12)
+        self.assertEqual(response['stats']['comparedDays'], 0)
 
     def test_matching_and_detail(self):
         for source in ['python_final', 'website']:
             self.store.save_month_source(2500, 12, source, self.payload)
-        result = compare_range(2500, 2500, 12, self.store)['years'][0]['months'][0]
+        response = compare_range(2500, 2500, 12, self.store)
+        result = response['years'][0]['months'][0]
         self.assertEqual(result['status'], 'match')
         self.assertEqual(len(result['days']), 30)
+        self.assertEqual(response['stats']['matchedMonths'], 1)
+        self.assertEqual(response['stats']['matchingDays'], 30)
+        self.assertEqual(response['stats']['fieldDifferenceCounts']['定曜'], 0)
         changed = copy.deepcopy(self.payload)
         changed['days'][7]['定曜'][1] = 1
         self.store.save_month_source(2500, 12, 'website', changed)
-        result = compare_range(2500, 2500, 12, self.store)['years'][0]['months'][0]
+        response = compare_range(2500, 2500, 12, self.store)
+        result = response['years'][0]['months'][0]
         self.assertEqual(result['differentDays'], [8])
         self.assertEqual(result['days'][7]['fields'], ['定曜'])
+        self.assertEqual(response['stats']['differentMonths'], 1)
+        self.assertEqual(response['stats']['differentDays'], 1)
+        self.assertEqual(response['stats']['fieldDifferenceCounts']['定曜'], 1)
 
     def test_stale_and_incomplete(self):
         self.payload['sourceHashes'] = {}
@@ -39,8 +50,9 @@ class RangeTests(unittest.TestCase):
         self.assertEqual(compare_range(1, 1, 1, self.store)['years'][0]['months'][0]['status'], 'unavailable')
 
     def test_bounds(self):
-        for a, b in [(0, 1), (1, 2501), (2, 1), (1, 26)]:
+        for a, b in [(0, 1), (1, 2501), (2, 1)]:
             with self.assertRaises(ValueError):
                 compare_range(a, b, store=self.store)
+        compare_range(1, 26, store=self.store)
         with self.assertRaises(ValueError):
             compare_range(1, 2, 1, self.store)
