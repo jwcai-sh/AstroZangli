@@ -21,3 +21,4 @@ tzdata==2026.1
 # RAG Dependencies
 jieba==0.42.1
 requests==2.31.0
+beautifulsoup4==4.12.3

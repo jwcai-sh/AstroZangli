@@ -1,6 +1,6 @@
 {
   "name": "astrozangli-ai",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "AstroZangli AI - 天文历法AI应用",
   "private": true,
   "workspaces": [

@@ -5,7 +5,7 @@ import { DateEventsCard, MoonPhaseCard, PlanetaryChartCard, CalendarBox } from "
 import AstrologicalTableCard, { type AstrologicalRow } from "@/components/widgets/AstrologicalTableCard";
 import WidgetCarousel from "@/components/widgets/WidgetCarousel";
 import FooterBar from "@/components/FooterBar";
-import { fetchCalendarData } from "@/services/calendarApi";
+import { fetchCalendarData, fetchMonthlyAstronomyEvents, fetchMonthlyTibetanFestivals, type CalendarDisplayMode, type MonthlyCalendarEvent } from "@/services/calendarApi";
 import { SUPPORTED_CITIES } from "@/constants/cities";
 
 const DEFAULT_CITY = "上海市";
@@ -49,6 +49,8 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [calendarData, setCalendarData] = useState<Awaited<ReturnType<typeof fetchCalendarData>> | null>(null);
+  const [calendarEventMode, setCalendarEventMode] = useState<CalendarDisplayMode>("astronomy");
+  const [calendarEvents, setCalendarEvents] = useState<MonthlyCalendarEvent[]>([]);
   const [stars, setStars] = useState<Array<{ left: number; top: number; opacity: number }>>([]);
   const [festivalPredictions, setFestivalPredictions] = useState<Record<FestivalKind, FestivalPrediction>>({
     solar: { status: "idle" },
@@ -86,6 +88,18 @@ export default function CalendarPage() {
     const dd = String(selectedDay).padStart(2, "0");
     return `${year}-${mm}-${dd}`;
   }, [year, month, selectedDay]);
+
+  useEffect(() => {
+    if (!ready) return;
+    let cancelled = false;
+    const loadEvents = calendarEventMode === "astronomy"
+      ? fetchMonthlyAstronomyEvents(year, month + 1)
+      : fetchMonthlyTibetanFestivals(year, month + 1);
+    loadEvents
+      .then(events => { if (!cancelled) setCalendarEvents(events); })
+      .catch(() => { if (!cancelled) setCalendarEvents([]); });
+    return () => { cancelled = true; };
+  }, [calendarEventMode, ready, year, month]);
 
 
   const loadFestivalPredictions = (dateStr: string) => {
@@ -254,6 +268,11 @@ export default function CalendarPage() {
     };
   };
 
+  const selectedTibetanFestival = useMemo(
+    () => calendarEvents.find((event) => event.type === "tibetan_festival" && event.date === selectedDateStr),
+    [calendarEvents, selectedDateStr]
+  );
+
   const items = [
     <DateEventsCard
       key="date"
@@ -272,7 +291,9 @@ export default function CalendarPage() {
       events={[
         buildFestivalEvent("solar", calendarData?.dateEvents?.events?.solarHoliday),
         buildFestivalEvent("lunar", calendarData?.dateEvents?.events?.lunarHoliday),
-        buildFestivalEvent("tibetan", calendarData?.dateEvents?.events?.tibetanHoliday)
+        selectedTibetanFestival
+          ? { label: selectedTibetanFestival.label, colorClass: "bg-gray-500", daysLeftText: "" }
+          : buildFestivalEvent("tibetan", calendarData?.dateEvents?.events?.tibetanHoliday)
       ]}
     />,
     <AstrologicalTableCard
@@ -383,6 +404,9 @@ export default function CalendarPage() {
                   startOffset={startOffset}
                   daysInMonth={daysInMonth}
                   initialSelected={selectedDay}
+                  astronomyEvents={calendarEvents}
+                  eventMode={calendarEventMode}
+                  onEventModeChange={setCalendarEventMode}
                   onPrevMonth={handlePrevMonth}
                   onNextMonth={handleNextMonth}
                   onSelectDay={handleSelectDay}

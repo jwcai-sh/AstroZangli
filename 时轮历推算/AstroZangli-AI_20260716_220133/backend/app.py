@@ -17,6 +17,8 @@ def create_app(config_name=None):
     # 注册蓝图
     from routes import api_bp
     app.register_blueprint(api_bp, url_prefix=app.config['API_PREFIX'])
+    from five_planets_compare import bp as five_planets_bp
+    app.register_blueprint(five_planets_bp, url_prefix=app.config['API_PREFIX'])
 
     # 添加根路由用于健康检查
     @app.route('/')
@@ -45,4 +47,3 @@ def register_error_handlers(app):
 if __name__ == "__main__":
     app = create_app()
     app.run(host="127.0.0.1", port=5001, debug=True)
-

@@ -5,6 +5,8 @@ from unittest.mock import patch
 from astronomy import (
     TIBETAN_CALENDAR_END,
     TIBETAN_CALENDAR_START,
+    calculate_five_elements,
+    get_monthly_astronomy_events,
     get_planets_data,
     get_zangli,
 )
@@ -36,3 +38,34 @@ class PlanetContractTests(TestCase):
 
         self.assertEqual(result["Mercury"]["transit"], "12:02:03")
         self.assertEqual(result["Mercury"]["declination"], "12.345679")
+
+
+class FiveElementsContractTests(TestCase):
+    def test_calculate_five_elements_uses_runtime_compatible_lunar_partner_values(self):
+        result = calculate_five_elements(2026, 9, 12)
+
+        self.assertEqual(result["积月"], 487)
+        self.assertEqual(result["闰余"], 36)
+        self.assertEqual(result["定曜"], [0, 1, 42, 3, 48, 239])
+        self.assertEqual(result["月伴星宿"], [10, 51, 8, 1, 43, 468])
+        self.assertEqual(result["太阳日月宿"], [10, 51, 8, 1, 43, 468])
+        self.assertEqual(result["作用"], ["不净", "枝稍"])
+
+
+class MonthlyAstronomyEventsTests(TestCase):
+    def test_events_use_requested_beijing_month_and_include_lunations(self):
+        events = get_monthly_astronomy_events(2026, 9)
+
+        self.assertTrue(all(event["date"].startswith("2026-09-") for event in events))
+        self.assertEqual(
+            {event["type"] for event in events},
+            {"new_moon", "full_moon"},
+        )
+
+    def test_eclipse_is_returned_alongside_its_lunation(self):
+        events = get_monthly_astronomy_events(2026, 8)
+        august_thirteenth = [event["type"] for event in events if event["date"] == "2026-08-13"]
+        august_twenty_eighth = [event["type"] for event in events if event["date"] == "2026-08-28"]
+
+        self.assertCountEqual(august_thirteenth, ["new_moon", "solar_total"])
+        self.assertCountEqual(august_twenty_eighth, ["lunar_partial", "full_moon"])
