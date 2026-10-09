@@ -152,7 +152,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
   }, [mode, selection]);
 
   const summaryCards = useMemo(
-    () => (monthlyData ? buildMonthlySummaryCards(monthlyData.monthSummary) : []),
+    () => (monthlyData ? buildMonthlySummaryCards(monthlyData.monthSummary).sort((a, b) => a.values.length - b.values.length) : []),
     [monthlyData]
   );
   const dayCards = useMemo(
@@ -171,7 +171,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
   );
 
   const dailySummaryCards = useMemo(
-    () => (dailyData ? buildMonthlySummaryCards(dailyData.monthSummary) : []),
+    () => (dailyData ? buildMonthlySummaryCards(dailyData.monthSummary).sort((a, b) => a.values.length - b.values.length) : []),
     [dailyData]
   );
   const dailyRows = useMemo(
@@ -343,11 +343,11 @@ export default function FiveElementsSubtab(): React.JSX.Element {
           ) : (
             <>
               <section className="rounded-[28px] border border-[#e2c6a2]/30 bg-slate-950/10 px-5 py-6 text-slate-100 shadow-[0_18px_60px_rgba(0,0,0,0.2)] backdrop-blur-sm">
-                <div className="grid gap-4 md:grid-cols-4">
+                <div className="grid grid-cols-2 items-start gap-2 sm:gap-4 lg:grid-cols-4">
                   {summaryCards.map((card) => (
                     <div
                       key={card.title}
-                      className="rounded-[22px] border border-[#e2c6a2]/45 bg-[#8b6b49]/5 px-4 py-4 text-center"
+                      className="min-w-0 rounded-[22px] border border-[#e2c6a2]/45 bg-[#8b6b49]/5 px-2 py-3 text-center sm:px-4 sm:py-4"
                     >
                       <p className="text-sm font-semibold tracking-wide text-cyan-100/80">
                         {card.title}
@@ -366,7 +366,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                 {dayCards.map((card) => (
                   <article
                     key={card.day}
-                    className="rounded-[26px] border border-[#e2c6a2]/30 bg-[#8b6b49]/5 px-4 py-5 text-slate-100 shadow-[0_18px_60px_rgba(0,0,0,0.2)]"
+                    className="min-w-0 rounded-[26px] border border-[#e2c6a2]/30 bg-[#8b6b49]/5 px-4 py-5 text-slate-100 shadow-[0_18px_60px_rgba(0,0,0,0.2)]"
                   >
                     <div className="border-b border-white/10 pb-3 text-center">
                       <p className="text-2xl font-semibold">{card.dayLabel}</p>
@@ -379,7 +379,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                     </div>
 
                     <div className="mt-4 overflow-x-auto">
-                      <table className="w-full min-w-[420px] text-center text-sm">
+                      <table className="w-full min-w-[300px] table-fixed text-center text-sm">
                         <thead>
                           <tr className="text-cyan-100/80">
                             <th className="pb-3 font-semibold">定曜</th>
@@ -539,11 +539,11 @@ export default function FiveElementsSubtab(): React.JSX.Element {
               </section>
 
               <section className="rounded-[28px] border border-cyan-100/15 bg-slate-950/50 px-5 py-6 text-slate-100 shadow-[0_18px_60px_rgba(0,0,0,0.2)] backdrop-blur-md">
-                <div className="grid gap-4 md:grid-cols-4">
+                <div className="grid grid-cols-2 items-start gap-2 sm:gap-4 lg:grid-cols-4">
                   {dailySummaryCards.map((card) => (
                     <div
                       key={card.title}
-                      className="rounded-[22px] border border-[#e2c6a2]/45 bg-[#8b6b49]/5 px-4 py-4 text-center"
+                      className="min-w-0 rounded-[22px] border border-[#e2c6a2]/45 bg-[#8b6b49]/5 px-2 py-3 text-center sm:px-4 sm:py-4"
                     >
                       <p className="text-sm font-semibold tracking-wide text-cyan-100/80">
                         {card.title}
