@@ -88,7 +88,7 @@ export default function EarthPageClient() {
           </div>
           {currentPage === 1 && <BasicDataSubnav currentSubtab={currentBasicDataSubtab} />}
           {currentPage === 2 && <SevenStarsSubnav currentSubtab={currentSubtab} />}
-          <div className="flex-1 flex items-center justify-center p-2 sm:p-4">
+          <div className={`flex-1 flex items-center justify-center py-2 pr-2 sm:p-4 ${currentPage === 1 && currentBasicDataSubtab !== "tibetan-cycle" ? "pl-8" : "pl-2"}`}>
             <WidgetCarousel
               items={items}
               currentIndex={currentPage}
