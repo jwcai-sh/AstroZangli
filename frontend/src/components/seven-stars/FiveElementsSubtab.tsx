@@ -214,16 +214,16 @@ export default function FiveElementsSubtab(): React.JSX.Element {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-2 pb-2">
-      <section className="rounded-[28px] border border-[#d7c3ac] bg-[linear-gradient(180deg,#f6ecde_0%,#efe1cf_100%)] px-4 py-5 text-[#2f2418] shadow-[0_18px_60px_rgba(0,0,0,0.28)] sm:px-6">
+      <section className="rounded-[28px] border border-cyan-100/15 bg-slate-950/55 px-4 py-5 text-slate-100 shadow-[0_18px_60px_rgba(0,0,0,0.28)] backdrop-blur-md sm:px-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <p className="text-xs uppercase tracking-[0.35em] text-[#8e6b47]">
+            <p className="text-xs uppercase tracking-[0.35em] text-cyan-200/70">
               Earth / Seven Stars
             </p>
             <h2 className="mt-3 text-2xl font-semibold tracking-wide sm:text-3xl">
               五要素值
             </h2>
-            <p className="mt-3 text-sm leading-6 text-[#5f4a35] sm:text-base">
+            <p className="mt-3 text-sm leading-6 text-slate-300 sm:text-base">
               当前支持按藏历年、月查看月度总览，也支持按藏历年、月、日进入单日交互式可视化；两者都读取数据库中的 Python final 预计算结果。
             </p>
           </div>
@@ -243,7 +243,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                   className={`rounded-full border px-4 py-2 text-sm transition-all ${
                     isActive
                       ? "border-[#8b6b49] bg-[#8b6b49] text-white"
-                      : "border-[#d0b79c] bg-[#fff8ef] text-[#5c4631] hover:bg-[#f6eadc]"
+                      : "border-white/15 bg-white/5 text-slate-200 hover:bg-white/10"
                   }`}
                 >
                   {label}
@@ -253,14 +253,14 @@ export default function FiveElementsSubtab(): React.JSX.Element {
             {mode === "daily" && (
               <Link
                 href={`/earth?${new URLSearchParams({ tab: "five-elements", data: "five-elements-sphere", year: String(selection.year), month: String(selection.month), day: String(selection.day), gdate: gregorianDate, city })}`}
-                className="rounded-full border border-[#46a2b4] bg-[#e2f4f5] px-4 py-2 text-sm font-medium text-[#16505b] transition-all hover:bg-[#d2ecee]"
+                className="rounded-full border border-cyan-300/50 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100 transition-all hover:bg-cyan-300/20"
               >
                 查看天球视角 ↗
               </Link>
             )}
             <Link
               href="/five-elements-compare"
-              className="rounded-full border border-[#d0b79c] bg-[#fff8ef] px-4 py-2 text-sm text-[#5c4631] transition-all hover:bg-[#f6eadc]"
+              className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-slate-200 transition-all hover:bg-white/10"
             >
               参考网站对照
             </Link>
@@ -271,6 +271,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
       <GregorianTibetanDatePicker
         initialDate={gregorianDate}
         initialCity={city}
+        tone="dark"
         onResolved={({ gregorianDate: nextGregorianDate, city: nextCity, tibetan }) => {
           router.push(buildNextUrl(tibetan.year, tibetan.month, tibetan.day, "daily", nextGregorianDate, nextCity));
         }}
@@ -278,10 +279,10 @@ export default function FiveElementsSubtab(): React.JSX.Element {
 
       {mode === "monthly" ? (
         <>
-          <section className="rounded-[28px] border border-[#d7c3ac] bg-[linear-gradient(180deg,#f9f1e6_0%,#f1e4d5_100%)] px-4 py-5 text-[#2f2418] shadow-[0_18px_60px_rgba(0,0,0,0.18)] sm:px-6">
+          <section className="rounded-[28px] border border-cyan-100/15 bg-slate-950/55 px-4 py-5 text-slate-100 shadow-[0_18px_60px_rgba(0,0,0,0.22)] backdrop-blur-md sm:px-6">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-[#8e6b47]">查询藏历月份</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-cyan-200/70">查询藏历月份</p>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <label className="flex items-center gap-2">
                     <span className="text-sm">藏历年</span>
@@ -292,7 +293,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                         setSelection((current) => ({ ...current, year: nextYear }));
                         syncUrl({ year: nextYear });
                       }}
-                      className="min-w-[110px] rounded-md border border-[#ccb296] bg-[#fff8ef] px-3 py-2 text-sm outline-none"
+                      className="min-w-[110px] rounded-md border border-cyan-100/25 bg-transparent px-3 py-2 text-sm text-slate-100 outline-none [color-scheme:dark] focus-visible:ring-2 focus-visible:ring-cyan-200/50"
                     >
                       {YEAR_OPTIONS.map((year) => (
                         <option key={year} value={year}>
@@ -311,7 +312,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                         setSelection((current) => ({ ...current, month: nextMonth }));
                         syncUrl({ month: nextMonth });
                       }}
-                      className="min-w-[88px] rounded-md border border-[#ccb296] bg-[#fff8ef] px-3 py-2 text-sm outline-none"
+                      className="min-w-[88px] rounded-md border border-cyan-100/25 bg-transparent px-3 py-2 text-sm text-slate-100 outline-none [color-scheme:dark] focus-visible:ring-2 focus-visible:ring-cyan-200/50"
                     >
                       {MONTH_OPTIONS.map((month) => (
                         <option key={month} value={month}>
@@ -324,7 +325,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
               </div>
 
               {monthTitle ? (
-                <div className="rounded-[20px] border border-[#d7c3ac] bg-[#fff8ef] px-5 py-3 text-center shadow-[inset_0_0_0_1px_rgba(215,195,172,0.35)]">
+                <div className="rounded-[20px] border border-white/15 bg-white/5 px-5 py-3 text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
                   <p className="text-lg font-semibold tracking-wide">{monthTitle}</p>
                 </div>
               ) : null}
@@ -341,14 +342,14 @@ export default function FiveElementsSubtab(): React.JSX.Element {
             </div>
           ) : (
             <>
-              <section className="rounded-[28px] border border-[#d7c3ac] bg-[linear-gradient(180deg,#f8efe3_0%,#efe1cf_100%)] px-5 py-6 text-[#2f2418] shadow-[0_18px_60px_rgba(0,0,0,0.16)]">
+              <section className="rounded-[28px] border border-[#e2c6a2]/30 bg-slate-950/10 px-5 py-6 text-slate-100 shadow-[0_18px_60px_rgba(0,0,0,0.2)] backdrop-blur-sm">
                 <div className="grid gap-4 md:grid-cols-4">
                   {summaryCards.map((card) => (
                     <div
                       key={card.title}
-                      className="rounded-[22px] border border-[#dbc7b0] bg-[#fbf4ea] px-4 py-4 text-center"
+                      className="rounded-[22px] border border-[#e2c6a2]/45 bg-[#8b6b49]/5 px-4 py-4 text-center"
                     >
-                      <p className="text-sm font-semibold tracking-wide text-[#6b513a]">
+                      <p className="text-sm font-semibold tracking-wide text-cyan-100/80">
                         {card.title}
                       </p>
                       <div className="mt-4 space-y-2 text-center text-lg font-medium">
@@ -365,14 +366,14 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                 {dayCards.map((card) => (
                   <article
                     key={card.day}
-                    className="rounded-[26px] border border-[#d7c3ac] bg-[linear-gradient(180deg,#f8efe3_0%,#efe1cf_100%)] px-4 py-5 text-[#2f2418] shadow-[0_18px_60px_rgba(0,0,0,0.14)]"
+                    className="rounded-[26px] border border-[#e2c6a2]/30 bg-[#8b6b49]/5 px-4 py-5 text-slate-100 shadow-[0_18px_60px_rgba(0,0,0,0.2)]"
                   >
-                    <div className="border-b border-[#dcc7ae] pb-3 text-center">
+                    <div className="border-b border-white/10 pb-3 text-center">
                       <p className="text-2xl font-semibold">{card.dayLabel}</p>
-                      <p className="mt-2 text-sm text-[#6d5440]">
+                      <p className="mt-2 text-sm text-slate-300">
                         {card.tibetanDate || "藏历信息待补充"}
                       </p>
-                      <p className="mt-1 text-xs tracking-[0.12em] text-[#8b7259]">
+                      <p className="mt-1 text-xs tracking-[0.12em] text-slate-400">
                         对应公历 {card.gregorianDate}
                       </p>
                     </div>
@@ -380,7 +381,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                     <div className="mt-4 overflow-x-auto">
                       <table className="w-full min-w-[420px] text-center text-sm">
                         <thead>
-                          <tr className="text-[#6b513a]">
+                          <tr className="text-cyan-100/80">
                             <th className="pb-3 font-semibold">定曜</th>
                             <th className="pb-3 font-semibold">月伴星宿</th>
                             <th className="pb-3 font-semibold">定日</th>
@@ -392,7 +393,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                           {card.rows.map((row, index) => (
                             <tr
                               key={`${card.day}-${index}`}
-                              className="border-t border-[#ead9c5]/70"
+                              className="border-t border-white/10"
                             >
                               <td className="py-2">{row.fixedWeekday || ""}</td>
                               <td className="py-2">{row.lunarPartner || ""}</td>
@@ -412,10 +413,10 @@ export default function FiveElementsSubtab(): React.JSX.Element {
         </>
       ) : (
         <>
-          <section className="rounded-[28px] border border-[#d7c3ac] bg-[linear-gradient(180deg,#f9f1e6_0%,#f1e4d5_100%)] px-4 py-5 text-[#2f2418] shadow-[0_18px_60px_rgba(0,0,0,0.18)] sm:px-6">
+          <section className="rounded-[28px] border border-cyan-100/15 bg-slate-950/55 px-4 py-5 text-slate-100 shadow-[0_18px_60px_rgba(0,0,0,0.22)] backdrop-blur-md sm:px-6">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-[#8e6b47]">查询藏历单日</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-cyan-200/70">查询藏历单日</p>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <label className="flex items-center gap-2">
                     <span className="text-sm">藏历年</span>
@@ -426,7 +427,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                         setSelection((current) => ({ ...current, year: nextYear }));
                         syncUrl({ year: nextYear });
                       }}
-                      className="min-w-[110px] rounded-md border border-[#ccb296] bg-[#fff8ef] px-3 py-2 text-sm outline-none"
+                      className="min-w-[110px] rounded-md border border-cyan-100/25 bg-transparent px-3 py-2 text-sm text-slate-100 outline-none [color-scheme:dark] focus-visible:ring-2 focus-visible:ring-cyan-200/50"
                     >
                       {YEAR_OPTIONS.map((year) => (
                         <option key={year} value={year}>
@@ -445,7 +446,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                         setSelection((current) => ({ ...current, month: nextMonth }));
                         syncUrl({ month: nextMonth });
                       }}
-                      className="min-w-[88px] rounded-md border border-[#ccb296] bg-[#fff8ef] px-3 py-2 text-sm outline-none"
+                      className="min-w-[88px] rounded-md border border-cyan-100/25 bg-transparent px-3 py-2 text-sm text-slate-100 outline-none [color-scheme:dark] focus-visible:ring-2 focus-visible:ring-cyan-200/50"
                     >
                       {MONTH_OPTIONS.map((month) => (
                         <option key={month} value={month}>
@@ -464,7 +465,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                         setSelection((current) => ({ ...current, day: nextDay }));
                         syncUrl({ day: nextDay });
                       }}
-                      className="min-w-[88px] rounded-md border border-[#ccb296] bg-[#fff8ef] px-3 py-2 text-sm outline-none"
+                      className="min-w-[88px] rounded-md border border-cyan-100/25 bg-transparent px-3 py-2 text-sm text-slate-100 outline-none [color-scheme:dark] focus-visible:ring-2 focus-visible:ring-cyan-200/50"
                     >
                       {DAY_OPTIONS.map((day) => (
                         <option key={day} value={day}>
@@ -476,9 +477,9 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                 </div>
               </div>
 
-              <div className="rounded-[20px] border border-[#d7c3ac] bg-[#fff8ef] px-5 py-3 text-center shadow-[inset_0_0_0_1px_rgba(215,195,172,0.35)]">
-                <p className="text-sm tracking-[0.2em] text-[#8b7259]">交互说明</p>
-                <p className="mt-2 text-sm text-[#5f4a35]">
+              <div className="rounded-[20px] border border-white/15 bg-white/5 px-5 py-3 text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
+                <p className="text-sm tracking-[0.2em] text-cyan-100/70">交互说明</p>
+                <p className="mt-2 text-sm text-slate-300">
                   缺日标“缺”并显示当日数值；重日标“重”并列出对应公历日期。
                 </p>
               </div>
@@ -495,10 +496,10 @@ export default function FiveElementsSubtab(): React.JSX.Element {
             </div>
           ) : dailyData ? (
             <>
-              <section className="rounded-[28px] border border-[#d7c3ac] bg-[linear-gradient(180deg,#f8efe3_0%,#efe1cf_100%)] px-5 py-6 text-[#2f2418] shadow-[0_18px_60px_rgba(0,0,0,0.16)]">
+              <section className="rounded-[28px] border border-[#e2c6a2]/30 bg-slate-950/10 px-5 py-6 text-slate-100 shadow-[0_18px_60px_rgba(0,0,0,0.2)] backdrop-blur-sm">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.28em] text-[#8e6b47]">
+                    <p className="text-xs uppercase tracking-[0.28em] text-cyan-200/70">
                       Daily Interactive
                     </p>
                     <h3 className="mt-3 text-3xl font-semibold">
@@ -509,42 +510,42 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                         </span>
                       ) : null}
                     </h3>
-                    <p className="mt-3 text-sm leading-6 text-[#5f4a35]">
+                    <p className="mt-3 text-sm leading-6 text-slate-300">
                       对应公历：
                       {dailyData.gregorianDates.length > 0
                         ? ` ${dailyData.gregorianDates.join(" / ")}`
                         : " 暂无映射"}
                     </p>
                     {dailyData.gregorianDates.length > 1 ? (
-                      <p className="mt-2 text-xs tracking-[0.08em] text-[#8b7259]">
+                      <p className="mt-2 text-xs tracking-[0.08em] text-slate-400">
                         当前藏历日对应多个公历日期，按重日显示。
                       </p>
                     ) : null}
                   </div>
 
-                  <div className="grid gap-3 text-sm text-[#5f4a35] sm:grid-cols-2">
-                    <div className="rounded-[18px] border border-[#dbc7b0] bg-[#fbf4ea] px-4 py-3">
-                      <p className="text-xs uppercase tracking-[0.24em] text-[#8e6b47]">藏历选择</p>
+                  <div className="grid gap-3 text-sm text-slate-200 sm:grid-cols-2">
+                    <div className="rounded-[18px] border border-white/10 bg-slate-900/45 px-4 py-3">
+                      <p className="text-xs uppercase tracking-[0.24em] text-cyan-200/70">藏历选择</p>
                       <p className="mt-2 font-medium">
                         {selection.year} 年 {selection.month} 月 {selection.day} 日
                       </p>
                     </div>
-                    <div className="rounded-[18px] border border-[#dbc7b0] bg-[#fbf4ea] px-4 py-3">
-                      <p className="text-xs uppercase tracking-[0.24em] text-[#8e6b47]">算法口径</p>
+                    <div className="rounded-[18px] border border-white/10 bg-slate-900/45 px-4 py-3">
+                      <p className="text-xs uppercase tracking-[0.24em] text-cyan-200/70">算法口径</p>
                       <p className="mt-2 font-medium">Python final 预计算缓存</p>
                     </div>
                   </div>
                 </div>
               </section>
 
-              <section className="rounded-[28px] border border-[#d7c3ac] bg-[linear-gradient(180deg,#f8efe3_0%,#efe1cf_100%)] px-5 py-6 text-[#2f2418] shadow-[0_18px_60px_rgba(0,0,0,0.16)]">
+              <section className="rounded-[28px] border border-cyan-100/15 bg-slate-950/50 px-5 py-6 text-slate-100 shadow-[0_18px_60px_rgba(0,0,0,0.2)] backdrop-blur-md">
                 <div className="grid gap-4 md:grid-cols-4">
                   {dailySummaryCards.map((card) => (
                     <div
                       key={card.title}
-                      className="rounded-[22px] border border-[#dbc7b0] bg-[#fbf4ea] px-4 py-4 text-center"
+                      className="rounded-[22px] border border-[#e2c6a2]/45 bg-[#8b6b49]/5 px-4 py-4 text-center"
                     >
-                      <p className="text-sm font-semibold tracking-wide text-[#6b513a]">
+                      <p className="text-sm font-semibold tracking-wide text-cyan-100/80">
                         {card.title}
                       </p>
                       <div className="mt-4 space-y-2 text-center text-lg font-medium">

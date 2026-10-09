@@ -48,7 +48,7 @@ export default function GregorianTibetanDatePicker({
   };
 
   return (
-    <section className={`rounded-2xl border p-4 ${isDark ? "border-white/10 bg-slate-900/60 text-slate-100" : "border-[#d7c3ac] bg-[#fff8ef] text-[#2f2418]"}`}>
+    <section className={`rounded-2xl border p-4 ${isDark ? "border-cyan-100/15 bg-slate-950/50 text-slate-100 backdrop-blur-md" : "border-[#d7c3ac] bg-[#fff8ef] text-[#2f2418]"}`}>
       <div>
         <p className={`text-xs tracking-[0.22em] ${isDark ? "text-cyan-300" : "text-[#8e6b47]"}`}>公历转藏历</p>
         <div className="mt-3 flex flex-wrap items-end gap-3">
