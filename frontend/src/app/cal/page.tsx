@@ -1,14 +1,15 @@
 ﻿"use client";
 
+import LocalizedText from "@/i18n/LocalizedText";
+import { useLocale } from "@/i18n/LocaleProvider";
+import { appText } from "@/i18n/copy";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DateEventsCard, MoonPhaseCard, PlanetaryChartCard, CalendarBox } from "@/components";
 import AstrologicalTableCard, { type AstrologicalRow } from "@/components/widgets/AstrologicalTableCard";
 import WidgetCarousel from "@/components/widgets/WidgetCarousel";
 import FooterBar from "@/components/FooterBar";
 import { fetchCalendarData, fetchMonthlyAstronomyEvents, fetchMonthlyTibetanFestivals, type CalendarDisplayMode, type MonthlyCalendarEvent } from "@/services/calendarApi";
-import { SUPPORTED_CITIES } from "@/constants/cities";
-
-const DEFAULT_CITY = "上海市";
+import { DEFAULT_CITY, SUPPORTED_CITIES } from "@/constants/cities";
 
 type HolidayInfo = { name: string; date: string; isoDate?: string; daysLeft: number };
 type FestivalKind = "solar" | "lunar" | "tibetan";
@@ -39,8 +40,9 @@ function normalizeHolidayInfo(input: unknown): HolidayInfo | null {
 
 
 export default function CalendarPage() {
+  const locale = useLocale();
   const [currentPage, setCurrentPage] = useState(0);
-  const [city, setCity] = useState(DEFAULT_CITY);
+  const [city, setCity] = useState<string>(DEFAULT_CITY);
   const [isCityOpen, setIsCityOpen] = useState(false);
   const [year, setYear] = useState<number>(1970);
   const [month, setMonth] = useState<number>(0); // 0-11
@@ -74,8 +76,8 @@ export default function CalendarPage() {
   const currentMonthLabel = useMemo(() => {
     if (!ready) return "";
     const d = new Date(year, month, 1);
-    return d.toLocaleDateString("zh-CN", { year: "numeric", month: "long" });
-  }, [ready, year, month]);
+    return locale === "bo" ? `${year} ལོའི ${month + 1} ཟླ་བ།` : d.toLocaleDateString("zh-CN", { year: "numeric", month: "long" });
+  }, [locale, ready, year, month]);
 
   const daysInMonth = useMemo(() => new Date(year, month + 1, 0).getDate(), [year, month]);
   const startOffset = useMemo(() => {
@@ -125,7 +127,7 @@ export default function CalendarPage() {
         signal: controller.signal
       });
       if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
+        throw new Error(`服务状态码 ${res.status}`);
       }
       const json = await res.json();
       return normalizeHolidayInfo(json);
@@ -354,13 +356,13 @@ export default function CalendarPage() {
       <div className="relative z-10 min-h-screen flex flex-col pb-20">
         <div className="flex flex-col p-4">
           {/* 城市选择器 */}
-          <div className="flex justify-center items-center py-2 relative mt-8">{/*"上海市"距离顶部距离*/}
+          <div className="flex justify-center items-center py-2 relative mt-8">{/*地点选择器距离顶部距离*/}
             <div className="relative">
               <button
                 className="flex items-center gap-2 px-3 py-1 bg-gray-800/50 rounded-lg hover:bg-gray-700/70 transition-colors cursor-pointer"
                 onClick={() => setIsCityOpen((v) => !v)}
               >
-                <span className="text-lg font-medium">{city}</span>
+                <span className="text-lg font-medium">{appText(locale, city)}</span>
                 <svg
                   width="16"
                   height="16"
@@ -412,7 +414,7 @@ export default function CalendarPage() {
                   onSelectDay={handleSelectDay}
                 />
               ) : (
-                <div className="text-center text-gray-300 py-10">加载中...</div>
+                <div className="text-center text-gray-300 py-10"><LocalizedText text={"加载中..."} /></div>
               )}
             </div>
           </div>
@@ -420,9 +422,9 @@ export default function CalendarPage() {
           <div className="flex items-center justify-center mt-6 mb-6">{/*上下两个框之间的距离*/}
             <div className="w-[90%] sm:w-[82%] md:w-[70%] max-w-[520px]">
               {loading ? (
-                <div className="text-center text-gray-300 py-12">加载中...</div>
+                <div className="text-center text-gray-300 py-12"><LocalizedText text={"加载中..."} /></div>
               ) : error ? (
-                <div className="text-center text-red-400 py-12">{error}</div>
+                <div className="text-center text-red-400 py-12">{appText(locale, error)}</div>
               ) : (
                 <WidgetCarousel items={items} currentIndex={currentPage} onChange={setCurrentPage} />
               )}

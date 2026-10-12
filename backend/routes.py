@@ -1,6 +1,10 @@
 from flask import Blueprint, Response, jsonify, request
 from datetime import datetime, timedelta
 import requests
+from eclipses import get_year_eclipses
+from moon_phase_calendar import get_month_moon_phases
+from sun_earth_moon_motion import get_sun_earth_moon_year
+from geocentric_motion import get_geocentric_motion_year
 from astronomy import (
     get_planets_data,
     get_tibetan_lunar_info,
@@ -40,8 +44,8 @@ CITY_COORDINATES = {
     '拉萨市': {'latitude': 29.6470, 'longitude': 91.1175, 'altitude': 3658.0},
 }
 
-# 默认城市坐标（上海）
-DEFAULT_CITY = '上海市'
+# 默认城市坐标（西藏拉萨）
+DEFAULT_CITY = '拉萨市'
 DEFAULT_COORDINATES = CITY_COORDINATES[DEFAULT_CITY]
 
 
@@ -298,10 +302,10 @@ def annual_motion_view():
     try:
         from annual_motion import render_annual_motion_html
 
-        latitude = float(request.args.get('lat', '31.2304'))
-        longitude = float(request.args.get('lon', '121.4737'))
+        latitude = float(request.args.get('lat', DEFAULT_COORDINATES['latitude']))
+        longitude = float(request.args.get('lon', DEFAULT_COORDINATES['longitude']))
         tz_name = request.args.get('tz', 'Asia/Shanghai')
-        city_name = request.args.get('city', 'Shanghai')
+        city_name = request.args.get('city', 'Lhasa')
         year = int(request.args.get('year', datetime.now().year))
         sample_hour = int(request.args.get('hour', '12'))
 
@@ -341,7 +345,7 @@ def chat_with_rag():
         user_message = data['message']
         
         # 调用处理函数
-        response = process_query_with_rag_and_api(user_message)
+        response = process_query_with_rag_and_api(user_message, response_locale=data.get("locale", "zh"))
         
         return jsonify({
             "success": True,
@@ -586,6 +590,77 @@ def get_monthly_astronomy_events_api():
             "success": False,
             "error": {"code": "ASTRONOMY_EVENTS_UNAVAILABLE", "message": "天文事件暂不可用", "details": str(error)},
         }), 500
+
+
+@api_bp.route('/calendar/year-eclipses', methods=['GET'])
+def get_year_eclipses_api():
+    """List every global eclipse in a year and its local visibility."""
+    try:
+        year = int(request.args['year'])
+        longitude = float(request.args['longitude'])
+        latitude = float(request.args['latitude'])
+        altitude = float(request.args.get('altitude', 0))
+        events = get_year_eclipses(year, longitude, latitude, altitude)
+        return jsonify({"success": True, "data": {"year": year, "events": events}})
+    except (KeyError, TypeError, ValueError) as error:
+        return jsonify({"success": False, "error": {"message": str(error)}}), 400
+    except Exception as error:
+        return jsonify({"success": False, "error": {"message": "日月食查询暂不可用", "details": str(error)}}), 500
+
+
+@api_bp.route('/calendar/moon-phases', methods=['GET'])
+def get_moon_phases_api():
+    """Return one geocentric Moon phase sample per local civil day."""
+    try:
+        year = int(request.args['year'])
+        month = int(request.args['month'])
+        time_zone = request.args.get('timezone', 'Asia/Shanghai')
+        return jsonify({"success": True, "data": get_month_moon_phases(year, month, time_zone)})
+    except (KeyError, TypeError, ValueError) as error:
+        return jsonify({"success": False, "error": {"message": str(error)}}), 400
+    except Exception as error:
+        return jsonify({"success": False, "error": {"message": "月相查询暂不可用", "details": str(error)}}), 500
+
+
+@api_bp.route('/astronomy/sun-earth-moon', methods=['GET'])
+def get_sun_earth_moon_api():
+    """Return daily heliocentric Earth and geocentric Moon positions."""
+    try:
+        year = int(request.args['year'])
+        return jsonify({"success": True, "data": get_sun_earth_moon_year(year)})
+    except (KeyError, TypeError, ValueError) as error:
+        return jsonify({"success": False, "error": {"message": str(error)}}), 400
+    except Exception as error:
+        return jsonify({"success": False, "error": {"message": "日地月运动数据暂不可用", "details": str(error)}}), 500
+
+
+@api_bp.route('/astronomy/geocentric-motion', methods=['GET'])
+def get_geocentric_motion_api():
+    """Return daily apparent geocentric positions of the seven luminaries."""
+    try:
+        year = int(request.args['year'])
+        return jsonify({"success": True, "data": get_geocentric_motion_year(year)})
+    except (KeyError, TypeError, ValueError) as error:
+        return jsonify({"success": False, "error": {"message": str(error)}}), 400
+    except Exception as error:
+        return jsonify({"success": False, "error": {"message": "地心七曜数据暂不可用", "details": str(error)}}), 500
+
+
+@api_bp.route('/astronomy/sky-view', methods=['GET'])
+def get_sky_view_api():
+    from sky_view import get_sky_view
+    try:
+        data = get_sky_view(
+            request.args.get('city', 'lhasa'),
+            request.args.get('mode', 'daily'),
+            request.args.get('date', '2026-01-01'),
+            int(request.args.get('hour', 12)),
+        )
+        return jsonify({"success": True, "data": data})
+    except (TypeError, ValueError) as error:
+        return jsonify({"success": False, "error": {"message": str(error)}}), 400
+    except Exception:
+        return jsonify({"success": False, "error": {"message": "观测星空数据暂不可用，请稍后重试"}}), 503
 
 
 @api_bp.route('/five-elements/monthly-overview', methods=['POST'])

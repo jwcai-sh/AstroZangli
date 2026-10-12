@@ -1,11 +1,14 @@
 "use client";
+import { appText } from "@/i18n/copy";
+import { useLocale } from "@/i18n/LocaleProvider";
 
-import Link from "next/link";
+import LocalizedText from "@/i18n/LocalizedText";
+import LocaleLink from "@/i18n/LocaleLink";
 import { useEffect, useMemo, useState } from "react";
 
 import { CalendarBox, FooterBar } from "@/components";
 import FiveElementsExplorer from "@/components/widgets/FiveElementsExplorer";
-import { SUPPORTED_CITIES } from "@/constants/cities";
+import { DEFAULT_CITY, SUPPORTED_CITIES } from "@/constants/cities";
 import {
   buildFiveElementPanels,
   clampStageIndex,
@@ -13,10 +16,9 @@ import {
 } from "@/features/five-elements/model";
 import { fetchCalendarData } from "@/services/calendarApi";
 
-const DEFAULT_CITY = "上海市";
-
 export default function FiveElementsPage(): React.JSX.Element {
-  const [city, setCity] = useState(DEFAULT_CITY);
+  const locale = useLocale();
+  const [city, setCity] = useState<string>(DEFAULT_CITY);
   const [isCityOpen, setIsCityOpen] = useState(false);
   const [year, setYear] = useState(1970);
   const [month, setMonth] = useState(0);
@@ -46,11 +48,11 @@ export default function FiveElementsPage(): React.JSX.Element {
   const currentMonthLabel = useMemo(() => {
     if (!ready) return "";
     const date = new Date(year, month, 1);
-    return date.toLocaleDateString("zh-CN", {
+    return locale === "bo" ? `${year} ལོའི ${month + 1} ཟླ་བ།` : date.toLocaleDateString("zh-CN", {
       year: "numeric",
       month: "long",
     });
-  }, [ready, year, month]);
+  }, [locale, ready, year, month]);
 
   const daysInMonth = useMemo(
     () => new Date(year, month + 1, 0).getDate(),
@@ -194,7 +196,7 @@ export default function FiveElementsPage(): React.JSX.Element {
                 className="flex items-center gap-2 rounded-lg bg-gray-800/50 px-3 py-1 transition-colors hover:bg-gray-700/70 cursor-pointer"
                 onClick={() => setIsCityOpen((value) => !value)}
               >
-                <span className="text-lg font-medium">{city}</span>
+                <span className="text-lg font-medium">{appText(locale, city)}</span>
                 <svg
                   width="16"
                   height="16"
@@ -225,7 +227,7 @@ export default function FiveElementsPage(): React.JSX.Element {
                       }`}
                       onClick={() => handleCityChange(supportedCity)}
                     >
-                      {supportedCity}
+                      {appText(locale, supportedCity)}
                     </button>
                   ))}
                 </div>
@@ -247,7 +249,7 @@ export default function FiveElementsPage(): React.JSX.Element {
                   onSelectDay={handleSelectDay}
                 />
               ) : (
-                <div className="py-10 text-center text-gray-300">加载中...</div>
+                <div className="py-10 text-center text-gray-300"><LocalizedText text={"加载中..."} /></div>
               )}
             </div>
           </div>
@@ -259,26 +261,26 @@ export default function FiveElementsPage(): React.JSX.Element {
                   Kalachakra
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold tracking-wide text-white sm:text-4xl">
-                  五要素交互式可视化
+                  <LocalizedText text={"五要素交互式可视化"} />
                 </h1>
                 <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
-                  复用当前日历接口中的五要素数据，把定曜、太阳日月宿、定日、会合、作用拆成可切换、可聚焦的序列视图，方便在单日维度上追踪结构与变化。
+                  <LocalizedText text={"复用当前日历接口中的五要素数据，把定曜、太阳日月宿、定日、会合、作用拆成可切换、可聚焦的序列视图，方便在单日维度上追踪结构与变化。"} />
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <Link
+                <LocaleLink
                   href="/cal"
                   className="rounded-full border border-cyan-300/25 bg-cyan-300/8 px-4 py-2 text-sm text-cyan-100 transition-colors hover:bg-cyan-300/14"
                 >
-                  返回日历页
-                </Link>
-                <Link
+                  <LocalizedText text={"返回日历页"} />
+                </LocaleLink>
+                <LocaleLink
                   href="/"
                   className="rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm text-slate-200 transition-colors hover:bg-white/10"
                 >
-                  返回首页
-                </Link>
+                  <LocalizedText text={"返回首页"} />
+                </LocaleLink>
               </div>
             </div>
           </section>
@@ -286,7 +288,7 @@ export default function FiveElementsPage(): React.JSX.Element {
           <div className="mx-auto w-full max-w-5xl">
             {loading ? (
               <div className="rounded-[28px] border border-white/10 bg-slate-950/70 py-16 text-center text-gray-300 backdrop-blur-xl">
-                正在载入五要素数据...
+                <LocalizedText text={"正在载入五要素数据..."} />
               </div>
             ) : error ? (
               <div className="rounded-[28px] border border-red-400/20 bg-slate-950/70 py-16 text-center text-red-300 backdrop-blur-xl">
@@ -298,8 +300,8 @@ export default function FiveElementsPage(): React.JSX.Element {
                 activePanelId={activePanelId}
                 activeStageIndex={activeStageIndex}
                 selectedDate={calendarData?.selectedDate || selectedDateStr}
-                secondaryLabel="城市"
-                secondaryValue={calendarData?.selectedCity || city}
+                secondaryLabel={appText(locale, "城市")}
+                secondaryValue={appText(locale, calendarData?.selectedCity || city)}
                 onPanelChange={(panelId) => {
                   setActivePanelId(panelId);
                   setActiveStageIndex(0);

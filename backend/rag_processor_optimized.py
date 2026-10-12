@@ -491,7 +491,7 @@ def generate_rag_prompt_optimized(query: str, relevant_chunks: List[Dict]) -> st
 #                 DeepSeek API调用优化
 # ==========================================================
 
-def get_deepseek_answer_optimized(prompt: str, max_retries: int = 3) -> str:
+def get_deepseek_answer_optimized(prompt: str, max_retries: int = 3, response_locale: str = "zh") -> str:
     """
     优化版DeepSeek API调用，包含重试机制
     """
@@ -504,10 +504,14 @@ def get_deepseek_answer_optimized(prompt: str, max_retries: int = 3) -> str:
         "Authorization": f"Bearer {DEEPSEEK_API_KEY}"
     }
 
+    language_instruction = (
+        "请用藏文（བོད་ཡིག）回答。保留历算术语的准确含义；知识库内容为中文时先理解后用藏文表达。"
+        if response_locale == "bo" else "请用中文回答。"
+    )
     payload = {
         "model": "deepseek-chat",
         "messages": [
-            {"role": "system", "content": "你是一个知识渊博的AI天文藏历助手，请根据用户提供的内容准确回答问题。"},
+            {"role": "system", "content": f"你是一个知识渊博的AI天文藏历助手，请根据用户提供的内容准确回答问题。{language_instruction}"},
             {"role": "user", "content": prompt}
         ],
         "stream": False,
@@ -578,7 +582,8 @@ def get_cached_knowledge_base(filepath: str) -> Optional[Dict[str, List[Dict]]]:
     return None
 
 def process_query_with_rag_optimized(query: str, 
-                                   knowledge_base_path: str = '../frontend/public/rag/knowledge_base.json') -> str:
+                                   knowledge_base_path: str = '../frontend/public/rag/knowledge_base.json',
+                                   response_locale: str = "zh") -> str:
     """
     优化版RAG + API完整流程
     """
@@ -601,7 +606,7 @@ def process_query_with_rag_optimized(query: str,
                 fallback_prompt = f"""请直接回答用户问题。如果信息不足，给出一般性说明并标注“以下为一般性说明”，不要回答“无法回答”。
 
 问题: {query}"""
-                return get_deepseek_answer_optimized(fallback_prompt)
+                return get_deepseek_answer_optimized(fallback_prompt, response_locale=response_locale)
             
             # 预处理知识库
             processed_kb = preprocess_knowledge_base(raw_kb)
@@ -629,7 +634,7 @@ def process_query_with_rag_optimized(query: str,
         rag_prompt = generate_rag_prompt_optimized(query, relevant_chunks)
         
         # 调用API
-        final_answer = get_deepseek_answer_optimized(rag_prompt)
+        final_answer = get_deepseek_answer_optimized(rag_prompt, response_locale=response_locale)
         
         total_time = time.time() - start_time
         logger.info(f"查询处理完成: 耗时{total_time:.2f}秒")
@@ -643,7 +648,7 @@ def process_query_with_rag_optimized(query: str,
             fallback_prompt = f"""请直接回答用户问题。如果信息不足，给出一般性说明并标注“以下为一般性说明”，不要回答“无法回答”。
 
 问题: {query}"""
-            return get_deepseek_answer_optimized(fallback_prompt)
+            return get_deepseek_answer_optimized(fallback_prompt, response_locale=response_locale)
         except Exception as fallback_error:
             log_error("PR005", f"处理查询回退失败: {str(fallback_error)}", {'query': query})
             return "处理查询时发生错误，请稍后重试。"

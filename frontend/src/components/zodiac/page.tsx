@@ -1,3 +1,5 @@
+import { appText } from "@/i18n/copy";
+import { useLocale } from "@/i18n/LocaleProvider";
 // "use client";
 
 // import { useEffect, useRef, useState } from "react";
@@ -321,11 +323,26 @@
 import React from "react";
 
 const ZodiacEmbed: React.FC = () => {
+  const locale = useLocale();
+  const zodiacNames = ["天秤宫", "天蝎宫", "射手宫", "摩羯宫", "水瓶宫", "双鱼宫", "白羊宫", "金牛宫", "双子宫", "巨蟹宫", "狮子宫", "处女宫"];
+  const seasons = ["春分", "夏至", "秋分", "冬至"];
+  const localizedLabels = {
+    pageTitle: appText(locale, "太阳系黄道十二宫"),
+    datePrompt: appText(locale, "选择日期："),
+    observationDate: appText(locale, "观测日期"),
+    earthLongitude: appText(locale, "地球的黄经"),
+    sunLongitude: appText(locale, "太阳的视黄经"),
+    sunLocated: appText(locale, "太阳位于"),
+    zodiac: zodiacNames.map((name) => appText(locale, name)),
+    seasons: seasons.map((name) => appText(locale, name)),
+    invalidDate: appText(locale, "请选择有效的日期和时间！"),
+  };
+  const iframeSrc = `/js/十二宫图.html?labels=${encodeURIComponent(JSON.stringify(localizedLabels))}`;
     return (
         <div style={{ width: "100%", height: "100vh", overflow: "hidden" }}>
             <iframe
-                src="/js/十二宫图.html"
-                title="十二宫图"
+                src={iframeSrc}
+                title={appText(locale, "十二宫图")}
                 style={{
                     width: "100%",
                     height: "100%",

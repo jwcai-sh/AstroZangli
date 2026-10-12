@@ -1,3 +1,5 @@
+import { DEFAULT_CITY } from "@/constants/cities";
+
 export interface CalendarApiResponse {
   success: boolean;
   data?: {
@@ -74,7 +76,7 @@ export interface MonthlyCalendarEvent {
 export async function fetchCalendarData(params?: { date?: string; cityName?: string }): Promise<CalendarApiResponse["data"]> {
   const body = {
     date: params?.date,
-    cityName: params?.cityName || "上海市"
+    cityName: params?.cityName || DEFAULT_CITY
   };
 
   const res = await fetch(`${API_BASE}/calendar/date-comprehensive-data`, {
@@ -84,7 +86,7 @@ export async function fetchCalendarData(params?: { date?: string; cityName?: str
   });
 
   if (!res.ok) {
-    throw new Error(`HTTP ${res.status}`);
+    throw new Error(`服务状态码 ${res.status}`);
   }
   const json: CalendarApiResponse = await res.json();
   if (!json.success) {
@@ -100,7 +102,7 @@ export async function fetchMonthlyAstronomyEvents(year: number, month: number): 
     body: JSON.stringify({ year, month }),
   });
   const json = await response.json() as { success: boolean; data?: { events?: MonthlyCalendarEvent[] }; error?: { message?: string } };
-  if (!response.ok || !json.success) throw new Error(json.error?.message || `HTTP ${response.status}`);
+  if (!response.ok || !json.success) throw new Error(json.error?.message || `服务状态码 ${response.status}`);
   return json.data?.events || [];
 }
 
@@ -111,6 +113,6 @@ export async function fetchMonthlyTibetanFestivals(year: number, month: number):
     body: JSON.stringify({ year, month }),
   });
   const json = await response.json() as { success: boolean; data?: { events?: MonthlyCalendarEvent[] }; error?: { message?: string } };
-  if (!response.ok || !json.success) throw new Error(json.error?.message || `HTTP ${response.status}`);
+  if (!response.ok || !json.success) throw new Error(json.error?.message || `服务状态码 ${response.status}`);
   return json.data?.events || [];
 }

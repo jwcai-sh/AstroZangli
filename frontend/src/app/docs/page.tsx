@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import LocaleLink from "@/i18n/LocaleLink";
 import Image from "next/image";
 import FooterBar from "@/components/FooterBar";
 import { CardData } from "@/components";
+import { useLocale } from "@/i18n/LocaleProvider";
+import { appText } from "@/i18n/copy";
 
 // 定义HTML文件信息的接口
 interface HtmlFileInfo {
@@ -16,6 +18,7 @@ interface HtmlFileInfo {
 }
 
 export default function DocsPage() {
+    const locale = useLocale();
     const [cards, setCards] = useState<CardData[]>([]);
     const [stars, setStars] = useState<Array<{ left: number; top: number }>>([]);
 
@@ -99,13 +102,13 @@ export default function DocsPage() {
             <div className="relative z-10 flex flex-col h-screen">
                 {/* 顶部搜索栏 */}
                 <div className="p-4 pt-3 flex items-center space-x-3">
-                    <Link href="/" className="text-gray-300 hover:text-white">
+                    <LocaleLink href="/" className="text-gray-300 hover:text-white">
                         <div className="w-4 h-4 border-l-2 border-t-2 border-current rotate-[-45deg]"></div>
-                    </Link>
+                    </LocaleLink>
                     <div className="flex-1">
                         <div className="flex items-center bg-white/10 border border-white/15 rounded-full px-4 py-2">
                             <input
-                                placeholder="搜索藏历主题..."
+                                placeholder={appText(locale, "搜索藏历主题...")}
                                 className="flex-1 bg-transparent outline-none text-sm placeholder-gray-300"
                             />
                             <div className="ml-2 w-5 h-5 rounded-full border border-white/50 flex items-center justify-center text-xs">
@@ -118,7 +121,7 @@ export default function DocsPage() {
                 {/* 卡片列表 */}
                 <div className="flex-1 overflow-y-auto px-4 pb-24 space-y-5">
                     {cards.map((card) => (
-                        <Link
+                        <LocaleLink
                             key={card.id}
                             href={`/details/topic/${card.id}`}
                             className="block group"
@@ -128,7 +131,7 @@ export default function DocsPage() {
                                 <div className="w-full h-48 overflow-hidden">
                                     <Image
                                         src={card.img}
-                                        alt={card.titleLeft}
+                                        alt={appText(locale, card.titleLeft)}
                                         width={500}
                                         height={300}
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -139,16 +142,16 @@ export default function DocsPage() {
                                 <div className="p-4">
                                     <div className="flex justify-between items-center">
                                         <h2 className="text-lg font-semibold text-white">
-                                            {card.titleLeft}
+                                            {appText(locale, card.titleLeft)}
                                         </h2>
                                         <span className="text-xs text-gray-400">{card.titleRight}</span>
                                     </div>
                                     <p className="text-gray-300 text-sm mt-2 leading-relaxed">
-                                        {card.desc}
+                                        {appText(locale, card.desc)}
                                     </p>
                                 </div>
                             </div>
-                        </Link>
+                        </LocaleLink>
                     ))}
 
                 </div>

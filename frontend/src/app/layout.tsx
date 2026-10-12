@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { LocaleProvider } from '@/i18n/LocaleProvider'
+import LanguageChooserShortcut from '@/components/i18n/LanguageChooserShortcut'
+import LocaleDocumentLanguage from '@/components/i18n/LocaleDocumentLanguage'
 
 export const metadata: Metadata = {
     title: '藏历星图',
@@ -21,7 +24,11 @@ export default function RootLayout({
     return (
         <html lang="zh-CN">
             <body className="antialiased">
-                {children}
+                <LocaleProvider locale="zh">
+                    <LocaleDocumentLanguage />
+                    <LanguageChooserShortcut />
+                    {children}
+                </LocaleProvider>
             </body>
         </html>
     )

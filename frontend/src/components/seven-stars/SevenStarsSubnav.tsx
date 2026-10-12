@@ -1,6 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import LocaleLink from "@/i18n/LocaleLink";
+import { useLocale } from "@/i18n/LocaleProvider";
+import { appText } from "@/i18n/copy";
 
 import type { SevenStarsSubtab } from "@/features/earth/navigation";
 
@@ -10,16 +12,19 @@ interface SevenStarsSubnavProps {
 
 const SUBTABS: Array<{ id: SevenStarsSubtab; label: string }> = [
   { id: "seven-stars", label: "七星轨迹" },
+  { id: "sun-earth-moon", label: "日地月运动与月相（日心视角）" },
+  { id: "geocentric-motion", label: "七曜每日运动（地心视角）" },
   { id: "seven-data", label: "七星数据" },
 ];
 
 export default function SevenStarsSubnav({
   currentSubtab,
 }: SevenStarsSubnavProps): React.JSX.Element {
+  const locale = useLocale();
   return (
     <div className="flex flex-wrap justify-center gap-2 px-2 pb-3 pt-1">
       {SUBTABS.map((subtab) => (
-        <Link
+        <LocaleLink
           key={subtab.id}
           href={`/earth?tab=seven-stars&subtab=${subtab.id}`}
           className={`rounded-full border px-4 py-2 text-xs font-medium transition-all duration-300 sm:text-sm ${
@@ -28,8 +33,8 @@ export default function SevenStarsSubnav({
               : "border-white/10 bg-white/6 text-slate-200 hover:border-cyan-300/30 hover:bg-white/10"
           }`}
         >
-          {subtab.label}
-        </Link>
+          {appText(locale, subtab.label)}
+        </LocaleLink>
       ))}
     </div>
   );

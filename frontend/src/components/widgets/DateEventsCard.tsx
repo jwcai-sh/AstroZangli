@@ -1,5 +1,8 @@
 ﻿import * as React from "react";
 
+import { useLocale } from "@/i18n/LocaleProvider";
+import { appText } from "@/i18n/copy";
+
 /**
  * DateEventsCard
  * - 用途：展示某天的标题/副标题、三个计数圆点（自定义标签与颜色）、以及事件列表（带枚举颜色与剩余天数）。
@@ -54,6 +57,8 @@ const DateEventsCard: React.FC<DateEventsCardProps> = ({
   onPageChange,
   totalPages = 4
 }) => {
+  const locale = useLocale();
+  const displayText = (text: string) => appText(locale, text);
   return (
     <div className="frosted-card calendar-gradient-neo widget-card-border px-6 pt-6 pb-4 light-purple-border transparent-purple-blue-gradient text-center shadow-2xl backdrop-blur-xl card-enter hover-lift dateevents-gradient-bg">
       {/* 四个卡片的指示器 - 位于卡片内部最上边 */}
@@ -68,7 +73,7 @@ const DateEventsCard: React.FC<DateEventsCardProps> = ({
                   ? 'w-8 h-2 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full shadow-lg shadow-blue-500/50' 
                   : 'w-2 h-2 bg-gray-500 rounded-full hover:bg-gray-400'
               }`}
-              aria-label={`切换到第 ${index + 1} 个卡片`}
+              aria-label={displayText(`切换到第 ${index + 1} 个卡片`)}
             >
               {index === currentPage && (
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full animate-pulse"></div>
@@ -85,30 +90,30 @@ const DateEventsCard: React.FC<DateEventsCardProps> = ({
         {/* 第1行：农历信息行 */}
         <div className="dateevents-row-lunar">
           <div className="dateevents-lunar-circle">
-            <span className="dateevents-lunar-text">{counters[0]?.label || ''}</span>
+            <span className="dateevents-lunar-text">{displayText(counters[0]?.label || '')}</span>
           </div>
           <div className="dateevents-lunar-rect">
-            <span className="dateevents-lunar-rect-text">{counters[0]?.value || ''}</span>
+            <span className="dateevents-lunar-rect-text">{displayText(String(counters[0]?.value || ''))}</span>
           </div>
         </div>
 
         {/* 第2行：公历信息行 */}
         <div className="dateevents-row-solar">
           <div className="dateevents-solar-circle">
-            <span className="dateevents-solar-text">{counters[1]?.label || ''}</span>
+            <span className="dateevents-solar-text">{displayText(counters[1]?.label || '')}</span>
           </div>
           <div className="dateevents-solar-rect">
-            <span className="dateevents-solar-rect-text">{counters[1]?.value || ''}</span>
+            <span className="dateevents-solar-rect-text">{displayText(String(counters[1]?.value || ''))}</span>
           </div>
         </div>
 
         {/* 第3行：藏历信息行 */}
         <div className="dateevents-row-tibetan">
           <div className="dateevents-tibetan-circle">
-            <span className="dateevents-tibetan-text">{counters[2]?.label || ''}</span>
+            <span className="dateevents-tibetan-text">{displayText(counters[2]?.label || '')}</span>
           </div>
           <div className="dateevents-tibetan-rect">
-            <span className="dateevents-tibetan-rect-text">{counters[2]?.value || ''}</span>
+            <span className="dateevents-tibetan-rect-text">{displayText(String(counters[2]?.value || ''))}</span>
           </div>
         </div>
       </div>
@@ -122,7 +127,7 @@ const DateEventsCard: React.FC<DateEventsCardProps> = ({
               <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2"/>
               <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="2"/>
             </svg>
-            <span className="dateevents-holiday1-text">{events[0]?.label || ''} {events[0]?.daysLeftText || ''}</span>
+            <span className="dateevents-holiday1-text">{displayText(events[0]?.label || '')} {displayText(events[0]?.daysLeftText || '')}</span>
           </div>
         </div>
 
@@ -132,7 +137,7 @@ const DateEventsCard: React.FC<DateEventsCardProps> = ({
             <svg className="dateevents-holiday2-icon" width="14" height="14" viewBox="0 0 24 24" fill="none">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" strokeWidth="2"/>
             </svg>
-            <span className="dateevents-holiday2-text">{events[1]?.label || ''} {events[1]?.daysLeftText || ''}</span>
+            <span className="dateevents-holiday2-text">{displayText(events[1]?.label || '')} {displayText(events[1]?.daysLeftText || '')}</span>
           </div>
         </div>
 
@@ -142,7 +147,7 @@ const DateEventsCard: React.FC<DateEventsCardProps> = ({
             <svg className="dateevents-holiday3-icon" width="14" height="14" viewBox="0 0 24 24" fill="none">
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="2"/>
             </svg>
-            <span className="dateevents-holiday3-text">{events[2]?.label || ''} {events[2]?.daysLeftText || ''}</span>
+            <span className="dateevents-holiday3-text">{displayText(events[2]?.label || '')} {displayText(events[2]?.daysLeftText || '')}</span>
           </div>
         </div>
       </div>

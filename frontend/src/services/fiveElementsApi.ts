@@ -176,7 +176,7 @@ export async function fetchMonthlyFiveElementsOverview(params: {
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
+    throw new Error(`服务状态码 ${response.status}`);
   }
 
   const json = (await response.json()) as ApiEnvelope<MonthlyFiveElementsResponse>;
@@ -201,7 +201,7 @@ export async function fetchMonthlyFiveElementsCompare(params: {
   const json = (await response.json()) as ApiEnvelope<MonthlyFiveElementsCompareResponse>;
   if (!response.ok) {
     const detail = json.error?.details ? `：${json.error.details}` : "";
-    throw new Error((json.error?.message || `HTTP ${response.status}`) + detail);
+    throw new Error((json.error?.message || `服务状态码 ${response.status}`) + detail);
   }
 
   if (!json.success || !json.data) {
@@ -221,7 +221,7 @@ export async function fetchYearlyFiveElementsCompare(year: number): Promise<Year
   const json = (await response.json()) as ApiEnvelope<YearlyFiveElementsCompareResponse>;
   if (!response.ok) {
     const detail = json.error?.details ? `：${json.error.details}` : "";
-    throw new Error((json.error?.message || `HTTP ${response.status}`) + detail);
+    throw new Error((json.error?.message || `服务状态码 ${response.status}`) + detail);
   }
 
   if (!json.success || !json.data) {
@@ -243,7 +243,7 @@ export async function fetchDailyFiveElementsDetail(params: {
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
+    throw new Error(`服务状态码 ${response.status}`);
   }
 
   const json = (await response.json()) as ApiEnvelope<DailyFiveElementsResponse>;
