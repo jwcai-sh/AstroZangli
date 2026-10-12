@@ -8,6 +8,20 @@ import {
 } from "@/features/sky-view/model";
 
 export interface StarSelection { name: string; magnitude: number; altitude: number; azimuth: number }
+const ZODIAC_CONSTELLATIONS: Record<string, { name: string; image: string }> = {
+  Ari: { name: "白羊座", image: "/pho/aries.png" },
+  Tau: { name: "金牛座", image: "/pho/taurus.png" },
+  Gem: { name: "双子座", image: "/pho/gemini.png" },
+  Cnc: { name: "巨蟹座", image: "/pho/cancer.png" },
+  Leo: { name: "狮子座", image: "/pho/leo.png" },
+  Vir: { name: "室女座", image: "/pho/virgo.png" },
+  Lib: { name: "天秤座", image: "/pho/libra.png" },
+  Sco: { name: "天蝎座", image: "/pho/scorpio.png" },
+  Sgr: { name: "人马座", image: "/pho/sagittarius.png" },
+  Cap: { name: "摩羯座", image: "/pho/capricorn.png" },
+  Aqr: { name: "宝瓶座", image: "/pho/aquarius.png" },
+  Psc: { name: "双鱼座", image: "/pho/pisces.png" },
+};
 interface Props {
   catalog: Catalog; data: SkyData; frame: SkyFrame; camera: CameraView;
   layers: SkyLayers; selected: BodyId;
@@ -19,12 +33,24 @@ interface Props {
 export default function SkyCanvas({ catalog, data, frame, camera, layers, selected, onCamera, onStar, onInteract }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [size, setSize] = useState({ width: 800, height: 540 });
+  const [zodiacImagesReady, setZodiacImagesReady] = useState(0);
+  const zodiacImages = useRef<Record<string, HTMLImageElement>>({});
   const cameraRef = useRef(camera);
   const actions = useRef({ onCamera, onStar, onInteract });
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const moved = useRef(false);
   const picks = useRef<(StarSelection & { x: number; y: number })[]>([]);
   useEffect(() => { cameraRef.current = camera; actions.current = { onCamera, onStar, onInteract }; }, [camera, onCamera, onStar, onInteract]);
+
+  useEffect(() => {
+    let loaded = 0;
+    for (const [id, zodiac] of Object.entries(ZODIAC_CONSTELLATIONS)) {
+      const image = new Image();
+      image.onload = () => { loaded += 1; setZodiacImagesReady(loaded); };
+      image.src = zodiac.image;
+      zodiacImages.current[id] = image;
+    }
+  }, []);
 
   const stars = useMemo(() => {
     const years = (Date.parse(`${frame.localTime}+08:00`) - Date.UTC(2000, 0, 1, 12)) / (365.25 * 86400000);
@@ -119,12 +145,18 @@ export default function SkyCanvas({ catalog, data, frame, camera, layers, select
 
     const labelBoxes: { x: number; y: number; w: number; h: number }[] = [];
     const placeLabel = (label: string, x: number, y: number, color: string, big = false) => {
-      const width = label.length * (big ? 14 : 10) + 10;
-      const box = { x: x - width / 2, y: y - 14, w: width, h: 22 };
+      const baseSize = big ? clamp(w / 36, 10, 14) : clamp(w / 48, 9, 11);
+      const maxWidth = big ? 112 : 96;
+      ctx.font = `500 ${baseSize}px system-ui`;
+      const measuredWidth = ctx.measureText(label).width;
+      const fontSize = Math.max(8, Math.min(baseSize, baseSize * maxWidth / measuredWidth));
+      ctx.font = `500 ${fontSize}px system-ui`;
+      const width = ctx.measureText(label).width + 10;
+      const box = { x: x - width / 2, y: y - fontSize, w: width, h: fontSize + 8 };
       if (box.x < 8 || box.x + width > w - 8 || y < 80 || y > h - 45) return;
       if (labelBoxes.some((b) => box.x < b.x + b.w && box.x + box.w > b.x && box.y < b.y + b.h && box.y + box.h > b.y)) return;
       labelBoxes.push(box);
-      text(label, x, y, color, big ? "500 14px system-ui" : "11px system-ui", "center");
+      text(label, x, y, color, `500 ${fontSize}px system-ui`, "center");
     };
 
     if (layers.lines) {
@@ -148,7 +180,21 @@ export default function SkyCanvas({ catalog, data, frame, camera, layers, select
           if (!length) continue;
           const center = sum.map((value) => value / length) as Vector;
           const p = visible(center) ? project(center) : null;
-          if (p && onScreen(p)) placeLabel(`${CONSTELLATION_NAMES[constellation.id] || constellation.name}座`, p.x, p.y, "#8fb8c7", true);
+          if (p && onScreen(p)) {
+            const zodiac = ZODIAC_CONSTELLATIONS[constellation.id];
+            if (zodiac) {
+              const image = zodiacImages.current[constellation.id];
+              if (image?.complete && image.naturalWidth && starOpacity > 0.018) {
+                const iconSize = clamp(32 * Math.sqrt(65 / camera.fov), 18, 42);
+                ctx.globalAlpha = 0.68 * starOpacity;
+                ctx.drawImage(image, p.x - iconSize / 2, p.y - iconSize / 2 - 8, iconSize, iconSize);
+                ctx.globalAlpha = 1;
+              }
+              placeLabel(zodiac.name, p.x, p.y + 30, "#ffffff", true);
+            } else {
+              placeLabel(`${CONSTELLATION_NAMES[constellation.id] || constellation.name}座`, p.x, p.y, "#8fb8c7", true);
+            }
+          }
         }
       }
     }
@@ -226,7 +272,7 @@ export default function SkyCanvas({ catalog, data, frame, camera, layers, select
       const p = project(horizontalVector(i * 45, 0));
       if (p && onScreen(p, 0)) text(label, p.x, clamp(p.y + 22, 22, h - 18), "#d3bd8d", "600 13px system-ui", "center");
     });
-  }, [stars, byHip, catalog, data, frame, camera, layers, selected, size]);
+  }, [stars, byHip, catalog, data, frame, camera, layers, selected, size, zodiacImagesReady]);
 
   const release = (id: number) => { pointers.current.delete(id); };
   return <canvas ref={canvasRef} role="application" aria-label="观测星空：拖动转向，滚轮或双指缩放，方向键转向，点击亮星查看信息" tabIndex={0}

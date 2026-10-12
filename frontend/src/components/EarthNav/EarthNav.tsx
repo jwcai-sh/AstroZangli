@@ -14,11 +14,10 @@ export default function EarthNav({ currentPage }: EarthNavProps) {
 
     const tabs = [
         { name: "十二宫图", path: "/earth?tab=zodiac" },
-        { name: "月相", path: "/earth?tab=moon-phases" },
-        { name: "日月食", path: "/earth?tab=eclipses" },
+        { name: "日月运行与历象", path: "/earth?tab=lunar-phenomena&phenomena=moon-phases" },
         { name: "天文历算基本数据", path: "/earth?tab=five-elements&data=five-elements" },
         { name: "七星轨迹", path: "/earth?tab=seven-stars" },
-        { name: "周年视运动（地心坐标）", path: "/earth?tab=annual-motion" },
+        { name: "天体运动", path: "/earth?tab=celestial-motion&motion=geocentric-motion" },
     ];
 
     return (

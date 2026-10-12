@@ -12,8 +12,6 @@ interface SevenStarsSubnavProps {
 
 const SUBTABS: Array<{ id: SevenStarsSubtab; label: string }> = [
   { id: "seven-stars", label: "七星轨迹" },
-  { id: "sun-earth-moon", label: "日地月运动与月相（日心视角）" },
-  { id: "geocentric-motion", label: "七曜每日运动（地心视角）" },
   { id: "seven-data", label: "七星数据" },
 ];
 

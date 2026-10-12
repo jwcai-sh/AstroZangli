@@ -6,6 +6,8 @@ import {
   getBasicDataGroup,
   getEarthPageIndex,
   getEarthTabLabel,
+  resolveCelestialMotionView,
+  resolveLunarPhenomenaView,
   resolveBasicDataSubtab,
   resolveSevenStarsSubtab,
 } from "./navigation";
@@ -29,6 +31,23 @@ test("earth page helpers place basic data before seven stars", () => {
   assert.equal(resolveBasicDataSubtab("five-planets"), "five-planets");
   assert.equal(resolveBasicDataSubtab("tibetan-cycle"), "tibetan-cycle");
   assert.equal(resolveBasicDataSubtab("unknown"), "five-elements");
+});
+
+test("related sky views share section entries while legacy URLs keep their destinations", () => {
+  assert.equal(getEarthPageIndex("celestial-motion"), 3);
+  assert.equal(getEarthPageIndex("annual-motion"), 3);
+  assert.equal(getEarthPageIndex("seven-stars", "geocentric-motion"), 3);
+  assert.equal(resolveCelestialMotionView("annual-motion", null), "annual-motion");
+  assert.equal(resolveCelestialMotionView("seven-stars", null, "geocentric-motion"), "geocentric-motion");
+  assert.equal(getEarthTabLabel("annual-motion"), "天体运动");
+
+  assert.equal(getEarthPageIndex("lunar-phenomena"), 4);
+  assert.equal(getEarthPageIndex("moon-phases"), 4);
+  assert.equal(getEarthPageIndex("eclipses"), 4);
+  assert.equal(getEarthPageIndex("seven-stars", "sun-earth-moon"), 4);
+  assert.equal(resolveLunarPhenomenaView("eclipses", null), "eclipses");
+  assert.equal(resolveLunarPhenomenaView("seven-stars", null, "sun-earth-moon"), "sun-earth-moon");
+  assert.equal(getEarthTabLabel("eclipses"), "日月运行与历象");
 });
 
 test("basic data resolves the five-elements sphere view", () => {
