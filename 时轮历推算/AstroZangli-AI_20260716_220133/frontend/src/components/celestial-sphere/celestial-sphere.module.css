@@ -1,0 +1,38 @@
+.wrapper { min-width:0; color:#dce7ee; }
+.scene { position:relative; height:clamp(480px,61vh,680px); border:1px solid #657e923b; border-radius:14px; overflow:hidden; background:#07111f; isolation:isolate; }
+.scene:fullscreen { width:100vw; height:100dvh; border:0; border-radius:0; }
+.scene canvas { display:block; width:100%; height:100%; touch-action:none; cursor:grab; }
+.scene canvas:active { cursor:grabbing; }
+.scene canvas:focus-visible { outline:2px solid #91c9d4; outline-offset:-3px; }
+.scene button { cursor:pointer; font:inherit; }
+.scene button:focus-visible { outline:2px solid #91c9d4; outline-offset:3px; }
+.header { position:absolute; inset:0 0 auto; display:flex; justify-content:space-between; gap:16px; padding:22px; background:linear-gradient(#020611cc,transparent); pointer-events:none; font-size:12px; }
+.header small { display:block; font-size:10px; color:#849ead; margin-top:8px; letter-spacing:.04em; }
+.dot { display:inline-block; width:6px; height:6px; margin-right:9px; border-radius:50%; background:#9ed4c6; box-shadow:0 0 12px #9ed4c666; }
+.readout { text-align:right; flex-shrink:0; }
+.readout small { color:inherit; font-variant-numeric:tabular-nums; }
+.layers { position:absolute; left:14px; top:96px; display:flex; flex-direction:column; gap:5px; }
+.layers button { display:flex; align-items:center; gap:8px; text-align:left; padding:7px 10px; background:#09111ba6; backdrop-filter:blur(8px); border:1px solid transparent; border-radius:6px; color:#849bad; font-size:11px; }
+.layers button[aria-pressed=true] { color:#c4dedf; background:#1c303999; border-color:#88b4c120; }
+.layers span { font-size:9px; }
+.camera { position:absolute; right:14px; top:96px; display:grid; gap:8px; }
+.camera button { width:33px; height:33px; border:1px solid #ffffff20; border-radius:50%; background:#0a1322b3; color:#c2d5e0; font-size:19px; }
+.camera button:hover,.layers button:hover { background:#29404f; }
+.crosshair { position:absolute; left:50%; top:50%; width:9px; height:9px; border:1px solid #bdd6df40; border-radius:50%; transform:translate(-50%,-50%); pointer-events:none; }
+.footer { position:absolute; inset:auto 0 0; display:flex; justify-content:space-between; align-items:center; gap:12px; padding:18px; background:linear-gradient(transparent,#040912ed); pointer-events:none; }
+.switch { display:flex; padding:3px; background:#09111ae6; border:1px solid #ffffff20; border-radius:24px; pointer-events:auto; flex-shrink:0; }
+.switch button { border:0; border-radius:20px; background:transparent; color:#879caa; padding:8px 13px; font-size:11px; }
+.switch button[aria-pressed=true] { background:#263c45; color:#e0f1ef; }
+.footer output { font-size:10px; color:#a5bccb; font-variant-numeric:tabular-nums; }
+.footer i { display:inline-block; width:1px; height:8px; background:#ffffff30; margin:0 9px; }
+.caption { display:flex; justify-content:space-between; gap:14px; padding:12px 3px; color:#90a6b5; font-size:10px; line-height:1.8; }
+.caption span:last-child { flex-shrink:0; color:#7c96a8; }
+.starCard { position:absolute; bottom:85px; right:15px; display:grid; gap:8px; padding:16px 32px 16px 16px; border:1px solid #647f9166; border-radius:8px; background:#0a1423f2; font-size:11px; }
+.starCard strong { font-weight:500; font-size:16px; color:#e4ebea; }
+.starCard span { color:#90a6b5; }
+.starCard button { position:absolute; right:8px; top:4px; color:#90a6b5; background:none; border:0; font-size:17px; }
+.message { color:#b8c8d2; font-size:11px; padding:8px; }
+.message button { margin-left:12px; text-decoration:underline; cursor:pointer; }
+@media(max-width:600px) {
+  .scene { height:500px; border-radius:10px; }.header { padding:16px 12px; gap:10px; font-size:11px; }.header small { font-size:9px; letter-spacing:0; }.layers { left:8px; top:83px; }.layers button { padding:6px 8px; font-size:10px; }.camera { right:8px; top:83px; }.camera button { width:30px; height:30px; }.footer { padding:12px 9px; flex-wrap:wrap; justify-content:center; gap:9px; }.footer output { font-size:9px; }.switch button { font-size:10px; padding:7px 12px; }.caption { flex-direction:column; gap:3px; }
+}

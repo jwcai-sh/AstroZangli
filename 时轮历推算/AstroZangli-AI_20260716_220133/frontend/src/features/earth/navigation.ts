@@ -2,6 +2,8 @@ export type EarthTab =
   | "zodiac"
   | "eclipses"
   | "moon-phases"
+  | "lunar-phenomena"
+  | "celestial-motion"
   | "seven-stars"
   | "five-elements"
   | "annual-motion"
@@ -14,6 +16,9 @@ export type SevenStarsSubtab =
   | "seven-data"
   | "five-elements-sphere"
   | "five-elements";
+
+export type LunarPhenomenaView = "moon-phases" | "sun-earth-moon" | "eclipses";
+export type CelestialMotionView = "geocentric-motion" | "annual-motion";
 
 export type BasicDataSubtab =
   | "daily-all"
@@ -36,21 +41,41 @@ export function resolveSevenStarsSubtab(
   return "seven-stars";
 }
 
-export function getEarthPageIndex(tab: string | null | undefined): number {
-  if (tab === "moon-phases") return 5;
-  if (tab === "eclipses") return 4;
+export function resolveLunarPhenomenaView(
+  tab: string | null | undefined,
+  view: string | null | undefined,
+  legacySubtab?: string | null
+): LunarPhenomenaView {
+  if (view === "sun-earth-moon" || view === "eclipses" || view === "moon-phases") return view;
+  if (tab === "eclipses") return "eclipses";
+  if (tab === "seven-stars" && legacySubtab === "sun-earth-moon") return "sun-earth-moon";
+  return "moon-phases";
+}
+
+export function resolveCelestialMotionView(
+  tab: string | null | undefined,
+  view: string | null | undefined,
+  legacySubtab?: string | null
+): CelestialMotionView {
+  if (view === "annual-motion" || view === "geocentric-motion") return view;
+  if (tab === "annual-motion") return "annual-motion";
+  if (tab === "seven-stars" && legacySubtab === "geocentric-motion") return "geocentric-motion";
+  return "geocentric-motion";
+}
+
+export function getEarthPageIndex(tab: string | null | undefined, subtab?: string | null): number {
+  if (tab === "lunar-phenomena" || tab === "moon-phases" || tab === "eclipses" || (tab === "seven-stars" && subtab === "sun-earth-moon")) return 4;
+  if (tab === "celestial-motion" || tab === "annual-motion" || (tab === "seven-stars" && subtab === "geocentric-motion")) return 3;
   if (tab === "five-elements" || tab === "tibetan-cycle") return 1;
   if (tab === "seven-stars") return 2;
-  if (tab === "annual-motion") return 3;
   return 0;
 }
 
-export function getEarthTabLabel(tab: string | null | undefined): string {
-  if (tab === "moon-phases") return "月相";
-  if (tab === "eclipses") return "日月食";
+export function getEarthTabLabel(tab: string | null | undefined, subtab?: string | null): string {
+  if (tab === "moon-phases" || tab === "eclipses" || tab === "lunar-phenomena" || (tab === "seven-stars" && subtab === "sun-earth-moon")) return "日月运行与历象";
+  if (tab === "celestial-motion" || tab === "annual-motion" || (tab === "seven-stars" && subtab === "geocentric-motion")) return "天体运动";
   if (tab === "seven-stars") return "七星轨迹";
   if (tab === "five-elements" || tab === "tibetan-cycle") return "天文历算基本数据";
-  if (tab === "annual-motion") return "周年视运动（地心坐标）";
   return "十二宫图";
 }
 

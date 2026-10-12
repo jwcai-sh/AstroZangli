@@ -41,6 +41,8 @@ def get_geocentric_motion_year(year: int) -> dict:
     ephemeris = load_file(str(EPHEMERIS_PATH))
     earth = ephemeris["earth"]
     observer = earth.at(times)
+    # Rotate catalogue ICRS vectors into the same ecliptic-of-date frame as the bodies.
+    star_frames = np.moveaxis(ecliptic_frame.rotation_at(times), -1, 0)
 
     positions = {}
     for key, target in BODIES:
@@ -68,6 +70,7 @@ def get_geocentric_motion_year(year: int) -> dict:
         "days": [
             {
                 "date": date.date().isoformat(),
+                "starMatrix": star_frames[index].reshape(9).tolist(),
                 "bodies": {key: positions[key][index] for key, _ in BODIES},
             }
             for index, date in enumerate(dates)
