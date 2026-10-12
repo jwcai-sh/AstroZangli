@@ -8,6 +8,11 @@ import { useLocale } from "@/i18n/LocaleProvider";
 const ZODIAC = ["白羊宫", "金牛宫", "双子宫", "巨蟹宫", "狮子宫", "处女宫", "天秤宫", "天蝎宫", "射手宫", "摩羯宫", "水瓶宫", "双鱼宫"];
 const identity = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 const ecliptic = Array.from({ length: 361 }, (_, index) => ({ longitude: index, latitude: 0 }));
+const lunarInclination = 5.145 * Math.PI / 180;
+const lunarOrbit = Array.from({ length: 361 }, (_, index) => {
+  const longitude = index * Math.PI / 180;
+  return { longitude: index, latitude: Math.asin(Math.sin(lunarInclination) * Math.sin(longitude)) * 180 / Math.PI };
+});
 
 function solarLongitude(date: string) {
   const year = Number(date.slice(0, 4));
@@ -32,8 +37,8 @@ export default function ZodiacSpherePage() {
       <label className="text-xs text-slate-300">{t("日期")}<input type="date" value={date} onChange={event => setDate(event.target.value)} className="mt-1 block rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-base text-white" /></label>
     </header>
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(260px,.7fr)]">
-      <CelestialSphere title="黄道十二宫" subtitle="球面总览" note="黄道带按 12 个 30° 区段显示；太阳位置为日期的近似黄经。" markers={markers} selected="sun" onSelect={() => undefined} trails={[{ id: "ecliptic", color: "#d1b77a", points: ecliptic }]} starFrame={{ matrix: identity, date }} t={t} />
-      <aside className="rounded-2xl border border-white/10 bg-white/5 p-5"><p className="text-xs tracking-[.2em] text-cyan-300">{t("当前观测")}</p><h2 className="mt-2 text-xl font-semibold">{date}</h2><dl className="mt-5 space-y-3 text-sm"><div className="flex justify-between gap-3"><dt className="text-slate-400">{t("太阳黄经")}</dt><dd className="font-medium text-amber-200">{sunLongitude.toFixed(1)}°</dd></div><div className="flex justify-between gap-3"><dt className="text-slate-400">{t("参考平面")}</dt><dd>{t("黄道面")}</dd></div></dl><p className="mt-6 text-xs leading-5 text-slate-400">{t("球面总览默认开启，可拖动旋转、滚轮缩放，并通过左侧图层控制显示内容。")}</p></aside>
+      <CelestialSphere title="黄道十二宫" subtitle="球面总览" note="黄道为黄线；白道为白色虚线，倾角约 5.1°。白道轨迹用于说明倾斜关系，月交点随日期变化未在此示意图中更新。" markers={markers} selected="sun" onSelect={() => undefined} trails={[{ id: "ecliptic", color: "#d1b77a", points: ecliptic }, { id: "lunar-orbit", color: "#e5edf5", points: lunarOrbit, dashed: true }]} starFrame={{ matrix: identity, date }} t={t} />
+      <aside className="rounded-2xl border border-white/10 bg-white/5 p-5"><p className="text-xs tracking-[.2em] text-cyan-300">{t("当前观测")}</p><h2 className="mt-2 text-xl font-semibold">{date}</h2><dl className="mt-5 space-y-3 text-sm"><div className="flex justify-between gap-3"><dt className="text-slate-400">{t("太阳黄经")}</dt><dd className="font-medium text-amber-200">{sunLongitude.toFixed(1)}°</dd></div><div className="flex justify-between gap-3"><dt className="text-slate-400">{t("参考平面")}</dt><dd>{t("黄道面")}</dd></div></dl><div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-300"><span className="inline-flex items-center gap-2"><i className="h-0.5 w-5 bg-[#d1b77a]" />{t("黄道 · 0°")}</span><span className="inline-flex items-center gap-2"><i className="w-5 border-t border-dashed border-[#e5edf5]" />{t("白道 · 倾角约 5.1°（示意）")}</span></div><p className="mt-5 text-xs leading-5 text-slate-400">{t("球面总览默认开启，可拖动旋转、滚轮缩放，并通过左侧图层控制显示内容。白道与黄道不重合，只在月交点处相交；此处未按日期更新交点位置。")}</p></aside>
     </div>
   </main>;
 }

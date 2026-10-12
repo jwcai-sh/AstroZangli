@@ -141,7 +141,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
         }
       } catch (cause) {
         if (!cancelled) {
-          setError(cause instanceof Error ? cause.message : "加载失败");
+          setError(cause instanceof Error ? appText(locale, cause.message) : appText(locale, "加载失败"));
         }
       } finally {
         if (!cancelled) {
@@ -154,7 +154,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
     return () => {
       cancelled = true;
     };
-  }, [mode, selection]);
+  }, [locale, mode, selection]);
 
   const summaryCards = useMemo(
     () => (monthlyData ? buildMonthlySummaryCards(monthlyData.monthSummary).sort((a, b) => a.values.length - b.values.length) : []),
@@ -254,7 +254,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                       : "border-white/15 bg-white/5 text-slate-200 hover:bg-white/10"
                   }`}
                 >
-                  {label}
+                  <LocalizedText text={label} />
                 </button>
               );
             })}
@@ -334,7 +334,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
 
               {monthTitle ? (
                 <div className="rounded-[20px] border border-white/15 bg-white/5 px-5 py-3 text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
-                  <p className="text-lg font-semibold tracking-wide">{monthTitle}</p>
+                  <p className="text-lg font-semibold tracking-wide">{appText(locale, monthTitle)}</p>
                 </div>
               ) : null}
             </div>
@@ -346,7 +346,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
             </div>
           ) : error ? (
             <div className="rounded-[28px] border border-[#d7c3ac] bg-[#f7eddf] py-16 text-center text-[#b34d3e]">
-              {error}
+              {appText(locale, error)}
             </div>
           ) : (
             <>
@@ -358,11 +358,11 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                       className="min-w-0 rounded-[22px] border border-[#e2c6a2]/45 bg-[#8b6b49]/5 px-2 py-3 text-center sm:px-4 sm:py-4"
                     >
                       <p className="text-sm font-semibold tracking-wide text-cyan-100/80">
-                        {card.title}
+                        {appText(locale, card.title)}
                       </p>
                       <div className="mt-4 space-y-2 text-center text-lg font-medium">
                         {card.values.map((value, index) => (
-                          <div key={`${card.title}-${index}`}>{value}</div>
+                          <div key={`${card.title}-${index}`}>{appText(locale, value)}</div>
                         ))}
                       </div>
                     </div>
@@ -377,9 +377,9 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                     className="min-w-0 rounded-[26px] border border-[#e2c6a2]/30 bg-[#8b6b49]/5 px-4 py-5 text-slate-100 shadow-[0_18px_60px_rgba(0,0,0,0.2)]"
                   >
                     <div className="border-b border-white/10 pb-3 text-center">
-                      <p className="text-2xl font-semibold">{card.dayLabel}</p>
+                      <p className="text-2xl font-semibold">{card.day} {appText(locale, "日")}</p>
                       <p className="mt-2 text-sm text-slate-300">
-                        {card.tibetanDate || "藏历信息待补充"}
+                        {appText(locale, card.tibetanDate || "藏历信息待补充")}
                       </p>
                       <p className="mt-1 text-xs tracking-[0.12em] text-slate-400">
                         <LocalizedText text={"对应公历"} /> {card.gregorianDate}
@@ -494,7 +494,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
             </div>
           ) : error ? (
             <div className="rounded-[28px] border border-[#d7c3ac] bg-[#f7eddf] py-16 text-center text-[#b34d3e]">
-              {error}
+              {appText(locale, error)}
             </div>
           ) : dailyData ? (
             <>
@@ -502,13 +502,13 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.28em] text-cyan-200/70">
-                      Daily Interactive
+                      {appText(locale, "Daily Interactive")}
                     </p>
                     <h3 className="mt-3 text-3xl font-semibold">
-                      {dailyData.tibetanDateLabel}
+                      {appText(locale, dailyData.tibetanDateLabel)}
                       {dailyData.dayStatus !== "normal" ? (
                         <span className="ml-3 inline-flex align-middle rounded-full border border-[#caa984] bg-[#fff8ef] px-3 py-1 text-base font-medium text-[#765638]">
-                          {dailyData.dayStatus === "missing" ? "缺" : "重"}
+                          {appText(locale, dailyData.dayStatus === "missing" ? "缺日" : "重日")}
                         </span>
                       ) : null}
                     </h3>
@@ -544,11 +544,11 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                       className="min-w-0 rounded-[22px] border border-[#e2c6a2]/45 bg-[#8b6b49]/5 px-2 py-3 text-center sm:px-4 sm:py-4"
                     >
                       <p className="text-sm font-semibold tracking-wide text-cyan-100/80">
-                        {card.title}
+                        {appText(locale, card.title)}
                       </p>
                       <div className="mt-4 space-y-2 text-center text-lg font-medium">
                         {card.values.map((value, index) => (
-                          <div key={`${card.title}-${index}`}>{value}</div>
+                          <div key={`${card.title}-${index}`}>{appText(locale, value)}</div>
                         ))}
                       </div>
                     </div>
@@ -560,7 +560,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                 panels={dailyPanels}
                 activePanelId={activePanelId}
                 activeStageIndex={activeStageIndex}
-                selectedDate={dailyData.tibetanDateLabel}
+                selectedDate={appText(locale, dailyData.tibetanDateLabel)}
                 secondaryLabel={appText(locale, "对应公历")}
                 secondaryValue={dailyData.gregorianDates.join(" / ") || "--"}
                 onPanelChange={(panelId) => {

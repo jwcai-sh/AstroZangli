@@ -9,7 +9,6 @@ import AstrologicalTableCard, { type AstrologicalRow } from "@/components/widget
 import WidgetCarousel from "@/components/widgets/WidgetCarousel";
 import FooterBar from "@/components/FooterBar";
 import { fetchCalendarData, fetchMonthlyAstronomyEvents, fetchMonthlyTibetanFestivals, type CalendarDisplayMode, type MonthlyCalendarEvent } from "@/services/calendarApi";
-import { DEFAULT_CITY, SUPPORTED_CITIES } from "@/constants/cities";
 
 type HolidayInfo = { name: string; date: string; isoDate?: string; daysLeft: number };
 type FestivalKind = "solar" | "lunar" | "tibetan";
@@ -42,8 +41,6 @@ function normalizeHolidayInfo(input: unknown): HolidayInfo | null {
 export default function CalendarPage() {
   const locale = useLocale();
   const [currentPage, setCurrentPage] = useState(0);
-  const [city, setCity] = useState<string>(DEFAULT_CITY);
-  const [isCityOpen, setIsCityOpen] = useState(false);
   const [year, setYear] = useState<number>(1970);
   const [month, setMonth] = useState<number>(0); // 0-11
   const [selectedDay, setSelectedDay] = useState<number>(1);
@@ -167,11 +164,11 @@ export default function CalendarPage() {
   };
 
 
-  const loadData = async (date?: string, cityName?: string) => {
+  const loadData = async (date?: string) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchCalendarData({ date, cityName });
+      const data = await fetchCalendarData({ date });
       setCalendarData(data || null);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : "加载失败";
@@ -180,13 +177,6 @@ export default function CalendarPage() {
       setLoading(false);
     }
   };
-  // 处理城市选择 - 坐标由后端自动处理
-  const handleCityChange = (selectedCity: string) => {
-    setCity(selectedCity);
-    setIsCityOpen(false);
-    loadData(selectedDateStr, selectedCity);
-  };
-
   const handlePrevMonth = () => {
     const d = new Date(year, month, 1);
     d.setMonth(d.getMonth() - 1);
@@ -199,7 +189,7 @@ export default function CalendarPage() {
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const dd = String(newDay).padStart(2, "0");
     const dateStr = `${d.getFullYear()}-${mm}-${dd}`;
-    loadData(dateStr, city);
+    loadData(dateStr);
     loadFestivalPredictions(dateStr);
   };
 
@@ -214,7 +204,7 @@ export default function CalendarPage() {
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const dd = String(newDay).padStart(2, "0");
     const dateStr = `${d.getFullYear()}-${mm}-${dd}`;
-    loadData(dateStr, city);
+    loadData(dateStr);
     loadFestivalPredictions(dateStr);
   };
 
@@ -223,7 +213,7 @@ export default function CalendarPage() {
     const mm = String(month + 1).padStart(2, "0");
     const dd = String(day).padStart(2, "0");
     const dateStr = `${year}-${mm}-${dd}`;
-    loadData(dateStr, city);
+    loadData(dateStr);
     loadFestivalPredictions(dateStr);
   };
 
@@ -240,7 +230,7 @@ export default function CalendarPage() {
     const mm = String(m + 1).padStart(2, "0");
     const dd = String(d).padStart(2, "0");
     const dateStr = `${y}-${mm}-${dd}`;
-    loadData(dateStr, DEFAULT_CITY);
+    loadData(dateStr);
     loadFestivalPredictions(dateStr);
   }, []);
 
@@ -355,48 +345,6 @@ export default function CalendarPage() {
       {/* 主内容区域 - 可滚动布局 */}
       <div className="relative z-10 min-h-screen flex flex-col pb-20">
         <div className="flex flex-col p-4">
-          {/* 城市选择器 */}
-          <div className="flex justify-center items-center py-2 relative mt-8">{/*地点选择器距离顶部距离*/}
-            <div className="relative">
-              <button
-                className="flex items-center gap-2 px-3 py-1 bg-gray-800/50 rounded-lg hover:bg-gray-700/70 transition-colors cursor-pointer"
-                onClick={() => setIsCityOpen((v) => !v)}
-              >
-                <span className="text-lg font-medium">{appText(locale, city)}</span>
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  className="text-gray-300"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M4 6l4 4 4-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-              {isCityOpen && (
-                <div className="absolute left-0 right-0 mt-2 w-48 bg-gray-900/90 border border-gray-700 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
-                  {SUPPORTED_CITIES.map((c) => (
-                    <button
-                      key={c}
-                      className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-700/70 ${c === city ? "text-white bg-gray-700/50" : "text-gray-300"
-                        }`}
-                      onClick={() => handleCityChange(c)}
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
           <div className="flex items-center justify-center mt-2">{/*日历距离顶部距离*/}
             <div className="w-[90%] sm:w-[82%] md:w-[70%] max-w-[520px]">
               {ready ? (
