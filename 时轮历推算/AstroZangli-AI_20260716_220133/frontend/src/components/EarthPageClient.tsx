@@ -10,9 +10,10 @@ import FivePlanetsSubtab from "@/components/seven-stars/FivePlanetsSubtab";
 import FivePlanetsSphere from "@/components/seven-stars/FivePlanetsSphere";
 import FiveElementsSphere from "@/components/seven-stars/FiveElementsSphere";
 import SevenStarsSubnav from "@/components/seven-stars/SevenStarsSubnav";
-import SunEarthMoonPage from "@/components/seven-stars/SunEarthMoonPage";
+import SunEarthMoonSpherePage from "@/components/seven-stars/SunEarthMoonSpherePage";
+import SevenStarsSpherePage from "@/components/seven-stars/SevenStarsSpherePage";
 import GeocentricMotionPage from "@/components/seven-stars/GeocentricMotionPage";
-import Zodiac from "@/components/zodiac/page";
+import Zodiac from "@/components/zodiac/ZodiacSpherePage";
 import EclipsePage from "@/components/eclipses/EclipsePage";
 import MoonPhasesPage from "@/components/moon-phases/MoonPhasesPage";
 import TibetanCycle from "@/components/tibetan-cycle/page";
@@ -69,14 +70,14 @@ export default function EarthPageClient() {
     currentSubtab === "seven-data"
       ? <SevenData key="seven-data" />
       : currentSubtab === "sun-earth-moon"
-        ? <SunEarthMoonPage key="sun-earth-moon" />
+        ? <SunEarthMoonSpherePage key="sun-earth-moon" />
       : currentSubtab === "geocentric-motion"
         ? <GeocentricMotionPage key="geocentric-motion" />
       : currentSubtab === "five-elements-sphere"
         ? <FiveElementsSphere key="five-elements-sphere" />
       : currentSubtab === "five-elements"
         ? <FiveElementsSubtab key="five-elements" />
-        : <SkyExplorer key="seven-stars" mode="daily" />;
+        : <SevenStarsSpherePage key="seven-stars" />;
 
   const basicDataItem = currentBasicDataSubtab === "tibetan-cycle"
     ? <TibetanCycle key="tibetan-cycle" />
@@ -95,7 +96,7 @@ export default function EarthPageClient() {
   const lunarPhenomenaItem = currentPhenomenaView === "eclipses"
     ? <EclipsePage key="eclipses" />
     : currentPhenomenaView === "sun-earth-moon"
-      ? <SunEarthMoonPage key="sun-earth-moon" />
+      ? <SunEarthMoonSpherePage key="sun-earth-moon" />
       : <MoonPhasesPage key="moon-phases" />;
 
   const items = [

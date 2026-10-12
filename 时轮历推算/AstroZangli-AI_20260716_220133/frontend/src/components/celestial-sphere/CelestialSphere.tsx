@@ -13,6 +13,7 @@ type Props = {
   focusToken?: number;
   mansion?: { index: number; color: string }; traditional?: boolean;
   starFrame?: { matrix: number[]; date: string }; t: (text: string) => string;
+  centerLabel?: string; centerColor?: string;
 };
 type View = { longitude: number; latitude: number; fov: number };
 type Projected = { x: number; y: number; depth: number };
@@ -35,11 +36,11 @@ function loadCatalog() {
   }).catch(error => { catalogPromise = undefined; throw error; });
 }
 
-export default function CelestialSphere({ title, subtitle, note, markers, selected, onSelect, trails = NO_TRAILS, mansion, traditional = false, starFrame, t, focusToken = 0 }: Props) {
+export default function CelestialSphere({ title, subtitle, note, markers, selected, onSelect, trails = NO_TRAILS, mansion, traditional = false, starFrame, t, focusToken = 0, centerLabel = "地心", centerColor = "#367ea0" }: Props) {
   const sceneRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const active = markers.find(marker => marker.id === selected) ?? markers[0];
-  const [mode, setMode] = useState<"sky" | "globe">("sky");
+  const [mode, setMode] = useState<"sky" | "globe">("globe");
   const [view, setView] = useState<View>(() => ({ longitude: active?.longitude ?? 0, latitude: 12, fov: 75 }));
   const [following, setFollowing] = useState(true);
   const [layers, setLayers] = useState({ names: true, lines: true, grid: traditional, trails: true });
@@ -231,12 +232,12 @@ export default function CelestialSphere({ title, subtitle, note, markers, select
     }
     if (globe) {
       const earth = ctx.createRadialGradient(w / 2 - 4, h * .53 - 5, 1, w / 2, h * .53, 14);
-      earth.addColorStop(0, "#92d9e9"); earth.addColorStop(.45, "#367ea0"); earth.addColorStop(1, "#10253e");
+      earth.addColorStop(0, "#ffffff"); earth.addColorStop(.45, centerColor); earth.addColorStop(1, "#10253e");
       ctx.fillStyle = earth; ctx.beginPath(); ctx.arc(w / 2, h * .53, 14, 0, Math.PI * 2); ctx.fill();
-      text(t("地心"), w / 2, h * .53 + 33, "#b0cbd6", 10);
+      text(t(centerLabel), w / 2, h * .53 + 33, "#b0cbd6", 10);
     }
     picks.current = nextPicks;
-  }, [view, mode, layers, size, stars, constellations, markers, selected, trails, mansion, traditional, t, iconsReady]);
+  }, [view, mode, layers, size, stars, constellations, markers, selected, trails, mansion, traditional, t, iconsReady, centerLabel, centerColor]);
 
   const focus = () => { setFollowing(true); setStarInfo(null); setView({ longitude: activeLongitude, latitude: mode === "globe" ? 28 : clamp(activeLatitude + 8, -75, 75), fov: 75 }); };
   const zoom = (amount: number) => setView(previous => ({ ...previous, fov: clamp(previous.fov + amount, 35, 105) }));
@@ -277,7 +278,7 @@ export default function CelestialSphere({ title, subtitle, note, markers, select
         }} />
       <div className={styles.header}><div><span className={styles.dot} />{t(title)}<small>{subtitle}</small></div><div className={styles.readout} style={{ color: active?.color }}>{active ? t(active.name) : ""}<small>{active ? `${active.longitude.toFixed(2)}°` : ""}</small></div></div>
       <div className={styles.layers} aria-label={t("天球图层")}>
-        {([...(traditional ? [] : ["lines" as const]), "names", "grid", "trails"] as const).map(key => <button key={key} aria-pressed={layers[key]} onClick={() => setLayers(previous => ({ ...previous, [key]: !previous[key] }))}><span>{layers[key] ? "◉" : "○"}</span>{t({ lines: "星座连线", names: "名称", grid: "坐标网", trails: "轨迹" }[key])}</button>)}
+        {([...(traditional ? [] : ["lines" as const]), "names", "grid", "trails"] as const).map(key => <button key={key} aria-pressed={layers[key]} onClick={() => setLayers(previous => ({ ...previous, [key]: !previous[key] }))}><span>{layers[key] ? "◉" : "○"}</span>{t({ lines: "星座连线", names: "名称", grid: "坐标网", trails: "黄道/白道" }[key])}</button>)}
       </div>
       <div className={styles.camera}><button onClick={() => zoom(-10)} aria-label={t("放大天球")}>＋</button><button onClick={() => zoom(10)} aria-label={t("缩小天球")}>−</button><button onClick={focus} aria-label={t("复位并跟随所选天体")}>⌖</button><button onClick={fullScreen} aria-label={t(fullscreen ? "退出天球全屏" : "全屏天球")}>{fullscreen ? "⊡" : "⛶"}</button></div>
       <div className={styles.crosshair} />
