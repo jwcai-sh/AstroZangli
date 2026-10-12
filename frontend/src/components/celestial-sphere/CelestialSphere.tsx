@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { catalogVector, clamp, CONSTELLATION_NAMES, DEG, dot, horizontalVector, projector, starColor, starName, wrap, type Catalog, type Vector } from "@/features/sky-view/model";
 import styles from "./celestial-sphere.module.css";
 
@@ -17,6 +17,8 @@ type Props = {
 };
 type View = { longitude: number; latitude: number; fov: number };
 type Projected = { x: number; y: number; depth: number };
+type CompassEvent = DeviceOrientationEvent & { webkitCompassHeading?: number; webkitCompassAccuracy?: number };
+type PermissionDevice = typeof DeviceOrientationEvent & { requestPermission?: () => Promise<string> };
 const NO_TRAILS: SphereTrail[] = [];
 const ZODIAC_ICONS: Record<string, string> = {
   Ari: "aries", Tau: "taurus", Gem: "gemini", Cnc: "cancer", Leo: "leo", Vir: "virgo",
@@ -27,6 +29,10 @@ const arc = (start: number, extent: number, latitude = 0) => {
   const count = Math.max(2, Math.ceil(Math.abs(extent) / 2) + 1);
   return Array.from({ length: count }, (_, i) => vectorAt({ longitude: start + extent * i / (count - 1), latitude }));
 };
+function localizedCanvasLabel(source: string, t: (text: string) => string, fallback: string): string {
+  const translated = t(source);
+  return /[\u3400-\u9fff]/.test(translated) ? fallback : translated;
+}
 // Share the same HYG / Stellarium catalogue as the observation page; no new assets or random star positions.
 let catalogPromise: Promise<Catalog> | undefined;
 function loadCatalog() {
@@ -50,10 +56,12 @@ export default function CelestialSphere({ title, subtitle, note, markers, select
   const [retry, setRetry] = useState(0);
   const [starInfo, setStarInfo] = useState<{ name: string; magnitude: number } | null>(null);
   const [message, setMessage] = useState("");
+  const [sensor, setSensor] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [iconsReady, setIconsReady] = useState(0);
   const icons = useRef<Record<string, HTMLImageElement>>({});
   const gestures = useRef(new Map<number, { x: number; y: number }>());
+  const sensorCleanup = useRef<(() => void) | null>(null);
   const moved = useRef(false);
   const distanceMoved = useRef(0);
   const picks = useRef<{ x: number; y: number; id?: string; name: string; magnitude?: number }[]>([]);
@@ -62,7 +70,9 @@ export default function CelestialSphere({ title, subtitle, note, markers, select
   useEffect(() => {
     if (following) setView(previous => ({ ...previous, longitude: activeLongitude, latitude: mode === "globe" ? 28 : clamp(activeLatitude + 8, -75, 75) }));
   }, [activeLongitude, activeLatitude, following, mode, selected]);
-  useEffect(() => { setFollowing(true); setStarInfo(null); }, [selected, focusToken]);
+  const stopSensor = useCallback(() => { sensorCleanup.current?.(); sensorCleanup.current = null; setSensor(false); }, []);
+  useEffect(() => { setFollowing(true); setStarInfo(null); stopSensor(); }, [selected, focusToken, stopSensor]);
+  useEffect(() => () => { sensorCleanup.current?.(); }, []);
   useEffect(() => {
     if (traditional) return;
     let cancelled = false;
@@ -94,8 +104,8 @@ export default function CelestialSphere({ title, subtitle, note, markers, select
   const stars = useMemo(() => {
     if (!catalog || !starFrame || traditional) return [];
     const years = (Date.parse(starFrame.date + "T00:00:00Z") - Date.UTC(2000, 0, 1, 12)) / (365.25 * 86400000);
-    return catalog.stars.map(star => ({ vector: catalogVector(star, starFrame.matrix, years), magnitude: star[4], color: starColor(star[5]), name: starName(star), hip: star[1] }));
-  }, [catalog, starFrame, traditional]);
+    return catalog.stars.map(star => ({ vector: catalogVector(star, starFrame.matrix, years), magnitude: star[4], color: starColor(star[5]), name: localizedCanvasLabel(starName(star), t, `HIP ${star[1] || star[0]}`), hip: star[1] }));
+  }, [catalog, starFrame, traditional, t]);
   const constellations = useMemo(() => {
     if (!catalog || !stars.length) return [];
     const byHip = new Map(stars.filter(star => star.hip).map(star => [star.hip, star.vector]));
@@ -103,7 +113,7 @@ export default function CelestialSphere({ title, subtitle, note, markers, select
       const members = [...new Set(constellation.lines.flat())].map(hip => byHip.get(hip)).filter((v): v is Vector => !!v);
       const sum = members.reduce<Vector>((a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]], [0, 0, 0]);
       const length = Math.hypot(...sum) || 1;
-      return { id: constellation.id, name: `${CONSTELLATION_NAMES[constellation.id] || constellation.name}座`, center: sum.map(n => n / length) as Vector,
+      return { id: constellation.id, name: localizedCanvasLabel(`${CONSTELLATION_NAMES[constellation.id] || constellation.name}座`, t, constellation.id), center: sum.map(n => n / length) as Vector,
         lines: constellation.lines.flatMap(path => path.slice(1).flatMap((hip, i) => {
           const a = byHip.get(path[i]), b = byHip.get(hip);
           if (!a || !b) return [];
@@ -114,7 +124,7 @@ export default function CelestialSphere({ title, subtitle, note, markers, select
           })];
         })) };
     });
-  }, [catalog, stars]);
+  }, [catalog, stars, t]);
 
   useEffect(() => {
     const canvas = canvasRef.current, ctx = canvas?.getContext("2d");
@@ -132,7 +142,7 @@ export default function CelestialSphere({ title, subtitle, note, markers, select
     const right: Vector = [-Math.sin(view.longitude * DEG), Math.cos(view.longitude * DEG), 0];
     const up: Vector = [-Math.cos(view.longitude * DEG) * Math.sin(view.latitude * DEG), -Math.sin(view.longitude * DEG) * Math.sin(view.latitude * DEG), Math.cos(view.latitude * DEG)];
     const perspective = projector({ azimuth: 90 - view.longitude, altitude: view.latitude, fov: view.fov }, w, h);
-    const project = (v: Vector): Projected | null => globe ? { x: w / 2 + radius * dot(v, right), y: h * .53 - radius * dot(v, up), depth: dot(v, forward) } : perspective(v);
+    const project = (v: Vector): Projected | null => globe ? { x: w / 2 + radius * dot(v, right), y: h / 2 - radius * dot(v, up), depth: dot(v, forward) } : perspective(v);
     const visible = (p: Projected | null, margin = 20): p is Projected => !!p && p.x > -margin && p.x < w + margin && p.y > -margin && p.y < h + margin;
     const stroke = (vectors: Vector[], color: string, width = 1, dashed = false, opacity = 1) => {
       ctx.strokeStyle = color; ctx.lineWidth = width; ctx.setLineDash(dashed ? [4, 6] : []);
@@ -161,9 +171,9 @@ export default function CelestialSphere({ title, subtitle, note, markers, select
       occupied.push({ x: p.x, y: p.y, w: width }); text(value, p.x, p.y, color, fontSize); return true;
     };
     if (globe) {
-      const shell = ctx.createRadialGradient(w / 2, h * .53, radius * .6, w / 2, h * .53, radius);
+      const shell = ctx.createRadialGradient(w / 2, h / 2, radius * .6, w / 2, h / 2, radius);
       shell.addColorStop(0, "#152b400a"); shell.addColorStop(1, "#7bb3ce20"); ctx.fillStyle = shell;
-      ctx.beginPath(); ctx.arc(w / 2, h * .53, radius, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#759eae40"; ctx.lineWidth = 1; ctx.stroke();
+      ctx.beginPath(); ctx.arc(w / 2, h / 2, radius, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#759eae40"; ctx.lineWidth = 1; ctx.stroke();
     }
     const nextPicks: typeof picks.current = [];
     for (const star of stars) {
@@ -231,16 +241,54 @@ export default function CelestialSphere({ title, subtitle, note, markers, select
       const p = project(star.vector); if (visible(p)) label(star.name, { ...p, y: p.y + 18 }, "#bacbd6", 10);
     }
     if (globe) {
-      const earth = ctx.createRadialGradient(w / 2 - 4, h * .53 - 5, 1, w / 2, h * .53, 14);
+      const earth = ctx.createRadialGradient(w / 2 - 4, h / 2 - 5, 1, w / 2, h / 2, 14);
       earth.addColorStop(0, "#ffffff"); earth.addColorStop(.45, centerColor); earth.addColorStop(1, "#10253e");
-      ctx.fillStyle = earth; ctx.beginPath(); ctx.arc(w / 2, h * .53, 14, 0, Math.PI * 2); ctx.fill();
-      text(t(centerLabel), w / 2, h * .53 + 33, "#b0cbd6", 10);
+      ctx.fillStyle = earth; ctx.beginPath(); ctx.arc(w / 2, h / 2, 14, 0, Math.PI * 2); ctx.fill();
+      text(t(centerLabel), w / 2, h / 2 + 33, "#b0cbd6", 10);
     }
     picks.current = nextPicks;
   }, [view, mode, layers, size, stars, constellations, markers, selected, trails, mansion, traditional, t, iconsReady, centerLabel, centerColor]);
 
-  const focus = () => { setFollowing(true); setStarInfo(null); setView({ longitude: activeLongitude, latitude: mode === "globe" ? 28 : clamp(activeLatitude + 8, -75, 75), fov: 75 }); };
+  const focus = () => { stopSensor(); setFollowing(true); setStarInfo(null); setView({ longitude: activeLongitude, latitude: mode === "globe" ? 28 : clamp(activeLatitude + 8, -75, 75), fov: 75 }); };
   const zoom = (amount: number) => setView(previous => ({ ...previous, fov: clamp(previous.fov + amount, 35, 105) }));
+  const startSensor = async () => {
+    if (sensor) { stopSensor(); return; }
+    if (!window.isSecureContext) { setMessage(t("手机指向需要 HTTPS。当前可拖动星空查看。")); return; }
+    if (!("DeviceOrientationEvent" in window)) { setMessage(t("此设备不支持方向传感器，可拖动星空查看。")); return; }
+    try {
+      const device = window.DeviceOrientationEvent as PermissionDevice;
+      if (device.requestPermission && await device.requestPermission() !== "granted") {
+        setMessage(t("未获得方向权限，可继续拖动星空查看。")); return;
+      }
+      let received = false;
+      const handler = (event: CompassEvent) => {
+        if (event.beta === null || event.gamma === null) return;
+        const iosHeading = event.webkitCompassHeading;
+        if (iosHeading === undefined && (!event.absolute || event.alpha === null)) return;
+        if (event.webkitCompassAccuracy !== undefined && (event.webkitCompassAccuracy < 0 || event.webkitCompassAccuracy > 40)) return;
+        received = true;
+        const a = (iosHeading !== undefined ? 360 - iosHeading : event.alpha!) * DEG;
+        const b = event.beta * DEG, g = event.gamma * DEG;
+        const east = -Math.cos(a) * Math.sin(g) - Math.sin(a) * Math.sin(b) * Math.cos(g);
+        const north = -Math.sin(a) * Math.sin(g) + Math.cos(a) * Math.sin(b) * Math.cos(g);
+        const up = -Math.cos(b) * Math.cos(g);
+        setFollowing(false);
+        const azimuth = Math.atan2(east, north) / DEG;
+        setView(previous => ({ ...previous, longitude: wrap(90 - azimuth), latitude: clamp(Math.asin(clamp(up, -1, 1)) / DEG, -80, 80) }));
+      };
+      window.addEventListener("deviceorientationabsolute", handler as EventListener);
+      window.addEventListener("deviceorientation", handler);
+      const timer = window.setTimeout(() => {
+        if (!received) { stopSensor(); setMessage(t("未收到可用的罗盘方向，请在支持传感器的手机浏览器中打开。")); }
+      }, 3000);
+      sensorCleanup.current = () => {
+        window.clearTimeout(timer);
+        window.removeEventListener("deviceorientationabsolute", handler as EventListener);
+        window.removeEventListener("deviceorientation", handler);
+      };
+      setFollowing(false); setSensor(true); setMessage(t("手机背面朝向天空；罗盘为近似指向，远离磁性物体。"));
+    } catch { setMessage(t("方向权限未开启，可继续拖动星空查看。")); }
+  };
   const release = (id: number) => gestures.current.delete(id);
   const fullScreen = async () => {
     try {
@@ -252,7 +300,7 @@ export default function CelestialSphere({ title, subtitle, note, markers, select
   return <div className={styles.wrapper} onTouchStart={e => e.stopPropagation()} onTouchMove={e => e.stopPropagation()} onTouchEnd={e => e.stopPropagation()}>
     <div className={styles.scene} ref={sceneRef}>
       <canvas ref={canvasRef} role="application" tabIndex={0} aria-label={t("交互天球：拖动转向，滚轮或双指缩放，点击天体选择")}
-        onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); gestures.current.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (gestures.current.size === 1) { moved.current = false; distanceMoved.current = 0; } else moved.current = true; }}
+        onPointerDown={e => { if (sensor) stopSensor(); e.currentTarget.setPointerCapture(e.pointerId); gestures.current.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (gestures.current.size === 1) { moved.current = false; distanceMoved.current = 0; } else moved.current = true; }}
         onPointerMove={e => {
           const old = gestures.current.get(e.pointerId); if (!old) return;
           const dx = e.clientX - old.x, dy = e.clientY - old.y;
@@ -276,14 +324,14 @@ export default function CelestialSphere({ title, subtitle, note, markers, select
           e.preventDefault(); if (e.key === "Home") { focus(); return; } if (e.key === "+" || e.key === "-") { zoom(e.key === "+" ? -10 : 10); return; }
           setFollowing(false); setView(previous => ({ ...previous, longitude: wrap(previous.longitude + (e.key === "ArrowLeft" ? 5 : e.key === "ArrowRight" ? -5 : 0) * (mode === "globe" ? -1 : 1)), latitude: clamp(previous.latitude + (e.key === "ArrowUp" ? 5 : e.key === "ArrowDown" ? -5 : 0), -80, 80) }));
         }} />
-      <div className={styles.header}><div><span className={styles.dot} />{t(title)}<small>{subtitle}</small></div><div className={styles.readout} style={{ color: active?.color }}>{active ? t(active.name) : ""}<small>{active ? `${active.longitude.toFixed(2)}°` : ""}</small></div></div>
+      <div className={styles.header}><div><span className={styles.dot} />{t(title)}<small>{t(subtitle)}</small></div><div className={styles.readout} style={{ color: active?.color }}>{active ? t(active.name) : ""}<small>{active ? `${active.longitude.toFixed(2)}°` : ""}</small></div></div>
       <div className={styles.layers} aria-label={t("天球图层")}>
         {([...(traditional ? [] : ["lines" as const]), "names", "grid", "trails"] as const).map(key => <button key={key} aria-pressed={layers[key]} onClick={() => setLayers(previous => ({ ...previous, [key]: !previous[key] }))}><span>{layers[key] ? "◉" : "○"}</span>{t({ lines: "星座连线", names: "名称", grid: "坐标网", trails: "黄道/白道" }[key])}</button>)}
       </div>
       <div className={styles.camera}><button onClick={() => zoom(-10)} aria-label={t("放大天球")}>＋</button><button onClick={() => zoom(10)} aria-label={t("缩小天球")}>−</button><button onClick={focus} aria-label={t("复位并跟随所选天体")}>⌖</button><button onClick={fullScreen} aria-label={t(fullscreen ? "退出天球全屏" : "全屏天球")}>{fullscreen ? "⊡" : "⛶"}</button></div>
       <div className={styles.crosshair} />
       {starInfo && <div className={styles.starCard}><button onClick={() => setStarInfo(null)} aria-label={t("关闭恒星信息")}>×</button><strong>{starInfo.name}</strong><span>{t("视星等")} {starInfo.magnitude.toFixed(2)}</span></div>}
-      <div className={styles.footer}><div className={styles.switch} aria-label={t("天球视角")}>{(["sky", "globe"] as const).map(value => <button key={value} aria-pressed={mode === value} onClick={() => { setMode(value); setFollowing(true); setView(previous => ({ ...previous, fov: 75 })); }}>{t(value === "sky" ? "沉浸视角" : "球面总览")}</button>)}</div><output aria-label={t("天球当前视角")}>{t(traditional ? "宿环角" : "黄经")} {wrap(view.longitude).toFixed(0)}°<i />{t(mode === "sky" ? "视场" : "缩放")}{mode === "sky" ? ` ${view.fov.toFixed(0)}°` : ` ${(75 / view.fov).toFixed(1)}×`}</output></div>
+      <div className={styles.footer}><div className={styles.switch} aria-label={t("天球视角")}>{(["sky", "globe"] as const).map(value => <button key={value} aria-pressed={mode === value} onClick={() => { if (sensor) stopSensor(); setMode(value); setFollowing(true); setView(previous => ({ ...previous, fov: 75 })); }}>{t(value === "sky" ? "沉浸视角" : "球面总览")}</button>)}</div><button className={styles.sensorToggle} onClick={() => void startSensor()} aria-pressed={sensor}>{t(sensor ? "停止指向" : "手机指向")}</button><output aria-label={t("天球当前视角")}>{t(traditional ? "宿环角" : "黄经")} {wrap(view.longitude).toFixed(0)}°<i />{t(mode === "sky" ? "视场" : "缩放")}{mode === "sky" ? ` ${view.fov.toFixed(0)}°` : ` ${(75 / view.fov).toFixed(1)}×`}</output></div>
     </div>
     <div className={styles.caption}><span>{t(note)}</span><span>{t("拖动转向 · 双指缩放 · 点击选择")}</span></div>
     {!traditional && (catalogError || !starFrame) && <p role="status" className={styles.message}>{t("恒星背景暂不可用，天体位置仍正常显示。")}{catalogError && <button onClick={() => setRetry(value => value + 1)}>{t("重试")}</button>}</p>}

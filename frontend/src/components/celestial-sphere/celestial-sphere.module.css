@@ -23,6 +23,8 @@
 .switch { display:flex; padding:3px; background:#09111ae6; border:1px solid #ffffff20; border-radius:24px; pointer-events:auto; flex-shrink:0; }
 .switch button { border:0; border-radius:20px; background:transparent; color:#879caa; padding:8px 13px; font-size:11px; }
 .switch button[aria-pressed=true] { background:#263c45; color:#e0f1ef; }
+.sensorToggle { pointer-events:auto; border:1px solid #ffffff20; border-radius:18px; background:#09111ae6; color:#a9c1d0; padding:8px 11px; font-size:11px; white-space:nowrap; }
+.sensorToggle[aria-pressed=true] { border-color:#87c6c0aa; color:#d6f0e8; background:#1a3837dd; }
 .footer output { font-size:10px; color:#a5bccb; font-variant-numeric:tabular-nums; }
 .footer i { display:inline-block; width:1px; height:8px; background:#ffffff30; margin:0 9px; }
 .caption { display:flex; justify-content:space-between; gap:14px; padding:12px 3px; color:#90a6b5; font-size:10px; line-height:1.8; }

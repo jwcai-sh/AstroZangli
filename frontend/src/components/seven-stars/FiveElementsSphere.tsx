@@ -73,10 +73,10 @@ function Sphere({ model, active, onSelect, focusToken }: { model: Model; active:
   const activeValue = spatialValue(model, active);
   const activeElement = ELEMENTS.find(item => item.key === active)!;
   const markers = useMemo<SphereMarker[]>(() => [
-    { id: "fixedDay", longitude: model.sun.angle, latitude: 0, name: "定日 · 太阳宿度", color: "#f9c967", kind: "sun" },
-    { id: "lunarPartner", longitude: model.moon.angle, latitude: 0, name: "月伴 · 月亮宿度", color: "#90dbf5", kind: "moon" },
-    ...(active === "conjunction" ? [{ id: "conjunction", longitude: model.sum.angle, latitude: 0, name: "会合 · 宿度和", color: "#c4a3ff", kind: "virtual" as const }] : []),
-  ], [model, active]);
+    { id: "fixedDay", longitude: model.sun.angle, latitude: 0, name: `${appText(locale, "定日")} · ${appText(locale, "太阳宿度")}`, color: "#f9c967", kind: "sun" },
+    { id: "lunarPartner", longitude: model.moon.angle, latitude: 0, name: `${appText(locale, "月伴")} · ${appText(locale, "月亮宿度")}`, color: "#90dbf5", kind: "moon" },
+    ...(active === "conjunction" ? [{ id: "conjunction", longitude: model.sum.angle, latitude: 0, name: `${appText(locale, "会合")} · ${appText(locale, "宿度和")}`, color: "#c4a3ff", kind: "virtual" as const }] : []),
+  ], [model, active, locale]);
   const trails = useMemo<SphereTrail[]>(() => {
     const arc = (start: number, extent: number) => Array.from({ length: 181 }, (_, i) => ({ longitude: start + extent * i / 180, latitude: 0 }));
     if (active === "conjunction") return [
@@ -86,8 +86,8 @@ function Sphere({ model, active, onSelect, focusToken }: { model: Model; active:
     const value = spatialValue(model, active);
     return value ? [{ id: active, color: ELEMENTS.find(item => item.key === active)!.color, points: arc(0, value.angle) }] : [];
   }, [model, active]);
-  return <CelestialSphere title="地心 · 27宿黄道投影" subtitle="传统历算 · 程序宿序 0–26" traditional
-    note="27宿几何示意 · 不代表同一时刻的实测日月位置"
+  return <CelestialSphere title={appText(locale, "地心 · 27宿黄道投影")} subtitle={appText(locale, "传统历算 · 程序宿序 0–26")} traditional
+    note={appText(locale, "27宿几何示意 · 不代表同一时刻的实测日月位置")}
     markers={markers} selected={active} focusToken={focusToken} onSelect={id => onSelect(id as ElementKey)} trails={trails}
     mansion={activeValue ? { index: activeValue.mansionIndex, color: activeElement.color } : undefined}
     t={text => appText(locale, text)} />;
@@ -141,19 +141,19 @@ export default function FiveElementsSphere() {
       <button className={buttonStyle} disabled={year === 1950 && month === 1 && day === 1} onClick={() => stepDay(-1)}><LocalizedText text={"上一日"} /></button><button className={buttonStyle} disabled={year === 2050 && month === 12 && day === 30} onClick={() => stepDay(1)}><LocalizedText text={"下一日"} /></button>
       <span className="text-xs text-slate-200"><LocalizedText text={"按藏历日序切换 · 缺日明确提示"} /></span>
     </div>
-    {!current ? <p role="status" className="py-24 text-center text-cyan-200"><LocalizedText text={"正在读取每日五要素…"} /></p> : current.error ? <div role="alert" className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-8"><h2 className="text-lg"><LocalizedText text={"此日暂不可显示"} /></h2><p className="my-3 text-sm text-amber-100">{current.error}</p><p className="mb-4 text-sm text-slate-200"><LocalizedText text={"藏历缺日没有对应的公历日。可切换相邻日；若为读取错误，请重试。"} /></p><button className={buttonStyle} onClick={() => { setResult(null); setRetry(v => v+1); }}><LocalizedText text={"重试"} /></button></div> : model && <>
-      <div className="mb-4 flex flex-wrap items-center gap-3 text-sm"><span>{current.data?.tibetanDateLabel}</span><span className="text-slate-300"><LocalizedText text={"公历"} /> {current.data?.gregorianDates.join(" / ")}</span><span className="rounded-full border border-emerald-400/20 px-2 py-1 text-[11px] text-emerald-300"><LocalizedText text={"最终计算结果"} /></span></div>
+    {!current ? <p role="status" className="py-24 text-center text-cyan-200"><LocalizedText text={"正在读取每日五要素…"} /></p> : current.error ? <div role="alert" className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-8"><h2 className="text-lg"><LocalizedText text={"此日暂不可显示"} /></h2><p className="my-3 text-sm text-amber-100">{appText(locale, current.error)}</p><p className="mb-4 text-sm text-slate-200"><LocalizedText text={"藏历缺日没有对应的公历日。可切换相邻日；若为读取错误，请重试。"} /></p><button className={buttonStyle} onClick={() => { setResult(null); setRetry(v => v+1); }}><LocalizedText text={"重试"} /></button></div> : model && <>
+      <div className="mb-4 flex flex-wrap items-center gap-3 text-sm"><span>{appText(locale, current.data?.tibetanDateLabel || "")}</span><span className="text-slate-300"><LocalizedText text={"公历"} /> {current.data?.gregorianDates.join(" / ")}</span><span className="rounded-full border border-emerald-400/20 px-2 py-1 text-[11px] text-emerald-300"><LocalizedText text={"最终计算结果"} /></span></div>
       <div className="mb-5 grid grid-cols-1 gap-2 min-[400px]:grid-cols-2 lg:grid-cols-5" role="group" aria-label={appText(locale, "选择五要素")}>
         {ELEMENTS.map(item => {
           const value = spatialValue(model, item.key);
           const displayValue = item.key === "fixedWeekday"
-            ? `曜序 ${model.weekday} · 日内 ${(model.time * 100).toFixed(3)}%`
+            ? `${appText(locale, "曜序")} ${model.weekday} · ${appText(locale, "日内")} ${(model.time * 100).toFixed(3)}%`
             : item.key === "effect"
-              ? `后分简式编号 ${model.effect}`
-              : value ? `${formatAngle(value)} · ${value.label}` : "";
-          return <button key={item.key} aria-label={`${item.title} ${item.subtitle}`} aria-pressed={active === item.key} onClick={() => selectElement(item.key)} className="min-w-0 rounded-xl border p-3 text-left transition hover:bg-white/5" style={{borderColor: active === item.key ? item.color : "#263247", background: active === item.key ? `${item.color}12` : "#0b1220"}}>
-            <span className="text-sm" style={{color: item.color}}>{item.title}</span>
-            <span className="mt-1 block text-[11px] text-slate-200">{item.subtitle}</span>
+              ? `${appText(locale, "后分简式编号")} ${model.effect}`
+              : value ? `${formatAngle(value)} · ${appText(locale, "宿")} ${value.mansionIndex} · ${(value.mansionProgress * 100).toFixed(3)}%` : "";
+          return <button key={item.key} aria-label={`${appText(locale, item.title)} ${appText(locale, item.subtitle)}`} aria-pressed={active === item.key} onClick={() => selectElement(item.key)} className="min-w-0 rounded-xl border p-3 text-left transition hover:bg-white/5" style={{borderColor: active === item.key ? item.color : "#263247", background: active === item.key ? `${item.color}12` : "#0b1220"}}>
+            <span className="text-sm" style={{color: item.color}}>{appText(locale, item.title)}</span>
+            <span className="mt-1 block text-[11px] text-slate-200">{appText(locale, item.subtitle)}</span>
             <span className="mt-3 block text-[10px] text-slate-300"><LocalizedText text={"原始数值 · 按位序"} /></span>
             <span className="mt-1 block break-words font-mono text-sm leading-6 text-slate-100">{model.raw[item.key]}</span>
             <span className="mt-3 block border-t border-white/10 pt-2 text-sm tabular-nums" style={{color: item.color}}>{displayValue}</span>
@@ -161,7 +161,7 @@ export default function FiveElementsSphere() {
         })}
       </div>
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.8fr)_minmax(280px,1fr)]"><Sphere model={model} active={active} onSelect={selectElement} focusToken={focusToken} /><aside className="rounded-2xl border border-white/10 bg-slate-900/65 p-5" aria-live="polite">
-        <p className="text-xs tracking-widest text-slate-300"><LocalizedText text={"读懂这个要素"} /></p><h2 className="mb-3 mt-2 text-2xl" style={{color: selected.color}}>{selected.title}</h2><p className="text-sm leading-7 text-slate-300">{selected.description}</p>
+        <p className="text-xs tracking-widest text-slate-300"><LocalizedText text={"读懂这个要素"} /></p><h2 className="mb-3 mt-2 text-2xl" style={{color: selected.color}}>{appText(locale, selected.title)}</h2><p className="text-sm leading-7 text-slate-300">{appText(locale, selected.description)}</p>
         <div className="my-5 rounded-lg border border-white/10 bg-black/20 p-4"><p className="mb-2 text-xs text-slate-300"><LocalizedText text={"历算数值"} /></p><p className="break-words font-mono text-sm" style={{color: selected.color}}>{model.raw[active]}</p></div>
         {active === "fixedWeekday" ? <div><div className="mx-auto flex h-32 w-32 items-center justify-center rounded-full" style={{background: `conic-gradient(#83e2b2 ${model.time * 360}deg, #243245 0)`}}><div className="flex h-28 w-28 flex-col items-center justify-center rounded-full bg-slate-900"><span className="text-xl"><LocalizedText text={"曜序"} /> {model.weekday}</span><span className="text-xs text-slate-200"><LocalizedText text={"日内"} /> {(model.time * 100).toFixed(3)}%</span></div></div><p className="mt-4 text-xs leading-6 text-slate-200"><LocalizedText text={"时间量单独展示，不作为空间方向。日内余分 = 漏刻/60 + 分/3600 + 后续细分。"} /></p></div> : active === "effect" ? <div><p className="text-4xl text-rose-200">{model.effect}</p><div className="mt-4 grid grid-cols-2 gap-2 text-xs"><div className="rounded border border-white/10 p-3 text-slate-200"><LocalizedText text={"前半日"} /><br /><LocalizedText text={"暂无数据"} /></div><div className="rounded border border-rose-300/30 p-3 text-rose-200"><LocalizedText text={"后分简式"} /><br /><LocalizedText text={"编号"} /> {model.effect}</div></div><p className="mt-4 text-xs leading-6 text-slate-200"><LocalizedText text={"编号属于传统历算分类，不代表天球角度。"} /></p></div> : (() => { const value = spatialValue(model, active)!; return <div><div className="grid grid-cols-2 gap-3 text-sm"><div className="rounded-lg border border-white/10 bg-black/20 p-3"><p className="text-xs text-slate-300"><LocalizedText text={"宿区"} /></p><p className="mt-1 text-xl" style={{color: selected.color}}><LocalizedText text={"宿"} /> {value.mansionIndex}</p><p className="mt-1 text-xs text-slate-200"><LocalizedText text={"宿内"} /> {(value.mansionProgress * 100).toFixed(3)}%</p></div><div className="rounded-lg border border-white/10 bg-black/20 p-3"><p className="text-xs text-slate-300"><LocalizedText text={"天球角"} /></p><p className="mt-1 text-xl tabular-nums" style={{color: selected.color}}>{formatAngle(value)}</p><p className="mt-1 text-xs text-slate-200"><LocalizedText text={"27宿换算"} /></p></div></div>{active === "conjunction" && <p className="mt-4 rounded-lg bg-violet-300/5 p-3 font-mono text-xs leading-6 text-violet-200"><LocalizedText text={"月伴"} /> {model.moon.rawValue.toFixed(6)} <LocalizedText text={"+ 定日"} /> {model.sun.rawValue.toFixed(6)}<br />= {model.conjunction.rawSum.toFixed(6)}<LocalizedText text={"，取 27 宿余数"} /> {model.conjunction.wrappedMansion.toFixed(6)}</p>}<p className="mt-4 text-xs leading-6 text-slate-300"><LocalizedText text={"宿 + 弧刻/60 + 分/3600 + 息/21600 + 子位细分，再乘 360/27。球面高亮的是当前数值所在宿区，点位是宿内精确位置。"} /></p></div>; })()}
       </aside></div>

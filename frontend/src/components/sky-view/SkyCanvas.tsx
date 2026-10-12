@@ -8,6 +8,11 @@ import {
 } from "@/features/sky-view/model";
 
 export interface StarSelection { name: string; magnitude: number; altitude: number; azimuth: number }
+function localizedName(source: string, t: (text: string) => string, fallback: string): string {
+  const result = t(source);
+  return /[\u3400-\u9fff]/.test(result) ? fallback : result;
+}
+
 const ZODIAC_CONSTELLATIONS: Record<string, { name: string; image: string }> = {
   Ari: { name: "白羊座", image: "/pho/aries.png" },
   Tau: { name: "金牛座", image: "/pho/taurus.png" },
@@ -28,9 +33,10 @@ interface Props {
   onCamera: (camera: CameraView) => void;
   onStar: (star: StarSelection) => void;
   onInteract: () => void;
+  t: (text: string) => string;
 }
 
-export default function SkyCanvas({ catalog, data, frame, camera, layers, selected, onCamera, onStar, onInteract }: Props) {
+export default function SkyCanvas({ catalog, data, frame, camera, layers, selected, onCamera, onStar, onInteract, t }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [size, setSize] = useState({ width: 800, height: 540 });
   const [zodiacImagesReady, setZodiacImagesReady] = useState(0);
@@ -57,9 +63,9 @@ export default function SkyCanvas({ catalog, data, frame, camera, layers, select
     const lst = frame.gast + data.city.longitude;
     return catalog.stars.map((star) => ({
       star, vector: equatorialToHorizontal(catalogVector(star, frame.matrix, years), lst, data.city.latitude),
-      name: starName(star), color: starColor(star[5]),
+      name: localizedName(starName(star), t, `HIP ${star[1] || star[0]}`), color: starColor(star[5]),
     }));
-  }, [catalog, frame, data.city]);
+  }, [catalog, frame, data.city, t]);
   const byHip = useMemo(() => new Map(stars.filter((item) => item.star[1]).map((item) => [item.star[1], item])), [stars]);
 
   useEffect(() => {
@@ -190,9 +196,9 @@ export default function SkyCanvas({ catalog, data, frame, camera, layers, select
                 ctx.drawImage(image, p.x - iconSize / 2, p.y - iconSize / 2 - 8, iconSize, iconSize);
                 ctx.globalAlpha = 1;
               }
-              placeLabel(zodiac.name, p.x, p.y + 30, "#ffffff", true);
+              placeLabel(localizedName(zodiac.name, t, constellation.id), p.x, p.y + 30, "#ffffff", true);
             } else {
-              placeLabel(`${CONSTELLATION_NAMES[constellation.id] || constellation.name}座`, p.x, p.y, "#8fb8c7", true);
+              placeLabel(localizedName(`${CONSTELLATION_NAMES[constellation.id] || constellation.name}座`, t, constellation.id), p.x, p.y, "#8fb8c7", true);
             }
           }
         }
@@ -217,7 +223,7 @@ export default function SkyCanvas({ catalog, data, frame, camera, layers, select
         const p = visible(v) ? project(v) : null;
         if (p && onScreen(p)) {
           ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
-          text(data.mode === "annual" ? `${Number(f.localTime.slice(5, 7))}月` : f.localTime.slice(11), p.x + 7, p.y - 6, color, "10px system-ui");
+          text(data.mode === "annual" ? t(`${Number(f.localTime.slice(5, 7))}月`) : f.localTime.slice(11), p.x + 7, p.y - 6, color, "10px system-ui");
         }
       });
     }
@@ -266,16 +272,17 @@ export default function SkyCanvas({ catalog, data, frame, camera, layers, select
         ctx.strokeStyle = body.color + "aa"; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
         ctx.beginPath(); ctx.arc(p.x, p.y, radius + 9, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
       }
-      if (layers.names) text(body.name, p.x + radius + 9, p.y + 4, body.color, "500 13px system-ui");
+      if (layers.names) text(t(body.name), p.x + radius + 9, p.y + 4, body.color, "500 13px system-ui");
     }
-    ["北", "东北", "东", "东南", "南", "西南", "西", "西北"].forEach((label, i) => {
+    ["北", "东北", "东", "东南", "南", "西南", "西", "西北"].forEach((source, i) => {
+      const label = t(source);
       const p = project(horizontalVector(i * 45, 0));
       if (p && onScreen(p, 0)) text(label, p.x, clamp(p.y + 22, 22, h - 18), "#d3bd8d", "600 13px system-ui", "center");
     });
-  }, [stars, byHip, catalog, data, frame, camera, layers, selected, size, zodiacImagesReady]);
+  }, [stars, byHip, catalog, data, frame, camera, layers, selected, size, zodiacImagesReady, t]);
 
   const release = (id: number) => { pointers.current.delete(id); };
-  return <canvas ref={canvasRef} role="application" aria-label="观测星空：拖动转向，滚轮或双指缩放，方向键转向，点击亮星查看信息" tabIndex={0}
+  return <canvas ref={canvasRef} role="application" aria-label={t("观测星空：拖动转向，滚轮或双指缩放，方向键转向，点击亮星查看信息")} tabIndex={0}
     style={{ width: "100%", height: "100%", display: "block", touchAction: "none", cursor: "grab" }}
     onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY }); moved.current = false; onInteract(); }}
     onPointerMove={(e) => {

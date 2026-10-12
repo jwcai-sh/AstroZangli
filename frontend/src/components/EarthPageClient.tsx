@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import SkyExplorer from "@/components/sky-view/SkyExplorer";
+import AnnualMotionSpherePage from "@/components/sky-view/AnnualMotionSpherePage";
 import SevenData from "@/components/seven-data/page";
 import FiveElementsSubtab from "@/components/seven-stars/FiveElementsSubtab";
 import FivePlanetsSubtab from "@/components/seven-stars/FivePlanetsSubtab";
@@ -90,7 +90,7 @@ export default function EarthPageClient() {
       : <FiveElementsSubtab key="five-elements" />;
 
   const celestialMotionItem = currentMotionView === "annual-motion"
-    ? <SkyExplorer key="annual-motion" mode="annual" />
+    ? <AnnualMotionSpherePage key="annual-motion" />
     : <GeocentricMotionPage key="geocentric-motion" />;
 
   const lunarPhenomenaItem = currentPhenomenaView === "eclipses"

@@ -502,9 +502,9 @@ body {
 }
 .dateevents-holiday1-bar {
   width: 95%; /* 灰色框长度：从flex: 1改为85%，让框变短一点点 */
-  height: 35px;/*灰色框高度*/
+  min-height: 35px;
   border-radius: 5px;
-  padding: 0 12px;
+  padding: 6px 12px;
   display: flex;
   align-items: center;
   /* 图标固定在最左侧，文字居中显示 */
@@ -513,6 +513,7 @@ body {
 .dateevents-holiday1-icon {
   width: 20px;/*太阳图标大小*/
   height: 20px;/*太阳图标大小*/
+  flex: 0 0 20px;
   color: white;
 }
 .dateevents-holiday1-text {
@@ -520,6 +521,8 @@ body {
   font-weight: 500;
   color: rgba(255, 255, 255, 0.75); /* 透明度75% */
   flex: 1; /* 占据剩余空间 */
+  min-width: 0;
+  line-height: 1.35;
   text-align: center; /* 文字居中显示 */
   margin-left: 8px; /* 与图标的间距 */
 }
@@ -534,9 +537,9 @@ body {
 }
 .dateevents-holiday2-bar {
   width: 95%; /* 灰色框长度：从flex: 1改为85%，让框变短一点点 */
-  height: 35px;/*灰色框高度*/
+  min-height: 35px;
   border-radius: 5px;
-  padding: 0 12px;
+  padding: 6px 12px;
   display: flex;
   align-items: center;
   /* 图标固定在最左侧，文字居中显示 */
@@ -545,6 +548,7 @@ body {
 .dateevents-holiday2-icon {
   width: 20px;/*月亮图标大小*/
   height: 20px;/*月亮图标大小*/
+  flex: 0 0 20px;
   color: white;
 }
 .dateevents-holiday2-text {
@@ -552,6 +556,8 @@ body {
   font-weight: 500;
   color: rgba(255, 255, 255, 0.75); /* 透明度75% */
   flex: 1; /* 占据剩余空间 */
+  min-width: 0;
+  line-height: 1.35;
   text-align: center; /* 文字居中显示 */
   margin-left: 8px; /* 与图标的间距 */
 }
@@ -566,9 +572,9 @@ body {
 }
 .dateevents-holiday3-bar {
   width: 95%; /* 灰色框长度：从flex: 1改为85%，让框变短一点点 */
-  height: 35px;/*灰色框高度*/
+  min-height: 35px;
   border-radius: 5px;
-  padding: 1 12px;
+  padding: 6px 12px;
   display: flex;
   align-items: center;
   /* 图标固定在最左侧，文字居中显示 */
@@ -577,6 +583,7 @@ body {
 .dateevents-holiday3-icon {
   width: 20px;/*星星图标大小*/
   height: 20px;/*星星图标大小*/
+  flex: 0 0 20px;
   color: white;
 }
 .dateevents-holiday3-text {
@@ -584,6 +591,8 @@ body {
   font-weight: 500;
   color: rgba(255, 255, 255, 0.75); /* 透明度75% */
   flex: 1; /* 占据剩余空间 */
+  min-width: 0;
+  line-height: 1.35;
   text-align: center; /* 文字居中显示 */
   margin-left: 8px; /* 与图标的间距 */
 }

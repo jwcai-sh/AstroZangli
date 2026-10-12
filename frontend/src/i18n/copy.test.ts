@@ -123,6 +123,22 @@ test("global language shortcut uses Tibetan locale on Tibetan routes", () => {
   assert.match(shortcut, /startsWith\("\/bo\/"\)/);
 });
 
+test("Tibetan astronomy and five-element pages do not retain Chinese labels", () => {
+  const visibleCopy = [
+    "日月运行与历象", "天体运动", "观测星空", "原轨迹天球", "在同一时刻，看见一年的变化",
+    "此地，此刻的星空", "北京时间 UTC+8", "类乌齐", "西藏 · 拉萨", "太阳年轨迹", "天体日轨迹", "月度总览", "每日查询",
+    "东北", "东南", "西南", "西北", "七曜每日运动", "以统一球面总览观察不同城市的太阳、月亮与五大行星。", "球面总览", "前一时刻", "后一时刻", "每日时刻滑块", "高度角", "方位角", "当前天体",
+    "交互天球：拖动转向，滚轮或双指缩放，点击天体选择", "拖动转向 · 双指缩放 · 点击选择", "恒星背景暂不可用，天体位置仍正常显示。",
+    "黄道/白道", "宿环角", "全屏天球", "退出天球全屏", "沉浸视角", "黄经", "缩放",
+    "地平线上", "地平线下", "数据与显示说明", "日月宿度相加 · 吉凶占卜", "太阳宿度",
+    "将定日的宿弧长换算为太阳方向。定日对应太阴日结束时的太阳位置；这里呈现传统历算的黄经投影。",
+    "公元2026年藏历火马年八月", "火马年 八月初三",
+  ];
+  for (const copy of visibleCopy) {
+    assert.doesNotMatch(appText("bo", copy), /[\u3400-\u9fff]/, `Tibetan astronomy UI still contains Chinese: ${copy}`);
+  }
+});
+
 test("dynamic calendar dates and countdowns do not fall back to Chinese", () => {
   const dynamicCopy = [
     "2026年10月10日 周六",
@@ -133,6 +149,34 @@ test("dynamic calendar dates and countdowns do not fall back to Chinese", () => 
 
   for (const copy of dynamicCopy) {
     assert.doesNotMatch(appText("bo", copy), /[\u3400-\u9fff]/, `Dynamic calendar text still contains Chinese: ${copy}`);
+  }
+});
+
+test("dynamic numeric labels and holiday names translate in Tibetan", () => {
+  for (const copy of ["序位 7", "数值 12", "文本结果", "世界保健日"]) {
+    const translated = appText("bo", copy);
+    assert.notEqual(translated, copy, `Dynamic text is still untranslated: ${copy}`);
+    assert.doesNotMatch(translated, /[\u3400-\u9fff]/, `Dynamic Tibetan text retained Chinese: ${copy}`);
+  }
+});
+
+test("geocentric globe, zodiac sphere, and eclipse navigation copy translate in Tibetan", () => {
+  const screenshotCopy = [
+    "日月食查询",
+    "地心 · 七曜天球",
+    "天体投影到同一天球 · 高亮轨迹为所选天体最近20日运动",
+    "黄道十二宫",
+    "在统一球面总览中查看黄道、十二宫分区与太阳当前位置。",
+    "黄道为黄线；白道为白色虚线，倾角约 5.1°。白道轨迹用于说明倾斜关系，月交点随日期变化未在此示意图中更新。",
+    "天体按视黄经、黄纬投影到同一天球，大小为示意。可切换沉浸视角与球面总览，点击天体或卡片聚焦；短弧显示所选天体最近 20 日运动。",
+    "恒星背景：HYG 4.1 星表与 Stellarium 星座连线，按当日黄道坐标系显示；恒星位置为星图近似。",
+    "数据来源与许可",
+  ];
+
+  for (const copy of screenshotCopy) {
+    const translated = appText("bo", copy);
+    assert.notEqual(translated, copy, `Screenshot text is still untranslated: ${copy}`);
+    assert.doesNotMatch(translated, /[\u3400-\u9fff]/, `Tibetan screenshot text retained Chinese: ${copy}`);
   }
 });
 

@@ -8,6 +8,8 @@ import {
 } from "@/features/sky-view/model";
 import SkyCanvas, { type StarSelection } from "./SkyCanvas";
 import styles from "./sky-view.module.css";
+import { useLocale } from "@/i18n/LocaleProvider";
+import { appText } from "@/i18n/copy";
 
 const LegacyDaily = dynamic(() => import("@/components/seven-stars/page"), { ssr: false });
 const LegacyAnnual = dynamic(() => import("@/components/annual-motion/page"), { ssr: false });
@@ -23,6 +25,8 @@ function getCatalog() {
 }
 
 export default function SkyExplorer({ mode }: { mode: SkyMode }) {
+  const locale = useLocale();
+  const t = useCallback((text: string) => appText(locale, text), [locale]);
   const [view, setView] = useState<"sky" | "legacy">("sky");
   const [city, setCity] = useState("lhasa");
   const [date, setDate] = useState("");
@@ -105,12 +109,12 @@ export default function SkyExplorer({ mode }: { mode: SkyMode }) {
 
   async function startSensor() {
     if (sensor) { stopSensor(); return; }
-    if (!window.isSecureContext) { setMessage("手机指向需要 HTTPS。当前可拖动星空查看。" ); return; }
-    if (!("DeviceOrientationEvent" in window)) { setMessage("此设备不支持方向传感器，可拖动星空查看。" ); return; }
+    if (!window.isSecureContext) { setMessage(t("手机指向需要 HTTPS。当前可拖动星空查看。")); return; }
+    if (!("DeviceOrientationEvent" in window)) { setMessage(t("此设备不支持方向传感器，可拖动星空查看。")); return; }
     try {
       const device = window.DeviceOrientationEvent as PermissionDevice;
       if (device.requestPermission && await device.requestPermission() !== "granted") {
-        setMessage("未获得方向权限，可继续拖动星空查看。" ); return;
+        setMessage(t("未获得方向权限，可继续拖动星空查看。")); return;
       }
       let received = false;
       const handler = (event: CompassEvent) => {
@@ -129,15 +133,15 @@ export default function SkyExplorer({ mode }: { mode: SkyMode }) {
       window.addEventListener("deviceorientationabsolute", handler as EventListener);
       window.addEventListener("deviceorientation", handler);
       const timer = window.setTimeout(() => {
-        if (!received) { stopSensor(); setMessage("未收到可用的罗盘方向，请在支持传感器的手机浏览器中打开。" ); }
+        if (!received) { stopSensor(); setMessage(t("未收到可用的罗盘方向，请在支持传感器的手机浏览器中打开。")); }
       }, 3000);
       sensorCleanup.current = () => {
         window.clearTimeout(timer);
         window.removeEventListener("deviceorientationabsolute", handler as EventListener);
         window.removeEventListener("deviceorientation", handler);
       };
-      setPlaying(false); setSensor(true); setMessage("手机背面朝向天空；罗盘为近似指向，远离磁性物体。" );
-    } catch { setMessage("方向权限未开启，可继续拖动星空查看。" ); }
+      setPlaying(false); setSensor(true); setMessage(t("手机背面朝向天空；罗盘为近似指向，远离磁性物体。"));
+    } catch { setMessage(t("方向权限未开启，可继续拖动星空查看。")); }
   }
 
   function selectBody(body: BodyId) {
@@ -147,7 +151,7 @@ export default function SkyExplorer({ mode }: { mode: SkyMode }) {
     setCamera((current) => ({ ...current, azimuth: position.azimuth, altitude: clamp(position.altitude, -80, 85) }));
     if (position.altitude < 0) {
       setLayers((current) => ({ ...current, ground: false }));
-      setMessage(`${BODIES.find((item) => item.id === body)!.name}在地平线下，已打开地下透视。`);
+      setMessage(t("在地平线下，已打开地下透视。"));
     } else setMessage("");
   }
   function updateDate(value: string) {
@@ -161,73 +165,73 @@ export default function SkyExplorer({ mode }: { mode: SkyMode }) {
     else setIndex(Math.floor((Number(time.slice(11, 13)) * 60 + Number(time.slice(14, 16))) / 10));
   }
   const currentBody = frame?.bodies[selected];
-  const bodyName = BODIES.find((item) => item.id === selected)!.name;
+  const bodyName = t(BODIES.find((item) => item.id === selected)!.name);
 
-  return <section className={styles.explorer} aria-label={mode === "daily" ? "七星观测星空" : "周年观测星空"}
+  return <section className={styles.explorer} aria-label={t(mode === "daily" ? "七星观测星空" : "周年观测星空")}
     onTouchStart={(event) => event.stopPropagation()} onTouchMove={(event) => event.stopPropagation()} onTouchEnd={(event) => event.stopPropagation()}>
     <div className={styles.heading}>
-      <div><span className={styles.eyebrow}>藏历星图 · 观测天空</span><h1>{mode === "daily" ? "此地，此刻的星空" : "在同一时刻，看见一年的变化"}</h1></div>
-      <div className={styles.viewSwitch} aria-label="视图模式">
-        <button aria-pressed={view === "sky"} onClick={() => setView("sky")}>观测星空</button>
-        <button aria-pressed={view === "legacy"} onClick={() => { stopSensor(); setPlaying(false); setView("legacy"); }}>原轨迹天球</button>
+      <div><span className={styles.eyebrow}>{t("藏历星图 · 观测天空")}</span><h1>{t(mode === "daily" ? "此地，此刻的星空" : "在同一时刻，看见一年的变化")}</h1></div>
+      <div className={styles.viewSwitch} aria-label={t("视图模式")}>
+        <button aria-pressed={view === "sky"} onClick={() => setView("sky")}>{t("观测星空")}</button>
+        <button aria-pressed={view === "legacy"} onClick={() => { stopSensor(); setPlaying(false); setView("legacy"); }}>{t("原轨迹天球")}</button>
       </div>
     </div>
     {view === "legacy" ? (mode === "annual" ? <LegacyAnnual /> : <LegacyDaily />) : <>
       <div className={styles.toolbar}>
-        <div className={styles.cities} aria-label="观测地点">{CITIES.map((item) => <button key={item.id} aria-pressed={city === item.id} onClick={() => { setCity(item.id); setStar(null); setMessage(""); }}>{item.name}</button>)}</div>
+        <div className={styles.cities} aria-label={t("观测地点")}>{CITIES.map((item) => <button key={item.id} aria-pressed={city === item.id} onClick={() => { setCity(item.id); setStar(null); setMessage(""); }}>{t(item.name)}</button>)}</div>
         <div className={styles.dateControls}>
-          <label><span className={styles.srOnly}>观测日期</span><input aria-label="观测日期" type="date" min="1900-01-01" max="2050-12-31" value={displayDate} onChange={(event) => updateDate(event.target.value)} /></label>
-          {mode === "annual" && <label className={styles.hourLabel}>每日 <select aria-label="每日采样时刻" value={hour} onChange={(event) => setHour(Number(event.target.value))}>{Array.from({ length: 24 }, (_, n) => <option key={n} value={n}>{String(n).padStart(2, "0")}:00</option>)}</select></label>}
-          <button onClick={now}>现在</button><span className={styles.timezone}>北京时间 UTC+8</span>
+          <label><span className={styles.srOnly}>{t("观测日期")}</span><input aria-label={t("观测日期")} type="date" min="1900-01-01" max="2050-12-31" value={displayDate} onChange={(event) => updateDate(event.target.value)} /></label>
+          {mode === "annual" && <label className={styles.hourLabel}>{t("每日")} <select aria-label={t("每日采样时刻")} value={hour} onChange={(event) => setHour(Number(event.target.value))}>{Array.from({ length: 24 }, (_, n) => <option key={n} value={n}>{String(n).padStart(2, "0")}:00</option>)}</select></label>}
+          <button onClick={now}>{t("现在")}</button><span className={styles.timezone}>{t("北京时间 UTC+8")}</span>
         </div>
       </div>
       <div className={styles.scene} ref={sceneRef}>
-        {catalog && data && frame && !loading ? <SkyCanvas catalog={catalog} data={data} frame={frame} camera={camera} layers={layers} selected={selected} onCamera={setCamera} onStar={(value) => { setStar(value); setPlaying(false); }} onInteract={stopSensor} /> : <div className={styles.loading} role={error ? "alert" : "status"}>
-          <span className={styles.loadingOrb}>✦</span><p>{error || "正在铺开这片星空…"}</p>{error && <button onClick={() => setRetry((value) => value + 1)}>重新加载</button>}
+        {catalog && data && frame && !loading ? <SkyCanvas catalog={catalog} data={data} frame={frame} camera={camera} layers={layers} selected={selected} onCamera={setCamera} onStar={(value) => { setStar(value); setPlaying(false); }} onInteract={stopSensor} t={t} /> : <div className={styles.loading} role={error ? "alert" : "status"}>
+          <span className={styles.loadingOrb}>✦</span><p>{error ? t(error) : t("正在铺开这片星空…")}</p>{error && <button onClick={() => setRetry((value) => value + 1)}>{t("重新加载")}</button>}
         </div>}
         <div className={styles.sceneHeader}>
-          <div><span className={styles.locationDot} />{CITIES.find((item) => item.id === city)!.note}<small>{isReady ? `${data.city.latitude.toFixed(2)}° N · ${data.city.longitude.toFixed(2)}° E` : "城市观测点"}</small></div>
-          <div className={styles.timeReadout}>{frame?.localTime.replace("T", "  ") || "—"}<small>{mode === "annual" ? "全年逐日 · 固定北京时间" : "当日星空 · 每 10 分钟一帧"}</small></div>
+          <div><span className={styles.locationDot} />{t(CITIES.find((item) => item.id === city)!.note)}<small>{isReady ? `${data.city.latitude.toFixed(2)}° N · ${data.city.longitude.toFixed(2)}° E` : t("城市观测点")}</small></div>
+          <div className={styles.timeReadout}>{frame?.localTime.replace("T", "  ") || "—"}<small>{t(mode === "annual" ? "全年逐日 · 固定北京时间" : "当日星空 · 每 10 分钟一帧")}</small></div>
         </div>
-        <div className={styles.layerTools} aria-label="星空图层">
+        <div className={styles.layerTools} aria-label={t("星空图层")}>
           {([
             ["lines", "星座连线"], ["names", "名称"], ["grid", "坐标网"], ["ground", "地面"], ["trails", mode === "annual" ? "太阳年轨迹" : "天体日轨迹"], ["daylightStars", "白昼显星"],
-          ] as [keyof SkyLayers, string][]).map(([key, label]) => <button key={key} aria-pressed={layers[key]} onClick={() => setLayers((current) => ({ ...current, [key]: !current[key] }))}><span>{layers[key] ? "◉" : "○"}</span>{label}</button>)}
+          ] as [keyof SkyLayers, string][]).map(([key, label]) => <button key={key} aria-pressed={layers[key]} onClick={() => setLayers((current) => ({ ...current, [key]: !current[key] }))}><span>{layers[key] ? "◉" : "○"}</span>{t(label)}</button>)}
         </div>
         <div className={styles.cameraTools}>
-          <button aria-label="放大星空" onClick={() => setCamera((current) => ({ ...current, fov: clamp(current.fov - 10, 25, 100) }))}>＋</button>
-          <button aria-label="缩小星空" onClick={() => setCamera((current) => ({ ...current, fov: clamp(current.fov + 10, 25, 100) }))}>−</button>
-          <button aria-label="复位朝南视角" title="复位朝南" onClick={() => { stopSensor(); setCamera({ azimuth: 180, altitude: 26, fov: 65 }); setLayers((current) => ({ ...current, ground: true })); setMessage(""); }}>↺</button>
-          <button aria-label="展开星空全屏" title="全屏" onClick={() => { if (document.fullscreenElement) void document.exitFullscreen(); else sceneRef.current?.requestFullscreen?.().catch(() => setMessage("此浏览器暂不支持全屏。")); }}>⛶</button>
+          <button aria-label={t("放大星空")} onClick={() => setCamera((current) => ({ ...current, fov: clamp(current.fov - 10, 25, 100) }))}>＋</button>
+          <button aria-label={t("缩小星空")} onClick={() => setCamera((current) => ({ ...current, fov: clamp(current.fov + 10, 25, 100) }))}>−</button>
+          <button aria-label={t("复位朝南视角")} title={t("复位朝南")} onClick={() => { stopSensor(); setCamera({ azimuth: 180, altitude: 26, fov: 65 }); setLayers((current) => ({ ...current, ground: true })); setMessage(""); }}>↺</button>
+          <button aria-label={t("展开星空全屏")} title={t("全屏")} onClick={() => { if (document.fullscreenElement) void document.exitFullscreen(); else sceneRef.current?.requestFullscreen?.().catch(() => setMessage(t("此浏览器暂不支持全屏。"))); }}>⛶</button>
         </div>
         <div className={styles.crosshair} aria-hidden="true" />
-        {star && <div className={styles.starCard}><button aria-label="关闭恒星信息" onClick={() => setStar(null)}>×</button><strong>{star.name}</strong><span>视星等 {star.magnitude.toFixed(2)}</span><span>高度 {star.altitude.toFixed(1)}° · 方位 {star.azimuth.toFixed(1)}°</span></div>}
+        {star && <div className={styles.starCard}><button aria-label={t("关闭恒星信息")} onClick={() => setStar(null)}>×</button><strong>{star.name}</strong><span>{t("视星等")} {star.magnitude.toFixed(2)}</span><span>{t("高度")} {star.altitude.toFixed(1)}° · {t("方位")} {star.azimuth.toFixed(1)}°</span></div>}
         <div className={styles.sceneFooter}>
-          <span className={styles.gestureHint}>拖动看四周 · 滚轮 / 双指缩放</span>
-          <output aria-label="当前视角">{headingName(camera.azimuth)} {Math.round(wrap(camera.azimuth))}° <i /> 仰角 {Math.round(camera.altitude)}° <i /> 视场 {Math.round(camera.fov)}°</output>
-          <button aria-pressed={sensor} onClick={() => void startSensor()}>{sensor ? "停止指向" : "手机指向"}</button>
+          <span className={styles.gestureHint}>{t("拖动看四周 · 滚轮 / 双指缩放")}</span>
+          <output aria-label={t("当前视角")}>{t(headingName(camera.azimuth))} {Math.round(wrap(camera.azimuth))}° <i /> {t("仰角")} {Math.round(camera.altitude)}° <i /> {t("视场")} {Math.round(camera.fov)}°</output>
+          <button aria-pressed={sensor} onClick={() => void startSensor()}>{t(sensor ? "停止指向" : "手机指向")}</button>
         </div>
       </div>
       {message && <p className={styles.message} role="status">{message}<button aria-label="关闭提示" onClick={() => setMessage("")}>×</button></p>}
       <div className={styles.timeline}>
-        <button className={styles.play} disabled={!isReady} aria-label={playing ? "暂停播放" : "播放星空"} onClick={() => { stopSensor(); setStar(null); setPlaying(!playing); }}>{playing ? "Ⅱ" : "▶"}</button>
-        <button className={styles.step} aria-label="上一帧" disabled={!isReady} onClick={() => { setPlaying(false); setIndex((value) => Math.max(0, value - 1)); }}>‹</button>
+        <button className={styles.play} disabled={!isReady} aria-label={t(playing ? "暂停播放" : "播放星空")} onClick={() => { stopSensor(); setStar(null); setPlaying(!playing); }}>{playing ? "Ⅱ" : "▶"}</button>
+        <button className={styles.step} aria-label={t("上一帧")} disabled={!isReady} onClick={() => { setPlaying(false); setIndex((value) => Math.max(0, value - 1)); }}>‹</button>
         <div className={styles.scrubber}>
-          <input aria-label={mode === "annual" ? "全年日期" : "当日时刻"} type="range" min={0} max={(data?.frames.length || (mode === "annual" ? 365 : 144)) - 1} value={index} disabled={!isReady} onChange={(event) => { setPlaying(false); setStar(null); setIndex(Number(event.target.value)); }} />
-          <div>{(mode === "annual" ? ["1月", "4月", "7月", "10月", "12月末"] : ["00:00", "06:00", "12:00", "18:00", "23:50"]).map((label) => <span key={label}>{label}</span>)}</div>
+          <input aria-label={t(mode === "annual" ? "全年日期" : "当日时刻")} type="range" min={0} max={(data?.frames.length || (mode === "annual" ? 365 : 144)) - 1} value={index} disabled={!isReady} onChange={(event) => { setPlaying(false); setStar(null); setIndex(Number(event.target.value)); }} />
+          <div>{(mode === "annual" ? ["1月", "4月", "7月", "10月", "12月末"] : ["00:00", "06:00", "12:00", "18:00", "23:50"]).map((label) => <span key={label}>{t(label)}</span>)}</div>
         </div>
-        <button className={styles.step} aria-label="下一帧" disabled={!isReady} onClick={() => { setPlaying(false); setIndex((value) => Math.min((data?.frames.length || 1) - 1, value + 1)); }}>›</button>
-        <div className={styles.timelineNote}>{mode === "annual" ? "每天同一时刻" : "时光流转"}<small>{mode === "annual" ? "比较季节与太阳高度" : "1 帧 = 10 分钟"}</small></div>
+        <button className={styles.step} aria-label={t("下一帧")} disabled={!isReady} onClick={() => { setPlaying(false); setIndex((value) => Math.min((data?.frames.length || 1) - 1, value + 1)); }}>›</button>
+        <div className={styles.timelineNote}>{t(mode === "annual" ? "每天同一时刻" : "时光流转")}<small>{t(mode === "annual" ? "比较季节与太阳高度" : "1 帧 = 10 分钟")}</small></div>
       </div>
-      <div className={styles.bodyList} aria-label="选择七曜并定位">{BODIES.map((body) => {
+      <div className={styles.bodyList} aria-label={t("选择七曜并定位")}>{BODIES.map((body) => {
         const altitude = frame?.bodies[body.id].altitude;
         return <button key={body.id} disabled={!frame || loading} aria-pressed={selected === body.id} onClick={() => selectBody(body.id)} style={{ "--body-color": body.color } as React.CSSProperties}>
-          <span className={styles.bodySymbol}>{body.symbol}</span><span>{body.name}<small>{altitude === undefined ? "—" : `${altitude >= 0 ? "地平线上" : "地平线下"} ${Math.abs(altitude).toFixed(1)}°`}</small></span><span className={styles.bodyArrow}>↗</span>
+          <span className={styles.bodySymbol}>{body.symbol}</span><span>{t(body.name)}<small>{altitude === undefined ? "—" : `${t(altitude >= 0 ? "地平线上" : "地平线下")} ${Math.abs(altitude).toFixed(1)}°`}</small></span><span className={styles.bodyArrow}>↗</span>
         </button>;
       })}</div>
       <div className={styles.caption}>
-        <span>{currentBody && <><b>{bodyName}</b> · 方位 {currentBody.azimuth.toFixed(1)}° · 高度 {currentBody.altitude.toFixed(1)}°　</>}{mode === "annual" ? "虚线：太阳在每日所选时刻的位置。" : "虚线：所选天体在当天的运动轨迹。"}</span>
-        <details><summary>数据与显示说明</summary><p>恒星来自 HYG 4.1，包含 {catalog?.stars.length.toLocaleString() || "8,920"} 颗亮星及连线成员；按岁差、章动与自行作近似位置换算。星座采用 Stellarium 西方星座连线，配中文名称，不代表中国传统星官。七曜由本地 Skyfield／DE421 计算观测点的视位置；木星、土星使用系统质心，未计大气折射、地形与实际天气。天体大小及月面亮度为示意，地面是理想地平面。</p><p>四地均用北京时间；类乌齐为县城桑多镇附近约略坐标。周年页的虚线表示全年每天同一时刻的太阳位置，并非一天的太阳轨迹。开启“白昼显星”可教学演示白昼中的星座，不代表肉眼可见。</p><p>手机指向需要 HTTPS 与方向权限，仅提供近似罗盘指向；本版不叠加相机画面。<a href="/sky-data/README.md" target="_blank" rel="noreferrer">查看星表来源与许可 ↗</a></p></details>
+        <span>{currentBody && <><b>{bodyName}</b> · {t("方位")} {currentBody.azimuth.toFixed(1)}° · {t("高度")} {currentBody.altitude.toFixed(1)}°　</>}{t(mode === "annual" ? "虚线：太阳在每日所选时刻的位置。" : "虚线：所选天体在当天的运动轨迹。")}</span>
+        <details><summary>{t("数据与显示说明")}</summary><p>{t(`恒星来自 HYG 4.1，包含 ${catalog?.stars.length.toLocaleString() || "8,920"} 颗亮星及连线成员；按岁差、章动与自行作近似位置换算。星座采用 Stellarium 西方星座连线，配中文名称，不代表中国传统星官。七曜由本地 Skyfield／DE421 计算观测点的视位置；木星、土星使用系统质心，未计大气折射、地形与实际天气。天体大小及月面亮度为示意，地面是理想地平面。`)}</p><p>{t("四地均用北京时间；类乌齐为县城桑多镇附近约略坐标。周年页的虚线表示全年每天同一时刻的太阳位置，并非一天的太阳轨迹。开启“白昼显星”可教学演示白昼中的星座，不代表肉眼可见。")}</p><p>{t("手机指向需要 HTTPS 与方向权限，仅提供近似罗盘指向；本版不叠加相机画面。")} <a href="/sky-data/README.md" target="_blank" rel="noreferrer">{t("查看星表来源与许可 ↗")}</a></p></details>
       </div>
     </>}
   </section>;
