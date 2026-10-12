@@ -1,5 +1,6 @@
 "use client";
 
+import LocalizedText from "@/i18n/LocalizedText";
 import type {
   FiveElementPanel,
   FiveElementPanelId,
@@ -37,7 +38,7 @@ export default function FiveElementsExplorer({
   if (!activePanel) {
     return (
       <div className="rounded-[28px] border border-white/10 bg-slate-950/70 p-8 text-center text-sm text-slate-300 backdrop-blur-xl">
-        暂无五要素数据
+        <LocalizedText text={"暂无五要素数据"} />
       </div>
     );
   }
@@ -72,7 +73,7 @@ export default function FiveElementsExplorer({
                   <p className="mt-1 text-xs text-slate-400">{panel.metricLabel}</p>
                 </div>
                 <div className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-slate-200">
-                  {panel.values.length} 项
+                  {panel.values.length} <LocalizedText text={"项"} />
                 </div>
               </div>
               <p className="mt-3 line-clamp-2 text-xs text-slate-400">
@@ -105,7 +106,7 @@ export default function FiveElementsExplorer({
 
             <div className="grid grid-cols-2 gap-3 text-sm text-slate-200 sm:min-w-[280px]">
               <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                <p className="text-xs uppercase tracking-[0.24em] text-slate-400">日期</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-slate-400"><LocalizedText text={"日期"} /></p>
                 <p className="mt-2 font-medium text-white">{selectedDate}</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
@@ -113,11 +114,11 @@ export default function FiveElementsExplorer({
                 <p className="mt-2 font-medium text-white">{secondaryValue}</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                <p className="text-xs uppercase tracking-[0.24em] text-slate-400">层级数</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-slate-400"><LocalizedText text={"层级数"} /></p>
                 <p className="mt-2 font-medium text-white">{activePanel.values.length}</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                <p className="text-xs uppercase tracking-[0.24em] text-slate-400">藏历</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-slate-400"><LocalizedText text={"藏历"} /></p>
                 <p className="mt-2 truncate font-medium text-white">
                   {activePanel.tibetanDate || "--"}
                 </p>
@@ -131,10 +132,10 @@ export default function FiveElementsExplorer({
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.28em] text-slate-400">
-                  交互序列
+                  <LocalizedText text={"交互序列"} />
                 </p>
                 <p className="mt-2 text-sm text-slate-300">
-                  点击任一节点，查看该要素在当前日期下的层级结果。
+                  <LocalizedText text={"点击任一节点，查看该要素在当前日期下的层级结果。"} />
                 </p>
               </div>
               <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">
@@ -182,7 +183,7 @@ export default function FiveElementsExplorer({
 
           <div className="space-y-4">
             <div className="rounded-[28px] border border-white/10 bg-white/5 p-5">
-              <p className="text-xs uppercase tracking-[0.28em] text-slate-400">当前焦点</p>
+              <p className="text-xs uppercase tracking-[0.28em] text-slate-400"><LocalizedText text={"当前焦点"} /></p>
               <h3 className="mt-3 text-xl font-semibold text-white">
                 {activeValue?.label || "序位 1"}
               </h3>
@@ -195,16 +196,16 @@ export default function FiveElementsExplorer({
             </div>
 
             <div className="rounded-[28px] border border-white/10 bg-white/5 p-5">
-              <p className="text-xs uppercase tracking-[0.28em] text-slate-400">阅读提示</p>
+              <p className="text-xs uppercase tracking-[0.28em] text-slate-400"><LocalizedText text={"阅读提示"} /></p>
               <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-300">
                 <li>
-                  当前视图保留后端给出的原始序位顺序，不额外改写算法口径。
+                  <LocalizedText text={"当前视图保留后端给出的原始序位顺序，不额外改写算法口径。"} />
                 </li>
                 <li>
-                  数值型节点以序列方式展示，便于比较同一要素内部的层级变化。
+                  <LocalizedText text={"数值型节点以序列方式展示，便于比较同一要素内部的层级变化。"} />
                 </li>
                 <li>
-                  作用以文本前后分展示，避免把文本结果误解为连续数值。
+                  <LocalizedText text={"作用以文本前后分展示，避免把文本结果误解为连续数值。"} />
                 </li>
               </ul>
             </div>

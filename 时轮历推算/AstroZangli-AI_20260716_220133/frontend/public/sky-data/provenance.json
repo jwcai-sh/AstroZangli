@@ -1,0 +1,25 @@
+{
+  "downloaded": "2026-10-12",
+  "sources": {
+    "hyg": {
+      "url": "https://raw.githubusercontent.com/astronexus/HYG-Database/main/hyg/CURRENT/hygdata_v41.csv",
+      "sha256": "d9f69fd86bbf90a4e4d52b4c5c53eacfa6dfc0bfdef85bfd94f095e0bebe4ebd"
+    },
+    "lines": {
+      "url": "https://raw.githubusercontent.com/Stellarium/stellarium-skycultures/master/western/index.json",
+      "sha256": "a861accd345249a185a5ecfc2a516f34291c0aa52f4bb8d8337ffc53e9cef6b9"
+    },
+    "license": {
+      "url": "https://raw.githubusercontent.com/astronexus/HYG-Database/main/hyg/CURRENT/LICENSE",
+      "sha256": "f404190403d31e0ce7223f4cb7af954485ad88077358330754dc5c892a856627"
+    },
+    "description": {
+      "url": "https://raw.githubusercontent.com/Stellarium/stellarium-skycultures/master/western/description.md",
+      "sha256": "dfac2bb33ce1bbd0082601b2fad90182c085b15bbdeeb3b49490dc7ad7b804e1"
+    }
+  },
+  "selection": "HYG 4.1: V magnitude <= 6.5, plus all HIP IDs used in Western constellation lines; Sun excluded; RA hours converted to degrees. Coordinates epoch/equinox J2000.0.",
+  "starCount": 8920,
+  "constellationCount": 88,
+  "missingLineHipIds": []
+}

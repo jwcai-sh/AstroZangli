@@ -1,3 +1,6 @@
+import LocalizedText from "@/i18n/LocalizedText";
+import { useLocale } from "@/i18n/LocaleProvider";
+import { appText } from "@/i18n/copy";
 import * as React from "react";
 
 /**
@@ -38,6 +41,8 @@ const AstrologicalTableCard: React.FC<AstrologicalTableCardProps> = ({
   onPageChange,
   totalPages = 4
 }) => {
+  const locale = useLocale();
+  const displayText = (text: string) => appText(locale, text);
   return (
     <div className="frosted-card calendar-gradient-neo widget-card-border px-6 pt-6 pb-4 light-purple-border transparent-purple-blue-gradient text-center shadow-2xl backdrop-blur-xl card-enter hover-lift dateevents-gradient-bg">
       {/* 四个卡片的指示器 - 位于卡片内部最上边 */}
@@ -52,7 +57,7 @@ const AstrologicalTableCard: React.FC<AstrologicalTableCardProps> = ({
                   ? 'w-8 h-2 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full shadow-lg shadow-blue-500/50' 
                   : 'w-2 h-2 bg-gray-500 rounded-full hover:bg-gray-400'
               }`}
-              aria-label={`切换到第 ${index + 1} 个卡片`}
+              aria-label={displayText(`切换到第 ${index + 1} 个卡片`)}
             >
               {index === currentPage && (
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full animate-pulse"></div>
@@ -65,7 +70,7 @@ const AstrologicalTableCard: React.FC<AstrologicalTableCardProps> = ({
       {/* 藏历信息框 - 只显示矩形框，居中放置 */}
       <div className="flex justify-center mb-6">
         <div className="astro-tibetan-rect-centered">
-          <span className="dateevents-tibetan-rect-text">{header.title}</span>
+          <span className="dateevents-tibetan-rect-text">{displayText(header.title)}</span>
         </div>
       </div>
 
@@ -73,11 +78,11 @@ const AstrologicalTableCard: React.FC<AstrologicalTableCardProps> = ({
         <table className="w-full text-sm astro-table-compact">
           <thead>
             <tr className="border-b border-gray-500/50">
-              <th className="text-center py-2 px-1 text-gray-300 font-semibold">定曜</th>
-              <th className="text-center py-2 px-1 text-gray-300 font-semibold whitespace-nowrap">太阳日月宿</th>
-              <th className="text-center py-2 px-1 text-gray-300 font-semibold">定日</th>
-              <th className="text-center py-2 px-1 text-gray-300 font-semibold">会合</th>
-              <th className="text-center py-2 px-1 text-gray-300 font-semibold">作用</th>
+              <th className="text-center py-2 px-1 text-gray-300 font-semibold"><LocalizedText text={"定曜"} /></th>
+              <th className="text-center py-2 px-1 text-gray-300 font-semibold whitespace-nowrap"><LocalizedText text={"太阳日月宿"} /></th>
+              <th className="text-center py-2 px-1 text-gray-300 font-semibold"><LocalizedText text={"定日"} /></th>
+              <th className="text-center py-2 px-1 text-gray-300 font-semibold"><LocalizedText text={"会合"} /></th>
+              <th className="text-center py-2 px-1 text-gray-300 font-semibold"><LocalizedText text={"作用"} /></th>
             </tr>
           </thead>
           <tbody>
@@ -87,7 +92,7 @@ const AstrologicalTableCard: React.FC<AstrologicalTableCardProps> = ({
                 <td className="py-1.5 px-1 text-gray-200 font-medium text-center">{r.solarLunar}</td>
                 <td className="py-1.5 px-1 text-gray-200 font-medium text-center">{r.fixedDay}</td>
                 <td className="py-1.5 px-1 text-gray-200 font-medium text-center">{r.conjunction}</td>
-                <td className="py-1.5 px-1 text-gray-200 font-medium text-center">{r.effect}</td>
+                <td className="py-1.5 px-1 text-gray-200 font-medium text-center">{displayText(String(r.effect || ""))}</td>
               </tr>
             ))}
           </tbody>

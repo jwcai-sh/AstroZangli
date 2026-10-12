@@ -1,11 +1,15 @@
 "use client";
+import { appText } from "@/i18n/copy";
 
+import LocalizedText from "@/i18n/LocalizedText";
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import LocaleLink from "@/i18n/LocaleLink";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useLocale } from "@/i18n/LocaleProvider";
+import { localizePath } from "@/i18n/locale";
 
 import GregorianTibetanDatePicker from "@/components/seven-stars/GregorianTibetanDatePicker";
-import { SUPPORTED_CITIES, type SupportedCity } from "@/constants/cities";
+import { DEFAULT_CITY, SUPPORTED_CITIES, type SupportedCity } from "@/constants/cities";
 import FiveElementsExplorer from "@/components/widgets/FiveElementsExplorer";
 import {
   buildFiveElementPanels,
@@ -65,6 +69,7 @@ function buildNextUrl(
 export default function FiveElementsSubtab(): React.JSX.Element {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const locale = useLocale();
 
   const parsedYear = useMemo(
     () => clampInitialYear(Number(searchParams.get("year")) || DEFAULT_DATE.year),
@@ -84,7 +89,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
   );
   const gregorianDate = searchParams.get("gdate") || "2026-09-14";
   const cityParam = searchParams.get("city");
-  const city: SupportedCity = SUPPORTED_CITIES.includes(cityParam as SupportedCity) ? cityParam as SupportedCity : "上海市";
+  const city: SupportedCity = SUPPORTED_CITIES.includes(cityParam as SupportedCity) ? cityParam as SupportedCity : DEFAULT_CITY;
 
   const [selection, setSelection] = useState({
     year: parsedYear,
@@ -209,7 +214,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
     const nextMonth = next.month ?? selection.month;
     const nextDay = next.day ?? selection.day;
     const nextMode = next.mode ?? mode;
-    router.push(buildNextUrl(nextYear, nextMonth, nextDay, nextMode, gregorianDate, city));
+    router.push(localizePath(locale, buildNextUrl(nextYear, nextMonth, nextDay, nextMode, gregorianDate, city)));
   };
 
   return (
@@ -218,13 +223,16 @@ export default function FiveElementsSubtab(): React.JSX.Element {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <p className="text-xs uppercase tracking-[0.35em] text-cyan-200/70">
-              Earth / Seven Stars
+              <LocalizedText text={"天文历算基本数据"} />
             </p>
             <h2 className="mt-3 text-2xl font-semibold tracking-wide sm:text-3xl">
-              五要素值
+              <LocalizedText text={"五要素值"} />
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-300 sm:text-base">
-              当前支持按藏历年、月查看月度总览，也支持按藏历年、月、日进入单日交互式可视化；两者都读取数据库中的 Python final 预计算结果。
+              <LocalizedText text={"按藏历日期查询五要素，查看月度总览或每日天球图。"} />
+            </p>
+            <p className="mt-2 text-sm leading-6 text-cyan-100/80">
+              <LocalizedText text={"计算规则采用浦尔派历算流派。"} />
             </p>
           </div>
 
@@ -251,19 +259,19 @@ export default function FiveElementsSubtab(): React.JSX.Element {
               );
             })}
             {mode === "daily" && (
-              <Link
+              <LocaleLink
                 href={`/earth?${new URLSearchParams({ tab: "five-elements", data: "five-elements-sphere", year: String(selection.year), month: String(selection.month), day: String(selection.day), gdate: gregorianDate, city })}`}
                 className="rounded-full border border-cyan-300/50 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100 transition-all hover:bg-cyan-300/20"
               >
-                查看天球视角 ↗
-              </Link>
+                <LocalizedText text={"查看天球视角 ↗"} />
+              </LocaleLink>
             )}
-            <Link
+            <LocaleLink
               href="/five-elements-compare"
               className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-slate-200 transition-all hover:bg-white/10"
             >
-              参考网站对照
-            </Link>
+              <LocalizedText text={"参考网站对照"} />
+            </LocaleLink>
           </div>
         </div>
       </section>
@@ -273,7 +281,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
         initialCity={city}
         tone="dark"
         onResolved={({ gregorianDate: nextGregorianDate, city: nextCity, tibetan }) => {
-          router.push(buildNextUrl(tibetan.year, tibetan.month, tibetan.day, "daily", nextGregorianDate, nextCity));
+          router.push(localizePath(locale, buildNextUrl(tibetan.year, tibetan.month, tibetan.day, "daily", nextGregorianDate, nextCity)));
         }}
       />
 
@@ -282,10 +290,10 @@ export default function FiveElementsSubtab(): React.JSX.Element {
           <section className="rounded-[28px] border border-cyan-100/15 bg-slate-950/55 px-4 py-5 text-slate-100 shadow-[0_18px_60px_rgba(0,0,0,0.22)] backdrop-blur-md sm:px-6">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-cyan-200/70">查询藏历月份</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-cyan-200/70"><LocalizedText text={"查询藏历月份"} /></p>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <label className="flex items-center gap-2">
-                    <span className="text-sm">藏历年</span>
+                    <span className="text-sm"><LocalizedText text={"藏历年"} /></span>
                     <select
                       value={selection.year}
                       onChange={(event) => {
@@ -304,7 +312,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                   </label>
 
                   <label className="flex items-center gap-2">
-                    <span className="text-sm">藏历月</span>
+                    <span className="text-sm"><LocalizedText text={"藏历月"} /></span>
                     <select
                       value={selection.month}
                       onChange={(event) => {
@@ -334,7 +342,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
 
           {loading ? (
             <div className="rounded-[28px] border border-[#d7c3ac] bg-[#f7eddf] py-16 text-center text-[#6d5440]">
-              正在载入月度五要素数据...
+              <LocalizedText text={"正在载入月度五要素数据..."} />
             </div>
           ) : error ? (
             <div className="rounded-[28px] border border-[#d7c3ac] bg-[#f7eddf] py-16 text-center text-[#b34d3e]">
@@ -374,7 +382,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                         {card.tibetanDate || "藏历信息待补充"}
                       </p>
                       <p className="mt-1 text-xs tracking-[0.12em] text-slate-400">
-                        对应公历 {card.gregorianDate}
+                        <LocalizedText text={"对应公历"} /> {card.gregorianDate}
                       </p>
                     </div>
 
@@ -382,11 +390,11 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                       <table className="w-full min-w-[300px] table-fixed text-center text-sm">
                         <thead>
                           <tr className="text-cyan-100/80">
-                            <th className="pb-3 font-semibold">定曜</th>
-                            <th className="pb-3 font-semibold">月伴星宿</th>
-                            <th className="pb-3 font-semibold">定日</th>
-                            <th className="pb-3 font-semibold">会合</th>
-                            <th className="pb-3 font-semibold">作用</th>
+                            <th className="pb-3 font-semibold"><LocalizedText text={"定曜"} /></th>
+                            <th className="pb-3 font-semibold"><LocalizedText text={"月伴星宿"} /></th>
+                            <th className="pb-3 font-semibold"><LocalizedText text={"定日"} /></th>
+                            <th className="pb-3 font-semibold"><LocalizedText text={"会合"} /></th>
+                            <th className="pb-3 font-semibold"><LocalizedText text={"作用"} /></th>
                           </tr>
                         </thead>
                         <tbody>
@@ -416,10 +424,10 @@ export default function FiveElementsSubtab(): React.JSX.Element {
           <section className="rounded-[28px] border border-cyan-100/15 bg-slate-950/55 px-4 py-5 text-slate-100 shadow-[0_18px_60px_rgba(0,0,0,0.22)] backdrop-blur-md sm:px-6">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-cyan-200/70">查询藏历单日</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-cyan-200/70"><LocalizedText text={"查询藏历单日"} /></p>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <label className="flex items-center gap-2">
-                    <span className="text-sm">藏历年</span>
+                    <span className="text-sm"><LocalizedText text={"藏历年"} /></span>
                     <select
                       value={selection.year}
                       onChange={(event) => {
@@ -438,7 +446,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                   </label>
 
                   <label className="flex items-center gap-2">
-                    <span className="text-sm">藏历月</span>
+                    <span className="text-sm"><LocalizedText text={"藏历月"} /></span>
                     <select
                       value={selection.month}
                       onChange={(event) => {
@@ -457,7 +465,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                   </label>
 
                   <label className="flex items-center gap-2">
-                    <span className="text-sm">藏历日</span>
+                    <span className="text-sm"><LocalizedText text={"藏历日"} /></span>
                     <select
                       value={selection.day}
                       onChange={(event) => {
@@ -477,18 +485,12 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                 </div>
               </div>
 
-              <div className="rounded-[20px] border border-white/15 bg-white/5 px-5 py-3 text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
-                <p className="text-sm tracking-[0.2em] text-cyan-100/70">交互说明</p>
-                <p className="mt-2 text-sm text-slate-300">
-                  缺日标“缺”并显示当日数值；重日标“重”并列出对应公历日期。
-                </p>
-              </div>
             </div>
           </section>
 
           {loading ? (
             <div className="rounded-[28px] border border-[#d7c3ac] bg-[#f7eddf] py-16 text-center text-[#6d5440]">
-              正在载入单日五要素数据...
+              <LocalizedText text={"正在载入单日五要素数据..."} />
             </div>
           ) : error ? (
             <div className="rounded-[28px] border border-[#d7c3ac] bg-[#f7eddf] py-16 text-center text-[#b34d3e]">
@@ -511,28 +513,24 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                       ) : null}
                     </h3>
                     <p className="mt-3 text-sm leading-6 text-slate-300">
-                      对应公历：
+                      <LocalizedText text={"对应公历："} />
                       {dailyData.gregorianDates.length > 0
                         ? ` ${dailyData.gregorianDates.join(" / ")}`
                         : " 暂无映射"}
                     </p>
                     {dailyData.gregorianDates.length > 1 ? (
                       <p className="mt-2 text-xs tracking-[0.08em] text-slate-400">
-                        当前藏历日对应多个公历日期，按重日显示。
+                        <LocalizedText text={"当前藏历日对应多个公历日期，按重日显示。"} />
                       </p>
                     ) : null}
                   </div>
 
-                  <div className="grid gap-3 text-sm text-slate-200 sm:grid-cols-2">
+                  <div className="grid gap-3 text-sm text-slate-200">
                     <div className="rounded-[18px] border border-white/10 bg-slate-900/45 px-4 py-3">
-                      <p className="text-xs uppercase tracking-[0.24em] text-cyan-200/70">藏历选择</p>
+                      <p className="text-xs uppercase tracking-[0.24em] text-cyan-200/70"><LocalizedText text={"藏历选择"} /></p>
                       <p className="mt-2 font-medium">
-                        {selection.year} 年 {selection.month} 月 {selection.day} 日
+                        {selection.year} <LocalizedText text={"年"} /> {selection.month} <LocalizedText text={"月"} /> {selection.day} <LocalizedText text={"日"} />
                       </p>
-                    </div>
-                    <div className="rounded-[18px] border border-white/10 bg-slate-900/45 px-4 py-3">
-                      <p className="text-xs uppercase tracking-[0.24em] text-cyan-200/70">算法口径</p>
-                      <p className="mt-2 font-medium">Python final 预计算缓存</p>
                     </div>
                   </div>
                 </div>
@@ -563,7 +561,7 @@ export default function FiveElementsSubtab(): React.JSX.Element {
                 activePanelId={activePanelId}
                 activeStageIndex={activeStageIndex}
                 selectedDate={dailyData.tibetanDateLabel}
-                secondaryLabel="对应公历"
+                secondaryLabel={appText(locale, "对应公历")}
                 secondaryValue={dailyData.gregorianDates.join(" / ") || "--"}
                 onPanelChange={(panelId) => {
                   setActivePanelId(panelId);

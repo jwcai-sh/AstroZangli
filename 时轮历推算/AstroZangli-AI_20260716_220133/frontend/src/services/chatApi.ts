@@ -11,17 +11,17 @@ export interface ChatApiResponse {
 // The API base is the root of our own application, not the external API
 const API_BASE = "/api";
 
-export async function fetchChatReply(message: string): Promise<ChatApiResponse["data"]> {
+export async function fetchChatReply(message: string, locale: "zh" | "bo" = "zh"): Promise<ChatApiResponse["data"]> {
     const res = await fetch(`${API_BASE}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message, locale }),
     });
 
     if (!res.ok) {
         // Attempt to parse error response for a more specific message
         const errorJson = await res.json().catch(() => ({}));
-        const errorMessage = errorJson.error?.message || `HTTP error! status: ${res.status}`;
+        const errorMessage = errorJson.error?.message || `聊天服务状态码 ${res.status}`;
         throw new Error(errorMessage);
     }
 

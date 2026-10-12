@@ -1,5 +1,8 @@
 ﻿"use client";
+import { appText } from "@/i18n/copy";
+import { useLocale } from "@/i18n/LocaleProvider";
 
+import LocalizedText from "@/i18n/LocalizedText";
 import * as React from "react";
 import Image from "next/image";
 // Use project SVG assets provided by the user
@@ -85,6 +88,7 @@ export const CalendarBox: React.FC<CalendarBoxProps> = ({
   eventMode = "astronomy",
   onEventModeChange,
 }) => {
+  const locale = useLocale();
   // 内部状态：高亮的日期，默认 null（不高亮任何一天）
   const [selectedDay, setSelectedDay] = React.useState<number | null>(initialSelected);
 
@@ -106,9 +110,9 @@ export const CalendarBox: React.FC<CalendarBoxProps> = ({
           <button
             className="hover:opacity-80 transition-opacity"
             onClick={onPrevMonth}
-            aria-label="Previous month"
+            aria-label={appText(locale, "上个月")}
           >
-            <Image src={LeftArrowSvg} alt="prev" width={16} height={16} />
+            <Image src={LeftArrowSvg} alt="" width={16} height={16} />
           </button>
         </div>
         <div className="flex justify-center">
@@ -118,9 +122,9 @@ export const CalendarBox: React.FC<CalendarBoxProps> = ({
           <button
             className="hover:opacity-80 transition-opacity"
             onClick={onNextMonth}
-            aria-label="Next month"
+            aria-label={appText(locale, "下个月")}
           >
-            <Image src={RightArrowSvg} alt="next" width={16} height={16} />
+            <Image src={RightArrowSvg} alt="" width={16} height={16} />
           </button>
         </div>
       </div>
@@ -128,7 +132,7 @@ export const CalendarBox: React.FC<CalendarBoxProps> = ({
       {/* 星期标题行 */}
       <div className="week-row text-gray-300/80 mb-3">
         {weekdays.map((label, index) => (
-          <div key={index} className="week-cell text-[11px] sm:text-xs">{label}</div>
+          <div key={index} className="week-cell text-[11px] sm:text-xs">{locale === "bo" ? ["ཉི།", "ཟླ།", "མིག།", "ལྷག།", "ཕུར།", "སངས།", "སྤེན།"][index] : label}</div>
         ))}
       </div>
 
@@ -149,8 +153,8 @@ export const CalendarBox: React.FC<CalendarBoxProps> = ({
               onClick={() => handleSelectDay(day)}
               aria-pressed={isSelected}
             >
-              {events.length > 0 && <span className="calendar-event-marks" aria-label={events.map(event => [event.label, event.time, event.tibetanDate].filter(Boolean).join(" ")).join("；")}>
-                {events.map(event => <span key={`${event.type}-${event.time || event.tibetanDate || event.label}`} className={`calendar-event-mark calendar-event-mark--${event.type}`} title={[event.label, event.time, event.tibetanDate].filter(Boolean).join(" · ")}>{event.type === "tibetan_festival" ? <TibetanFestivalMark label={event.label} /> : EVENT_MARKS[event.type]}</span>)}
+              {events.length > 0 && <span className="calendar-event-marks" aria-label={appText(locale, events.map(event => [event.label, event.time, event.tibetanDate].filter(Boolean).join(" ")).join("；"))}>
+                {events.map(event => <span key={`${event.type}-${event.time || event.tibetanDate || event.label}`} className={`calendar-event-mark calendar-event-mark--${event.type}`} title={appText(locale, [event.label, event.time, event.tibetanDate].filter(Boolean).join(" · "))}>{event.type === "tibetan_festival" ? <TibetanFestivalMark label={appText(locale, event.label)} /> : appText(locale, EVENT_MARKS[event.type])}</span>)}
               </span>}
               {isSelected ? (
                 <span className="selected-badge">
@@ -159,28 +163,28 @@ export const CalendarBox: React.FC<CalendarBoxProps> = ({
               ) : (
                 <span className="day-number">{day}</span>
               )}
-              {isSelected && <span className="sr-only">selected</span>}
+              {isSelected && <span className="sr-only"><LocalizedText text={"已选中"} /></span>}
             </button>
           );
         })}
       </div>
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3" aria-label="日历标记口径">
-        <div className="calendar-event-legend calendar-event-legend--footer" aria-label={eventMode === "astronomy" ? "现代天文事件图例" : "藏历节日图例"}>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3" aria-label={appText(locale, "日历标记口径")}>
+        <div className="calendar-event-legend calendar-event-legend--footer" aria-label={appText(locale, eventMode === "astronomy" ? "现代天文事件图例" : "藏历节日图例")}>
           {eventMode === "astronomy" ? <>
-            <span>🌑 新月</span>
-            <span>🌕 满月</span>
-            <span className="calendar-event-legend--solar">日偏／日全／日环</span>
-            <span className="calendar-event-legend--lunar">月偏／月全</span>
+            <span><LocalizedText text={"🌑 新月"} /></span>
+            <span><LocalizedText text={"🌕 满月"} /></span>
+            <span className="calendar-event-legend--solar"><LocalizedText text={"日偏／日全／日环"} /></span>
+            <span className="calendar-event-legend--lunar"><LocalizedText text={"月偏／月全"} /></span>
         </> : <>
-          <span className="calendar-event-legend--tibetan"><BuddhaLineMark className="calendar-festival-icon--medicine" /> 药师佛</span>
-          <span className="calendar-event-legend--tibetan"><TibetanFestivalMark label="莲师荟供日" /> 莲师</span>
-          <span className="calendar-event-legend--tibetan"><BuddhaLineMark className="calendar-festival-icon--amitabha" /> 阿弥陀佛</span>
-          <span className="calendar-event-legend--tibetan">🪔 其他节日</span>
+          <span className="calendar-event-legend--tibetan"><BuddhaLineMark className="calendar-festival-icon--medicine" /> <LocalizedText text={"药师佛"} /></span>
+          <span className="calendar-event-legend--tibetan"><TibetanFestivalMark label={appText(locale, "莲师荟供日")} /> <LocalizedText text={"莲师"} /></span>
+          <span className="calendar-event-legend--tibetan"><BuddhaLineMark className="calendar-festival-icon--amitabha" /> <LocalizedText text={"阿弥陀佛"} /></span>
+          <span className="calendar-event-legend--tibetan"><LocalizedText text={"🪔 其他节日"} /></span>
         </>}
         </div>
         <div className="inline-flex overflow-hidden rounded-lg border border-white/15 text-xs">
-          <button type="button" aria-pressed={eventMode === "astronomy"} onClick={() => onEventModeChange?.("astronomy")} className={`px-3 py-2 transition ${eventMode === "astronomy" ? "bg-cyan-300/20 text-cyan-100" : "text-slate-400 hover:bg-white/5"}`}>现代天文</button>
-          <button type="button" aria-pressed={eventMode === "tibetan"} onClick={() => onEventModeChange?.("tibetan")} className={`border-l border-white/15 px-3 py-2 transition ${eventMode === "tibetan" ? "bg-amber-300/20 text-amber-100" : "text-slate-400 hover:bg-white/5"}`}>藏历节日</button>
+          <button type="button" aria-pressed={eventMode === "astronomy"} onClick={() => onEventModeChange?.("astronomy")} className={`px-3 py-2 transition ${eventMode === "astronomy" ? "bg-cyan-300/20 text-cyan-100" : "text-slate-400 hover:bg-white/5"}`}><LocalizedText text={"现代天文"} /></button>
+          <button type="button" aria-pressed={eventMode === "tibetan"} onClick={() => onEventModeChange?.("tibetan")} className={`border-l border-white/15 px-3 py-2 transition ${eventMode === "tibetan" ? "bg-amber-300/20 text-amber-100" : "text-slate-400 hover:bg-white/5"}`}><LocalizedText text={"藏历节日"} /></button>
         </div>
       </div>
     </div>

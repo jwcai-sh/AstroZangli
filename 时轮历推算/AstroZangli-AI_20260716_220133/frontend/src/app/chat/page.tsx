@@ -1,15 +1,19 @@
 "use client";
 
+import LocalizedText from "@/i18n/LocalizedText";
 import { useState } from "react";
-import Link from "next/link";
+import LocaleLink from "@/i18n/LocaleLink";
 import FooterBar from "@/components/FooterBar";
 import { fetchChatReply } from "@/services/chatApi";
+import { useLocale } from "@/i18n/LocaleProvider";
+import { appText } from "@/i18n/copy";
 
 export default function ChatPage() {
+  const locale = useLocale();
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "你好！我是你的天文助手，有什么可以帮助你的吗？",
+      text: appText(locale, "你好！我是你的天文助手，有什么可以帮助你的吗？"),
       isUser: false,
       time: "14:30",
     },
@@ -22,7 +26,7 @@ export default function ChatPage() {
         id: messages.length + 1,
         text: inputText,
         isUser: true,
-        time: new Date().toLocaleTimeString("zh-CN", {
+        time: new Date().toLocaleTimeString(locale === "bo" ? "bo-Tibt" : "zh-CN", {
           hour: "2-digit",
           minute: "2-digit",
         }),
@@ -34,13 +38,13 @@ export default function ChatPage() {
       setInputText("");
 
       try {
-        const data = await fetchChatReply(currentInput);
+        const data = await fetchChatReply(currentInput, locale);
         if (data) {
           const aiMessage = {
             id: updatedMessages.length + 1,
             text: data.reply,
             isUser: false,
-            time: new Date().toLocaleTimeString("zh-CN", {
+            time: new Date().toLocaleTimeString(locale === "bo" ? "bo-Tibt" : "zh-CN", {
               hour: "2-digit",
               minute: "2-digit",
             }),
@@ -51,9 +55,9 @@ export default function ChatPage() {
         console.error("Error fetching AI response:", error);
         const errorMessage = {
           id: updatedMessages.length + 1,
-          text: "抱歉，我这里出了点问题，暂时无法回复。",
+          text: appText(locale, "抱歉，我这里出了点问题，暂时无法回复。"),
           isUser: false,
-          time: new Date().toLocaleTimeString("zh-CN", {
+          time: new Date().toLocaleTimeString(locale === "bo" ? "bo-Tibt" : "zh-CN", {
             hour: "2-digit",
             minute: "2-digit",
           }),
@@ -68,7 +72,7 @@ export default function ChatPage() {
       <div className="relative z-10 flex flex-col h-screen bg-black">
         {/* 顶部导航 */}
         <div className="flex justify-between items-center p-4 border-b border-white/10 glass-effect">
-          <Link
+          <LocaleLink
             href="/"
             className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors"
           >
@@ -84,9 +88,9 @@ export default function ChatPage() {
                 clipRule="evenodd"
               />
             </svg>
-            <span>返回</span>
-          </Link>
-          <h1 className="text-xl font-semibold">天文助手</h1>
+            <span><LocalizedText text={"返回"} /></span>
+          </LocaleLink>
+          <h1 className="text-xl font-semibold"><LocalizedText text={"天文助手"} /></h1>
           <div className="w-12"></div>
         </div>
 
@@ -130,7 +134,7 @@ export default function ChatPage() {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-              placeholder="输入你的问题..."
+              placeholder={appText(locale, "输入你的问题...")}
               className="flex-1 bg-gray-800/80 text-white px-4 py-3 rounded-xl border border-gray-600/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
             />
             <button
@@ -138,7 +142,7 @@ export default function ChatPage() {
               className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors glow-effect disabled:opacity-50"
               disabled={!inputText.trim()}
             >
-              发送
+              <LocalizedText text={"发送"} />
             </button>
           </div>
         </div>

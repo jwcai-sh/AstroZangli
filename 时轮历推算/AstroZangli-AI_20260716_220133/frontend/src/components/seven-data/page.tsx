@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Image from "next/image";
+import { appText } from "@/i18n/copy";
+import { useLocale } from "@/i18n/LocaleProvider";
 
 // 定义行星数据接口
 interface PlanetInfo {
@@ -13,6 +15,15 @@ interface PlanetInfo {
 
 // 定义行星数据类型
 type PlanetData = Record<string, PlanetInfo>;
+const PLANET_DISPLAY_NAMES: Record<string, string> = {
+    Sun: "太阳",
+    Moon: "月球",
+    Mercury: "水星",
+    Venus: "金星",
+    Mars: "火星",
+    Jupiter: "木星",
+    Saturn: "土星",
+};
 
 // ✅ 演示数据
 const demoData: PlanetData = {
@@ -26,12 +37,13 @@ const demoData: PlanetData = {
 };
 
 export default function PlanetCalculator() {
+    const locale = useLocale();
     const [formData, setFormData] = useState({
-        latitude: "30.67",
-        longitude: "104.06",
+        latitude: "29.647",
+        longitude: "91.1175",
         date: "",
         time: "",
-        altitude: "500",
+        altitude: "3658",
     });
 
     const [planetsData, setPlanetsData] = useState<PlanetData | null>(null);
@@ -85,11 +97,11 @@ export default function PlanetCalculator() {
         } catch (err) {
             let errorMessage = "获取行星数据失败，请稍后再试。";
             if (axios.isAxiosError(err) && err.response) {
-                errorMessage = err.response.data?.error?.message || err.message;
+                errorMessage = err.response.data?.error?.message || "行星数据服务暂不可用，请稍后重试。";
             } else if (err instanceof Error) {
                 errorMessage = err.message;
             }
-            setError(errorMessage);
+            setError(locale === "bo" ? appText(locale, "获取行星数据失败") : errorMessage);
         } finally {
             setLoading(false);
         }
@@ -103,38 +115,36 @@ export default function PlanetCalculator() {
             {/* 输入表单 */}
             <form
                 onSubmit={handleSubmit}
-                className="relative z-10 mt-2 w-[92%] max-w-2xl backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl px-0 py-4 shadow-[0_0_20px_rgba(255,255,255,0.05)] text-sm"
+                className="relative z-10 mt-2 w-fit max-w-[92vw] backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl px-0 py-4 shadow-[0_0_20px_rgba(255,255,255,0.05)] text-sm"
             >
-                <div className="flex items-end gap-2">
-                    {/* 左侧 80% 输入框 */}
-                    <div className="w-4/5 space-y-1 px-3">
+                <div className="flex items-end gap-3">
+                    <div className="w-fit space-y-1 px-3">
                         {[
-                            ["纬度 Latitude", "latitude"],
-                            ["经度 Longitude", "longitude"],
-                            ["日期 Date", "date"],
-                            ["时间 Time(HH:MM)", "time"],
-                            ["海拔 Altitude", "altitude"],
+                            ["纬度", "latitude"],
+                            ["经度", "longitude"],
+                            ["日期", "date"],
+                            ["时间", "time"],
+                            ["海拔", "altitude"],
                         ].map(([label, name]) => (
                             <div key={name}>
-                                <label className="block text-xs mb-1 opacity-80">{label}</label>
+                                <label className="block text-xs mb-1 opacity-80">{appText(locale, label)}</label>
                                 <input
                                     type={name === "date" ? "date" : name === "time" ? "time" : "text"}
                                     name={name}
                                     value={formData[name as keyof typeof formData] || ""}
                                     onChange={handleChange}
-                                    className="w-full bg-white/10 border border-white/20 rounded-full px-2 py-1.5 text-left text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400 text-sm"
+                                    className={`${name === "date" ? "w-44" : name === "time" ? "w-36" : "w-32"} bg-white/10 border border-white/20 rounded-full px-2 py-1.5 text-left text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400 text-sm`}
                                     required={name !== "altitude"}
                                 />
                             </div>
                         ))}
                     </div>
 
-                    {/* 右侧 20% 图片按钮 */}
-                    <div className="w-1/5 flex justify-center">
+                    <div className="w-14 shrink-0 flex justify-center">
                         <button type="submit" disabled={loading} className="p-0 bg-transparent border-none">
                             <Image
                                 src="/pho/箭头.png"
-                                alt={loading ? "计算中..." : "开始计算"}
+                                alt={appText(locale, loading ? "计算中..." : "开始计算")}
                                 width={80}
                                 height={80}
                                 className="w-full h-auto"
@@ -154,7 +164,7 @@ export default function PlanetCalculator() {
                         key={title}
                         className="bg-[rgb(90,89,122)] text-white text-xs py-1 px-3 rounded-full cursor-default select-none"
                     >
-                        {title}
+                        {appText(locale, title)}
                     </div>
                 ))}
             </div>
@@ -168,7 +178,7 @@ export default function PlanetCalculator() {
                                 key={planet}
                                 className="grid grid-cols-5 gap-0.5 text-center py-0.5 rounded hover:bg-white/5 transition"
                             >
-                                <span className="whitespace-nowrap">{planet}</span>
+                                <span className="whitespace-nowrap">{appText(locale, PLANET_DISPLAY_NAMES[planet] ?? planet)}</span>
                                 <span className="whitespace-nowrap">{d.rise}</span>
                                 <span className="whitespace-nowrap">{d.transit}</span>
                                 <span className="whitespace-nowrap">{d.set}</span>

@@ -1,5 +1,8 @@
 "use client";
+import { appText } from "@/i18n/copy";
+import { useLocale } from "@/i18n/LocaleProvider";
 
+import LocalizedText from "@/i18n/LocalizedText";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 export type WorldCity = {
@@ -21,16 +24,21 @@ type Props = {
   side?: "left" | "right";
 };
 
-function buildLabel(city: WorldCity) {
+function buildLabel(city: WorldCity, locale: "zh" | "bo") {
   const names: Record<string, string> = {
-    Shanghai: "上海", Tianjin: "天津", Beijing: "北京", London: "伦敦", "New York": "纽约", Tokyo: "东京", Paris: "巴黎", Sydney: "悉尼",
+    Shanghai: "上海", Lhasa: "拉萨", Tianjin: "天津", Beijing: "北京", London: "伦敦", "New York": "纽约", Tokyo: "东京", Paris: "巴黎", Sydney: "悉尼",
     Cairo: "开罗", Nairobi: "内罗毕", "Cape Town": "开普敦", Moscow: "莫斯科", Berlin: "柏林", Madrid: "马德里", Rome: "罗马", Istanbul: "伊斯坦布尔", Dubai: "迪拜", Delhi: "德里", Bangkok: "曼谷", Singapore: "新加坡", Seoul: "首尔", Jakarta: "雅加达", Manila: "马尼拉", Canberra: "堪培拉", Wellington: "惠灵顿", "Mexico City": "墨西哥城", "Sao Paulo": "圣保罗", "Buenos Aires": "布宜诺斯艾利斯", Lima: "利马", Toronto: "多伦多", "Los Angeles": "洛杉矶", Honolulu: "檀香山", Reykjavik: "雷克雅未克", Oslo: "奥斯陆", Stockholm: "斯德哥尔摩", Helsinki: "赫尔辛基", Warsaw: "华沙", Vienna: "维也纳", Athens: "雅典", Lisbon: "里斯本", Brussels: "布鲁塞尔", Amsterdam: "阿姆斯特丹", Zurich: "苏黎世", Prague: "布拉格", Budapest: "布达佩斯", Copenhagen: "哥本哈根", Dublin: "都柏林", "Kuala Lumpur": "吉隆坡", Hanoi: "河内", Kathmandu: "加德满都", Colombo: "科伦坡", Dhaka: "达卡", Karachi: "卡拉奇", Doha: "多哈", Riyadh: "利雅得", "Tel Aviv": "特拉维夫"
   };
   const countries: Record<string, string> = { China: "中国", "United Kingdom": "英国", "United States": "美国", Japan: "日本", France: "法国", Australia: "澳大利亚", Egypt: "埃及", Germany: "德国", Russia: "俄罗斯", Italy: "意大利", Spain: "西班牙", India: "印度", Thailand: "泰国", Singapore: "新加坡", Canada: "加拿大", Brazil: "巴西", Mexico: "墨西哥", Norway: "挪威", Sweden: "瑞典", Finland: "芬兰", Greece: "希腊", Portugal: "葡萄牙", Netherlands: "荷兰", Ireland: "爱尔兰", Vietnam: "越南", Indonesia: "印度尼西亚", Philippines: "菲律宾", Turkey: "土耳其", Qatar: "卡塔尔", Israel: "以色列" };
+  if (locale === "bo") {
+    const tibetanNames: Record<string, string> = { Lhasa: "ལྷ་ས།" };
+    return tibetanNames[city.name] ?? city.name;
+  }
   return [names[city.name] ?? city.name, city.country && (countries[city.country] ?? city.country)].filter(Boolean).join(", ");
 }
 
 export default function WorldCityPicker({ value, onSelect, extraControls, side = "right" }: Props) {
+  const locale = useLocale();
   const [expanded, setExpanded] = useState(false);
   const [apiCities, setApiCities] = useState<WorldCity[]>([]);
   const [citiesLoading, setCitiesLoading] = useState(false);
@@ -84,7 +92,8 @@ export default function WorldCityPicker({ value, onSelect, extraControls, side =
     return () => controller.abort();
   }, [apiCities.length]);
 
-  const locationLabel = value.timezone ? `位置 (${value.timezone.replace("Asia/", "GMT+8 ")})` : "位置";
+  const locationName = buildLabel(value, locale).split(",")[0];
+  const locationLabel = `${appText(locale, "位置")} (${locationName})`;
   const formatCoordinate = (coordinate: number, positive: string, negative: string) => {
     const direction = coordinate >= 0 ? positive : negative;
     return `${Math.abs(coordinate).toFixed(2)}° ${direction}`;
@@ -98,7 +107,7 @@ export default function WorldCityPicker({ value, onSelect, extraControls, side =
         top: 12,
         [side]: 16,
         zIndex: 30,
-        width: "min(440px, calc(100vw - 32px))",
+        width: "min(380px, calc(100vw - 32px))",
       }}
       >
       <div
@@ -115,23 +124,22 @@ export default function WorldCityPicker({ value, onSelect, extraControls, side =
         <button type="button" onClick={() => setExpanded((current) => !current)} style={{ width: "100%", border: "none", background: "transparent", color: "#fff", textAlign: "left", cursor: "pointer", padding: "12px 16px" }}>
           <div style={{ fontSize: "clamp(14px, 2vw, 18px)", fontWeight: 600 }}>{locationLabel}</div>
           <div style={{ marginTop: 4, color: "rgba(255,255,255,0.65)", fontSize: "clamp(12px, 1.7vw, 14px)" }}>
-            {formatCoordinate(value.latitude, "北", "南")} · {formatCoordinate(value.longitude, "东", "西")}
+            {formatCoordinate(value.latitude, appText(locale, "北"), appText(locale, "南"))} · {formatCoordinate(value.longitude, appText(locale, "东"), appText(locale, "西"))}
           </div>
         </button>
         {expanded ? <div style={{ padding: "0 12px 12px" }}>
           <div style={{ borderRadius: 12, padding: "12px 14px", background: "rgba(39, 52, 78, 0.78)", color: "rgba(255,255,255,0.9)", fontSize: 13, lineHeight: 1.7 }}>
-            <div style={{ fontSize: 16, marginBottom: 5 }}>位置</div>
-            <div><span style={{ display: "inline-block", width: 54, color: "rgba(255,255,255,0.65)" }}>地区</span>{value.timezone ?? "—"}</div>
-            <div><span style={{ display: "inline-block", width: 54, color: "rgba(255,255,255,0.65)" }}>纬度</span>{value.latitude.toFixed(2)}° ({formatCoordinate(value.latitude, "北", "南")})</div>
-            <div><span style={{ display: "inline-block", width: 54, color: "rgba(255,255,255,0.65)" }}>经度</span>{value.longitude.toFixed(2)}° ({formatCoordinate(value.longitude, "东", "西")})</div>
-            <div><span style={{ display: "inline-block", width: 54, color: "rgba(255,255,255,0.65)" }}>海拔</span>{typeof value.elevation === "number" ? `${Math.round(value.elevation)} 米` : "—"}</div>
+            <div style={{ fontSize: 16, marginBottom: 5 }}><LocalizedText text={"位置"} /></div>
+            <div><span style={{ display: "inline-block", width: 54, color: "rgba(255,255,255,0.65)" }}><LocalizedText text={"纬度"} /></span>{value.latitude.toFixed(2)}° ({formatCoordinate(value.latitude, appText(locale, "北"), appText(locale, "南"))})</div>
+            <div><span style={{ display: "inline-block", width: 54, color: "rgba(255,255,255,0.65)" }}><LocalizedText text={"经度"} /></span>{value.longitude.toFixed(2)}° ({formatCoordinate(value.longitude, appText(locale, "东"), appText(locale, "西"))})</div>
+            <div><span style={{ display: "inline-block", width: 54, color: "rgba(255,255,255,0.65)" }}><LocalizedText text={"海拔"} /></span>{typeof value.elevation === "number" ? `${Math.round(value.elevation)} ${appText(locale, "米")}` : "—"}</div>
           </div>
-          <select value={value.id} onChange={(event) => { const city = cities.find((item) => item.id === Number(event.target.value)); if (city) onSelect(city); }} style={{ width: "100%", boxSizing: "border-box", marginTop: 10, padding: "12px 14px", borderRadius: 12, border: "1px solid rgba(133,164,255,0.2)", outline: "none", background: "#27344e", color: "#fff", fontSize: 14 }} aria-label="选择城市">
-            {cities.map((city) => <option key={city.id} value={city.id}>{buildLabel(city)}</option>)}
+          <select value={value.id} onChange={(event) => { const city = cities.find((item) => item.id === Number(event.target.value)); if (city) onSelect(city); }} style={{ width: "100%", boxSizing: "border-box", marginTop: 10, padding: "12px 14px", borderRadius: 12, border: "1px solid rgba(133,164,255,0.2)", outline: "none", background: "#27344e", color: "#fff", fontSize: 14 }} aria-label={appText(locale, "选择城市")}>
+            {cities.map((city) => <option key={city.id} value={city.id}>{buildLabel(city, locale)}</option>)}
           </select>
-          {citiesLoading ? <div style={{ marginTop: 6, color: "rgba(255,255,255,0.55)", fontSize: 12 }}>正在从 Open-Meteo 导入全球城市…</div> : null}
-          <button type="button" onClick={() => setExpanded(false)} style={{ width: "100%", marginTop: 10, padding: "10px 14px", border: "none", borderRadius: 10, background: "#3eaa87", color: "#fff", fontSize: 14, cursor: "pointer" }}>使用位置</button>
-          <button type="button" disabled style={{ width: "100%", marginTop: 8, padding: "10px 14px", border: "none", borderRadius: 10, background: "rgba(164,168,184,0.55)", color: "rgba(255,255,255,0.78)", fontSize: 14 }}>固定坐标</button>
+          {citiesLoading ? <div style={{ marginTop: 6, color: "rgba(255,255,255,0.55)", fontSize: 12 }}><LocalizedText text={"正在从 Open-Meteo 导入全球城市…"} /></div> : null}
+          <button type="button" onClick={() => setExpanded(false)} style={{ width: "100%", marginTop: 10, padding: "10px 14px", border: "none", borderRadius: 10, background: "#3eaa87", color: "#fff", fontSize: 14, cursor: "pointer" }}><LocalizedText text={"使用位置"} /></button>
+          <button type="button" disabled style={{ width: "100%", marginTop: 8, padding: "10px 14px", border: "none", borderRadius: 10, background: "rgba(164,168,184,0.55)", color: "rgba(255,255,255,0.78)", fontSize: 14 }}><LocalizedText text={"固定坐标"} /></button>
         </div> : null}
       </div>
     </div>

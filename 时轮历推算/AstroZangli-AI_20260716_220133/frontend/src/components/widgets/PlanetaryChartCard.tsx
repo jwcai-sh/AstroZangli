@@ -1,5 +1,8 @@
 ﻿import * as React from "react";
 
+import { useLocale } from "@/i18n/LocaleProvider";
+import { appText } from "@/i18n/copy";
+
 /**
  * PlanetaryChartCard
  * - 用途：展示一个行星图（简化的 SVG 示意）以及左右两侧的关键时间点。
@@ -30,6 +33,8 @@ const PlanetaryChartCard: React.FC<PlanetaryChartCardProps> = ({
   onPageChange,
   totalPages = 4
 }) => {
+  const locale = useLocale();
+  const displayText = (text: string) => appText(locale, text);
   return (
     <div className="frosted-card calendar-gradient-neo widget-card-border px-6 pt-6 pb-4 light-purple-border transparent-purple-blue-gradient text-center shadow-2xl backdrop-blur-xl card-enter hover-lift dateevents-gradient-bg">
       {/* 四个卡片的指示器 - 位于卡片内部最上边 */}
@@ -44,7 +49,7 @@ const PlanetaryChartCard: React.FC<PlanetaryChartCardProps> = ({
                   ? 'w-8 h-2 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full shadow-lg shadow-blue-500/50' 
                   : 'w-2 h-2 bg-gray-500 rounded-full hover:bg-gray-400'
               }`}
-              aria-label={`切换到第 ${index + 1} 个卡片`}
+              aria-label={displayText(`切换到第 ${index + 1} 个卡片`)}
             >
               {index === currentPage && (
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full animate-pulse"></div>
@@ -57,7 +62,7 @@ const PlanetaryChartCard: React.FC<PlanetaryChartCardProps> = ({
       {/* 公历信息框 - 只显示紫色矩形框，居中放置 */}
       <div className="flex justify-center mb-6">
         <div className="astro-solar-rect-centered">
-          <span className="dateevents-solar-rect-text">{solarDate || "日期暂不可用"}</span>
+          <span className="dateevents-solar-rect-text">{displayText(solarDate || "日期暂不可用")}</span>
         </div>
       </div>
 
@@ -89,7 +94,7 @@ const PlanetaryChartCard: React.FC<PlanetaryChartCardProps> = ({
         
         {/* 星座标签（位于图右侧中部） - 改进样式 */}
         <div className="absolute top-1/2 right-0 transform -translate-y-1/2 text-sm text-yellow-400 font-bold bg-gray-900/80 px-2 py-1 rounded-lg border border-yellow-400/30">
-          {label}
+          {displayText(label)}
         </div>
         
         {/* 装饰性光晕 */}

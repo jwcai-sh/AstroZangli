@@ -1,3 +1,6 @@
+import LocalizedText from "@/i18n/LocalizedText";
+import { useLocale } from "@/i18n/LocaleProvider";
+import { appText } from "@/i18n/copy";
 import * as React from "react";
 import Image from "next/image";
 import { useCallback } from "react";
@@ -40,6 +43,8 @@ const MoonPhaseCard: React.FC<MoonPhaseCardProps> = ({
   onPageChange,
   totalPages = 3
 }) => {
+  const locale = useLocale();
+  const displayText = (text: string) => appText(locale, text);
   // 根据农历日期计算月相图片编号（1-31）
   // 如果 lunarDay 不存在或无效，使用照明度来估算
   const getMoonImageIndex = useCallback((): number => {
@@ -80,7 +85,7 @@ const MoonPhaseCard: React.FC<MoonPhaseCardProps> = ({
                   ? 'w-2 h-2 bg-white rounded-full shadow-lg' 
                   : 'w-2 h-2 bg-gray-500 rounded-full hover:bg-gray-400'
               }`}
-              aria-label={`切换到第 ${index + 1} 个卡片`}
+              aria-label={displayText(`切换到第 ${index + 1} 个卡片`)}
             >
             </button>
           ))}
@@ -91,7 +96,7 @@ const MoonPhaseCard: React.FC<MoonPhaseCardProps> = ({
       <div className="flex justify-center items-center mb-8">
         {/* 农历信息框 - 居中 */}
         <div className="astro-lunar-rect-centered">
-          <span className="dateevents-lunar-rect-text">{header.title}</span>
+          <span className="dateevents-lunar-rect-text">{displayText(header.title)}</span>
         </div>
       </div>
 
@@ -107,7 +112,7 @@ const MoonPhaseCard: React.FC<MoonPhaseCardProps> = ({
             <div className="absolute inset-0 flex items-center justify-center">
               <Image
                 src={moonImagePath}
-                alt={`月相图 - 农历${lunarDay || '未知'}日`}
+                alt={displayText(`月相图 - 农历${lunarDay || '未知'}日`)}
                 width={128}
                 height={128}
                 className="w-full h-full object-contain"
@@ -119,7 +124,7 @@ const MoonPhaseCard: React.FC<MoonPhaseCardProps> = ({
         {/* 右上角：照明度 */}
         <div className="absolute top-8 right-0 text-right">
           <div className="relative text-white/80 font-medium text-lg px-2" style={{ fontSize: '70%' }}>
-            <span className="text-gray-300/80">照明度</span>
+            <span className="text-gray-300/80"><LocalizedText text={"照明度"} /></span>
             <span className="font-semibold ml-1">
               {illumination !== undefined ? `${(illumination * 100).toFixed(1)}%` : '99.6%'}
             </span>
@@ -130,7 +135,7 @@ const MoonPhaseCard: React.FC<MoonPhaseCardProps> = ({
         {/* 右下角：中天时间 */}
         <div className="absolute bottom-14 right-4 text-right">
           <div className="relative text-white/80 font-medium text-lg px-2" style={{ fontSize: '70%' }}>
-            <span className="text-gray-300/80">中天</span>
+            <span className="text-gray-300/80"><LocalizedText text={"中天"} /></span>
             <span className="font-semibold ml-1">
               {culminationText ? (culminationText.includes(' ') ? culminationText.split(' ')[1] : culminationText) : '--:--'}
             </span>

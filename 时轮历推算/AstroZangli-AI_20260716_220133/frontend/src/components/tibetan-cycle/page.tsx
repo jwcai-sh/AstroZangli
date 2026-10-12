@@ -1,9 +1,12 @@
 "use client";
+import { appText } from "@/i18n/copy";
+import { useLocale } from "@/i18n/LocaleProvider";
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 
 export default function TibetanCyclePage() {
+  const locale = useLocale();
     const baseYear = 2025;
     const [year, setYear] = useState<number>(baseYear);
     const [result, setResult] = useState<string>("");
@@ -150,7 +153,7 @@ export default function TibetanCyclePage() {
                 >
                     <Image
                         src="/pho/地支.png"
-                        alt="地支盘"
+                        alt={appText(locale, "地支盘")}
                         width={320}
                         height={320}
                         className="w-full h-full select-none pointer-events-none"
@@ -165,7 +168,7 @@ export default function TibetanCyclePage() {
                 >
                     <Image
                         src="/pho/天干.png"
-                        alt="天干盘"
+                        alt={appText(locale, "天干盘")}
                         width={320}
                         height={320}
                         className="w-full h-full select-none pointer-events-none"
@@ -174,7 +177,7 @@ export default function TibetanCyclePage() {
                 <div className="absolute top-0 left-0 w-full h-full">
                     <Image
                         src="/pho/指针.png"
-                        alt="指针"
+                        alt={appText(locale, "指针")}
                         width={320}
                         height={320}
                         className="w-full h-full select-none pointer-events-none"

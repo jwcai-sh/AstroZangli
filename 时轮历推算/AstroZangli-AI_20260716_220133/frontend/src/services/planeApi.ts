@@ -50,7 +50,7 @@ export async function fetchPlanetsData(params: FetchPlanetsDataParams): Promise<
     });
 
     if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
+        throw new Error(`服务状态码 ${res.status}`);
     }
 
     const json: PlaneApiResponse = await res.json();

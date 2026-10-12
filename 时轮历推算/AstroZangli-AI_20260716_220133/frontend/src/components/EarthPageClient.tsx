@@ -3,18 +3,23 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import SevenStars from "@/components/seven-stars/page";
+import SkyExplorer from "@/components/sky-view/SkyExplorer";
 import SevenData from "@/components/seven-data/page";
 import FiveElementsSubtab from "@/components/seven-stars/FiveElementsSubtab";
 import FivePlanetsSubtab from "@/components/seven-stars/FivePlanetsSubtab";
 import FivePlanetsSphere from "@/components/seven-stars/FivePlanetsSphere";
 import FiveElementsSphere from "@/components/seven-stars/FiveElementsSphere";
 import SevenStarsSubnav from "@/components/seven-stars/SevenStarsSubnav";
+import SunEarthMoonPage from "@/components/seven-stars/SunEarthMoonPage";
+import GeocentricMotionPage from "@/components/seven-stars/GeocentricMotionPage";
 import Zodiac from "@/components/zodiac/page";
-import AnnualMotion from "@/components/annual-motion/page";
+import EclipsePage from "@/components/eclipses/EclipsePage";
+import MoonPhasesPage from "@/components/moon-phases/MoonPhasesPage";
 import TibetanCycle from "@/components/tibetan-cycle/page";
 import WidgetCarousel from "@/components/widgets/WidgetCarousel";
 import EarthNav from "@/components/EarthNav/EarthNav";
+import { useLocale } from "@/i18n/LocaleProvider";
+import { localizePath } from "@/i18n/locale";
 import BasicDataSubnav from "@/components/EarthNav/BasicDataSubnav";
 import EarthStarfield from "@/components/earth/EarthStarfield";
 import FooterBar from "@/components/FooterBar";
@@ -28,6 +33,7 @@ import {
 export default function EarthPageClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const locale = useLocale();
   const tabParam = searchParams.get("tab");
   const currentSubtab = resolveSevenStarsSubtab(searchParams.get("subtab"));
   const currentBasicDataSubtab = resolveBasicDataSubtab(
@@ -46,20 +52,26 @@ export default function EarthPageClient() {
 
   const handleChangePage = (index: number) => {
     setCurrentPage(index);
-    if (index === 0) router.push("/earth?tab=zodiac");
-    if (index === 1) router.push(`/earth?tab=five-elements&data=${currentBasicDataSubtab}`);
-    if (index === 2) router.push(`/earth?tab=seven-stars&subtab=${currentSubtab}`);
-    if (index === 3) router.push("/earth?tab=annual-motion");
+    if (index === 0) router.push(localizePath(locale, "/earth?tab=zodiac"));
+    if (index === 1) router.push(localizePath(locale, `/earth?tab=five-elements&data=${currentBasicDataSubtab}`));
+    if (index === 2) router.push(localizePath(locale, `/earth?tab=seven-stars&subtab=${currentSubtab}`));
+    if (index === 3) router.push(localizePath(locale, "/earth?tab=annual-motion"));
+    if (index === 4) router.push(localizePath(locale, "/earth?tab=eclipses"));
+    if (index === 5) router.push(localizePath(locale, "/earth?tab=moon-phases"));
   };
 
   const sevenStarsItem =
     currentSubtab === "seven-data"
       ? <SevenData key="seven-data" />
+      : currentSubtab === "sun-earth-moon"
+        ? <SunEarthMoonPage key="sun-earth-moon" />
+      : currentSubtab === "geocentric-motion"
+        ? <GeocentricMotionPage key="geocentric-motion" />
       : currentSubtab === "five-elements-sphere"
         ? <FiveElementsSphere key="five-elements-sphere" />
       : currentSubtab === "five-elements"
         ? <FiveElementsSubtab key="five-elements" />
-        : <SevenStars key="seven-stars" />;
+        : <SkyExplorer key="seven-stars" mode="daily" />;
 
   const basicDataItem = currentBasicDataSubtab === "tibetan-cycle"
     ? <TibetanCycle key="tibetan-cycle" />
@@ -75,13 +87,17 @@ export default function EarthPageClient() {
     <Zodiac key="zodiac" />,
     basicDataItem,
     sevenStarsItem,
-    <AnnualMotion key="annual-motion" />,
+    <SkyExplorer key="annual-motion" mode="annual" />,
+    <EclipsePage key="eclipses" />,
+    <MoonPhasesPage key="moon-phases" />,
   ];
+
+  const isSkyView = currentPage === 3 || (currentPage === 2 && currentSubtab === "seven-stars");
 
   return (
     <div className="starfield-bg text-white min-h-screen flex flex-col">
       <EarthStarfield />
-      <div className="relative z-10 flex flex-col h-screen">
+      <div className={`relative z-10 flex flex-col ${isSkyView ? "min-h-screen" : "h-screen"}`}>
         <div className="flex-1 flex flex-col p-4">
           <div className="mb-4 text-sm">
             <EarthNav currentPage={getEarthTabLabel(tabParam)} />

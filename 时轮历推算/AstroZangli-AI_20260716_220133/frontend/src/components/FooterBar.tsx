@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import LocaleLink from "@/i18n/LocaleLink";
+import { useLocale } from "@/i18n/LocaleProvider";
+import { appText } from "@/i18n/copy";
 import { usePathname } from "next/navigation";
 
 interface NavItem {
@@ -20,6 +22,7 @@ const NAV_ITEMS: NavItem[] = [
 
 export default function FooterBar(): React.JSX.Element {
   const pathname = usePathname();
+  const locale = useLocale();
 
   return (
     <footer
@@ -27,7 +30,7 @@ export default function FooterBar(): React.JSX.Element {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <nav
-        aria-label="主导航"
+        aria-label={appText(locale, "主导航")}
         className="mx-auto grid h-full w-full max-w-md grid-cols-5 items-center px-4"
       >
         {NAV_ITEMS.map((item, index) => {
@@ -36,10 +39,10 @@ export default function FooterBar(): React.JSX.Element {
 
           if (isChat) {
             return (
-              <Link
+              <LocaleLink
                 href={item.href}
                 key={item.href}
-                aria-label={item.label}
+                aria-label={appText(locale, item.label)}
                 aria-current={isActive ? "page" : undefined}
                 className="mx-auto flex h-[clamp(54px,14vw,62px)] w-[clamp(54px,14vw,62px)] -translate-y-3 items-center justify-center rounded-full bg-[#0051fe] shadow-[0_10px_28px_rgba(0,81,254,0.38)] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
               >
@@ -50,15 +53,15 @@ export default function FooterBar(): React.JSX.Element {
                   height={32}
                   className="h-[clamp(28px,7vw,32px)] w-[clamp(28px,7vw,32px)] object-contain"
                 />
-              </Link>
+              </LocaleLink>
             );
           }
 
           return (
-            <Link
+            <LocaleLink
               href={item.href}
               key={item.href}
-              aria-label={item.label}
+              aria-label={appText(locale, item.label)}
               aria-current={isActive ? "page" : undefined}
               className={`mx-auto flex h-[clamp(40px,10.5vw,46px)] w-[clamp(40px,10.5vw,46px)] items-center justify-center rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 ${
                 isActive ? "bg-slate-600/80" : "hover:bg-slate-700/70"
@@ -71,7 +74,7 @@ export default function FooterBar(): React.JSX.Element {
                 height={24}
                 className="h-[clamp(20px,5.5vw,24px)] w-[clamp(20px,5.5vw,24px)] object-contain"
               />
-            </Link>
+            </LocaleLink>
           );
         })}
       </nav>

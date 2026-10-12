@@ -15,3 +15,16 @@ export const SUPPORTED_CITIES = [
 ] as const;
 
 export type SupportedCity = (typeof SUPPORTED_CITIES)[number];
+
+export const DEFAULT_CITY: SupportedCity = "拉萨市";
+
+export const DEFAULT_WORLD_CITY = {
+  id: 1280737,
+  name: "Lhasa",
+  country: "China",
+  admin1: "Tibet",
+  timezone: "Asia/Shanghai",
+  latitude: 29.647,
+  longitude: 91.1175,
+  elevation: 3658,
+};

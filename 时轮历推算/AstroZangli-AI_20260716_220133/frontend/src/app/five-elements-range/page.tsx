@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import LocalizedText from "@/i18n/LocalizedText";
+import LocaleLink from "@/i18n/LocaleLink";
 import { useEffect, useRef, useState } from "react";
 
 type Day = { day: number; fields: string[]; python: Record<string, number[]>; website: Record<string, number[]> };
@@ -26,7 +27,7 @@ async function request(start: number, end: number, signal: AbortSignal, month?: 
   const query = new URLSearchParams({ start: String(start), end: String(end) });
   if (month !== undefined) query.set("month", String(month));
   const response = await fetch(`/api/five-elements/range-compare?${query}`, { signal });
-  if (!response.ok) throw new Error(`对照请求失败（HTTP ${response.status}）`);
+  if (!response.ok) throw new Error(`对照请求失败（服务状态码 ${response.status}）`);
   const body = await response.json();
   if (!body.success) throw new Error(body.error?.message || "读取失败");
   return body.data;
@@ -108,22 +109,22 @@ export default function RangeCompare(): React.JSX.Element {
   return <main className="min-h-screen bg-[#0c0b09] px-4 py-8 text-[#392d20] md:px-8">
     <div className="mx-auto max-w-6xl space-y-6">
       <section className={panel}>
-        <p className="text-xs tracking-[0.3em] text-[#946b44]">YEAR RANGE COMPARISON</p>
-        <h1 className="my-3 text-3xl font-semibold">Python / 参考网站 · 年份区间对照</h1>
-        <p>公元 1–2500 年；按藏历月、日比较定曜、月伴星宿、定日、会合，不计月头与作用。</p>
-        <p className="mt-2 text-sm">Python v2：从 1987 年起连续累计积年。只读本地预计算及网站快照，不实时抓取；版本过期或数据缺失会标为未对照。</p>
+        <p className="text-xs tracking-[0.3em] text-[#946b44]"><LocalizedText text={"年份区间对照"} /></p>
+        <h1 className="my-3 text-3xl font-semibold"><LocalizedText text={"Python / 参考网站 · 年份区间对照"} /></h1>
+        <p><LocalizedText text={"公元 1–2500 年；按藏历月、日比较定曜、月伴星宿、定日、会合，不计月头与作用。"} /></p>
+        <p className="mt-2 text-sm"><LocalizedText text={"Python v2：从 1987 年起连续累计积年。只读本地预计算及网站快照，不实时抓取；版本过期或数据缺失会标为未对照。"} /></p>
         <div className="my-5 flex flex-wrap items-end gap-4">
-          <label>起始年份<input className="mt-1 block w-36 rounded-lg border p-2" type="number" min="1" max="2500" step="1" value={start} disabled={running} onChange={e => { setStart(e.target.value); setYears([]); setStats(null); setDetail(null); setYearPage(0); }} /></label>
-          <label>结束年份<input className="mt-1 block w-36 rounded-lg border p-2" type="number" min="1" max="2500" step="1" value={end} disabled={running} onChange={e => { setEnd(e.target.value); setYears([]); setStats(null); setDetail(null); setYearPage(0); }} /></label>
-          <button className="rounded-full bg-[#644629] px-5 py-3 text-white disabled:opacity-50" disabled={running} onClick={() => void run()}>开始区间对照</button>
-          <button className="rounded-full border border-[#b99b7d] px-5 py-3 disabled:opacity-50" disabled={running} onClick={() => { setStart("1"); setEnd("2500"); setYears([]); setStats(null); setDetail(null); setYearPage(0); }}>设为完整范围</button>
-          {running && <button className="rounded-full border px-5 py-3" onClick={() => scan.current?.abort()}>停止</button>}
-          <Link className="underline" href="/five-elements-compare">返回三方对照页</Link>
+          <label><LocalizedText text={"起始年份"} /><input className="mt-1 block w-36 rounded-lg border p-2" type="number" min="1" max="2500" step="1" value={start} disabled={running} onChange={e => { setStart(e.target.value); setYears([]); setStats(null); setDetail(null); setYearPage(0); }} /></label>
+          <label><LocalizedText text={"结束年份"} /><input className="mt-1 block w-36 rounded-lg border p-2" type="number" min="1" max="2500" step="1" value={end} disabled={running} onChange={e => { setEnd(e.target.value); setYears([]); setStats(null); setDetail(null); setYearPage(0); }} /></label>
+          <button className="rounded-full bg-[#644629] px-5 py-3 text-white disabled:opacity-50" disabled={running} onClick={() => void run()}><LocalizedText text={"开始区间对照"} /></button>
+          <button className="rounded-full border border-[#b99b7d] px-5 py-3 disabled:opacity-50" disabled={running} onClick={() => { setStart("1"); setEnd("2500"); setYears([]); setStats(null); setDetail(null); setYearPage(0); }}><LocalizedText text={"设为完整范围"} /></button>
+          {running && <button className="rounded-full border px-5 py-3" onClick={() => scan.current?.abort()}><LocalizedText text={"停止"} /></button>}
+          <LocaleLink className="underline" href="/five-elements-compare"><LocalizedText text={"返回三方对照页"} /></LocaleLink>
         </div>
         <p role="status" aria-live="polite">{message}</p>
       </section>
       {years.length > 0 && <section className={panel}>
-        <h2 className="text-xl font-semibold">整体统计 · 已检查 {stats?.monthCount ?? months.length} 个月</h2>
+        <h2 className="text-xl font-semibold"><LocalizedText text={"整体统计 · 已检查"} /> {stats?.monthCount ?? months.length} <LocalizedText text={"个月"} /></h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             ["覆盖月份", `${stats?.monthCount ?? months.length} / ${requestedMonths}`],
@@ -137,8 +138,8 @@ export default function RangeCompare(): React.JSX.Element {
           ].map(([label, value]) => <div key={label} className="rounded-2xl border border-[#d5b99c] bg-[#fff9f0] p-4"><p className="text-sm text-[#806448]">{label}</p><p className="mt-1 text-2xl font-semibold">{value}</p></div>)}
         </div>
         {stats && <div className="mt-5 overflow-x-auto">
-          <h3 className="mb-2 font-semibold">逐日字段差异</h3>
-          <table className="w-full min-w-[520px] text-left text-sm"><thead><tr className="border-b border-[#d5b99c]"><th className="p-2">字段</th><th className="p-2">差异日数</th><th className="p-2">该字段差异率</th></tr></thead><tbody>
+          <h3 className="mb-2 font-semibold"><LocalizedText text={"逐日字段差异"} /></h3>
+          <table className="w-full min-w-[520px] text-left text-sm"><thead><tr className="border-b border-[#d5b99c]"><th className="p-2"><LocalizedText text={"字段"} /></th><th className="p-2"><LocalizedText text={"差异日数"} /></th><th className="p-2"><LocalizedText text={"该字段差异率"} /></th></tr></thead><tbody>
             {fields.map(field => {
               const count = stats.fieldDifferenceCounts[field] ?? 0;
               const denominator = stats.comparedDays;
@@ -146,29 +147,29 @@ export default function RangeCompare(): React.JSX.Element {
             })}
           </tbody></table>
         </div>}
-        <p className="my-3 text-sm">月一致表示该月四项逐日字段全一致；未对照月份不计入一致率。点击月份查看逐字段数值。</p>
-        <label><input type="checkbox" checked={onlyIssues} onChange={e => { setOnlyIssues(e.target.checked); setYearPage(0); }} /> 仅显示有差异或未对照的年份</label>
-        {visible.length === 0 && <p className="mt-4">已检查范围内没有差异或缺失月份。</p>}
+        <p className="my-3 text-sm"><LocalizedText text={"月一致表示该月四项逐日字段全一致；未对照月份不计入一致率。点击月份查看逐字段数值。"} /></p>
+        <label><input type="checkbox" checked={onlyIssues} onChange={e => { setOnlyIssues(e.target.checked); setYearPage(0); }} /> <LocalizedText text={"仅显示有差异或未对照的年份"} /></label>
+        {visible.length === 0 && <p className="mt-4"><LocalizedText text={"已检查范围内没有差异或缺失月份。"} /></p>}
         <div className="mt-4 max-h-[36rem] space-y-3 overflow-auto">
           {visiblePage.map(y => <details key={y.year} className="rounded-xl border border-[#d5b99c] p-3">
-            <summary className="cursor-pointer font-semibold">公元 {y.year} 年 · 差异 {y.months.filter(m => m.status === "difference").length} 月 · 未对照 {y.months.filter(m => m.status === "unavailable").length} 月</summary>
+            <summary className="cursor-pointer font-semibold"><LocalizedText text={"公元"} /> {y.year} <LocalizedText text={"年 · 差异"} /> {y.months.filter(m => m.status === "difference").length} <LocalizedText text={"月 · 未对照"} /> {y.months.filter(m => m.status === "unavailable").length} <LocalizedText text={"月"} /></summary>
             <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4">{y.months.map(m => <button key={m.month} onClick={() => void openMonth(y.year, m.month)} className={`rounded-xl border p-3 text-left ${m.status === "difference" ? "border-red-400 bg-red-50" : m.status === "unavailable" ? "border-amber-500 bg-amber-50" : "border-[#acbda1]"}`}>
-              {m.month} 月 · {labels[m.status]}<span className="mt-1 block text-sm">{m.reason || `${m.differentDays.length} 个差异日`}</span>
+              {m.month} <LocalizedText text={"月 ·"} /> {labels[m.status]}<span className="mt-1 block text-sm">{m.reason || `${m.differentDays.length} 个差异日`}</span>
             </button>)}</div>
           </details>)}
         </div>
         {visible.length > YEARS_PER_PAGE && <div className="mt-4 flex items-center justify-between gap-3 text-sm">
-          <button className="rounded-full border border-[#b99b7d] px-4 py-2 disabled:opacity-40" disabled={yearPage === 0} onClick={() => setYearPage(page => Math.max(0, page - 1))}>上一页</button>
-          <span>年份明细 {yearPage * YEARS_PER_PAGE + 1}–{Math.min((yearPage + 1) * YEARS_PER_PAGE, visible.length)} / {visible.length}（每页 {YEARS_PER_PAGE} 年）</span>
-          <button className="rounded-full border border-[#b99b7d] px-4 py-2 disabled:opacity-40" disabled={yearPage + 1 >= pageCount} onClick={() => setYearPage(page => Math.min(pageCount - 1, page + 1))}>下一页</button>
+          <button className="rounded-full border border-[#b99b7d] px-4 py-2 disabled:opacity-40" disabled={yearPage === 0} onClick={() => setYearPage(page => Math.max(0, page - 1))}><LocalizedText text={"上一页"} /></button>
+          <span><LocalizedText text={"年份明细"} /> {yearPage * YEARS_PER_PAGE + 1}–{Math.min((yearPage + 1) * YEARS_PER_PAGE, visible.length)} / {visible.length}<LocalizedText text={"（每页"} /> {YEARS_PER_PAGE} <LocalizedText text={"年）"} /></span>
+          <button className="rounded-full border border-[#b99b7d] px-4 py-2 disabled:opacity-40" disabled={yearPage + 1 >= pageCount} onClick={() => setYearPage(page => Math.min(pageCount - 1, page + 1))}><LocalizedText text={"下一页"} /></button>
         </div>}
       </section>}
       {detail && <section className={panel}>
-        <h2 className="text-xl font-semibold">公元 {detail.year} 年 · 藏历 {detail.month.month} 月</h2>
+        <h2 className="text-xl font-semibold"><LocalizedText text={"公元"} /> {detail.year} <LocalizedText text={"年 · 藏历"} /> {detail.month.month} <LocalizedText text={"月"} /></h2>
         <p className="my-3">{detail.month.reason || (detail.month.differentDays.length ? `差异日期：${detail.month.differentDays.join("、")}` : "30 日四项共同字段全部一致。")}</p>
         {detail.month.days.filter(d => d.fields.length > 0).map(d => <div key={d.day} className="my-4 overflow-x-auto">
-          <h3 className="font-semibold">藏历 {d.day} 日</h3>
-          <table className="w-full text-left text-sm"><thead><tr><th className="p-2">字段</th><th>Python</th><th>参考网站</th></tr></thead><tbody>
+          <h3 className="font-semibold"><LocalizedText text={"藏历"} /> {d.day} <LocalizedText text={"日"} /></h3>
+          <table className="w-full text-left text-sm"><thead><tr><th className="p-2"><LocalizedText text={"字段"} /></th><th>Python</th><th><LocalizedText text={"参考网站"} /></th></tr></thead><tbody>
             {Object.keys(d.python).map(k => <tr key={k} className={d.fields.includes(k) ? "bg-red-50 text-red-800" : ""}><td className="p-2">{k}</td>{(["python", "website"] as const).map(source => <td key={source} className="whitespace-nowrap pr-4">{d[source][k].map((v, i) => <span key={i} className={v !== d[source === "python" ? "website" : "python"][k][i] ? "font-bold underline" : ""}>{i > 0 ? " / " : ""}{v}</span>)}</td>)}</tr>)}
           </tbody></table>
         </div>)}

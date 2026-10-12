@@ -134,6 +134,7 @@ def render_annual_motion_html(latitude: float, longitude: float, *, date_time: d
 
     fig.update_layout(
         title="",
+        autosize=True,
         scene=dict(
             xaxis=dict(showbackground=False, showticklabels=False, zeroline=False, showgrid=False, title=""),
             yaxis=dict(showbackground=False, showticklabels=False, zeroline=False, showgrid=False, title=""),
@@ -144,8 +145,8 @@ def render_annual_motion_html(latitude: float, longitude: float, *, date_time: d
         ),
         paper_bgcolor="rgb(0,0,0)",
         font=dict(color="white", family="SimHei, Arial, sans-serif"),
-        showlegend=True,
+        showlegend=False,
         margin=dict(l=0, r=0, t=0, b=0),
     )
 
-    return pio.to_html(fig, full_html=True, include_plotlyjs="cdn", config={"responsive": True})
+    return pio.to_html(fig, full_html=True, include_plotlyjs=True, config={"responsive": True})

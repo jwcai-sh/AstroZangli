@@ -4,6 +4,7 @@ from unittest.mock import patch
 import requests
 
 from app import create_app
+from routes import DEFAULT_CITY
 
 
 class ApiContractTests(TestCase):
@@ -18,6 +19,18 @@ class ApiContractTests(TestCase):
         self.assertEqual(payload["status"], "ok")
         self.assertIn("南京市", payload["supportedCities"])
         self.assertEqual(payload["tibetanCalendarRange"]["start"], "1951-01-08")
+
+    def test_backend_default_city_is_lhasa(self):
+        self.assertEqual(DEFAULT_CITY, "拉萨市")
+
+    @patch("annual_motion.render_annual_motion_html", return_value="<html></html>")
+    def test_annual_motion_route_defaults_to_lhasa(self, render):
+        response = self.client.get("/api/annual-motion-view")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(render.call_args.kwargs["latitude"], 29.647)
+        self.assertEqual(render.call_args.kwargs["longitude"], 91.1175)
+        self.assertEqual(render.call_args.kwargs["city_label"], "Lhasa")
 
     def test_unknown_city_is_not_silently_replaced(self):
         response = self.client.post(

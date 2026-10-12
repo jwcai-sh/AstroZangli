@@ -1,8 +1,9 @@
 "use client";
 
+import LocalizedText from "@/i18n/LocalizedText";
 import { useEffect, useState } from "react";
 import { useParams } from 'next/navigation';
-import Link from "next/link";
+import LocaleLink from "@/i18n/LocaleLink";
 import Image from "next/image";
 import FooterBar from "@/components/FooterBar";
 
@@ -49,8 +50,8 @@ export default function DetailPage() {
     if (!card) {
         return (
             <div className="bg-black text-white min-h-screen flex flex-col items-center justify-center">
-                <p>Card not found.</p>
-                <Link href="/docs" className="mt-4 text-blue-400">Back to docs</Link>
+                <p><LocalizedText text={"未找到此卡片。"} /></p>
+                <LocaleLink href="/docs" className="mt-4 text-blue-400"><LocalizedText text={"返回文档"} /></LocaleLink>
             </div>
         );
     }
@@ -76,9 +77,9 @@ export default function DetailPage() {
             <div className="relative z-10 flex flex-col h-screen">
                 {/* 顶部：返回 */}
                 <div className="p-4 pt-3 flex items-center">
-                    <Link href="/docs" className="text-gray-300 hover:text-white">
+                    <LocaleLink href="/docs" className="text-gray-300 hover:text-white">
                         <div className="w-4 h-4 border-l-2 border-t-2 border-current rotate-[-45deg]"></div>
-                    </Link>
+                    </LocaleLink>
                 </div>
 
                 {/* 详情内容 */}

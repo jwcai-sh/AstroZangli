@@ -1,7 +1,9 @@
+import { appText } from "@/i18n/copy";
+import { useLocale } from "@/i18n/LocaleProvider";
 // "use client";
 
 // import React, { useEffect, useRef, useState } from 'react';
-// import Link from "next/link";
+// import LocaleLink from "@/i18n/LocaleLink";
 // import BottomNav from "@/components/Footer/BottomNav";
 // import EarthNav from "@/components/EarthNav/EarthNav";
 // import * as THREE from 'three';
@@ -1276,30 +1278,46 @@
 import React, { useMemo, useState } from "react";
 
 import WorldCityPicker, { type WorldCity } from "@/components/earth/WorldCityPicker";
-
-const DEFAULT_CITY: WorldCity = {
-    id: 1796236,
-    name: "Shanghai",
-    country: "China",
-    admin1: "Shanghai",
-    timezone: "Asia/Shanghai",
-    latitude: 31.2304,
-    longitude: 121.4737,
-    elevation: 4,
-};
+import { DEFAULT_WORLD_CITY } from "@/constants/cities";
 
 const ZodiacEmbed: React.FC = () => {
-    const [city, setCity] = useState<WorldCity>(DEFAULT_CITY);
+  const locale = useLocale();
+    const [city, setCity] = useState<WorldCity>(DEFAULT_WORLD_CITY);
     const iframeSrc = useMemo(() => {
         const params = new URLSearchParams({
             lat: String(city.latitude),
             lon: String(city.longitude),
             city: city.name,
             tz: city.timezone ?? "Asia/Shanghai",
+            locale,
+            labels: JSON.stringify({
+                visualizationTitle: appText(locale, "天文数据查询与可视化"),
+                sun: appText(locale, "太阳"),
+                moon: appText(locale, "月亮"),
+                mercury: appText(locale, "水星"),
+                venus: appText(locale, "金星"),
+                mars: appText(locale, "火星"),
+                jupiter: appText(locale, "木星"),
+                saturn: appText(locale, "土星"),
+                east: appText(locale, "东"),
+                west: appText(locale, "西"),
+                south: appText(locale, "南"),
+                north: appText(locale, "北"),
+                northPole: appText(locale, "北天极"),
+                southPole: appText(locale, "南天极"),
+                latitude: appText(locale, "纬度"),
+                longitude: appText(locale, "经度"),
+                date: appText(locale, "日期"),
+                time: appText(locale, "时间"),
+                submit: appText(locale, "查询并可视化"),
+                error: appText(locale, "获取数据时出错，请重试"),
+                declination: appText(locale, "赤纬角"),
+                example: appText(locale, "例如"),
+            }),
         });
         if (typeof city.elevation === "number") params.set("alt", String(city.elevation));
         return `/js/moon.html?${params.toString()}`;
-    }, [city]);
+    }, [city, locale]);
 
     return (
         <div style={{ width: "100%", height: "100vh", overflow: "hidden", position: "relative" }}>
@@ -1307,7 +1325,7 @@ const ZodiacEmbed: React.FC = () => {
             <iframe
                 key={iframeSrc}
                 src={iframeSrc}
-                title="qixingguiji"
+            title={appText(locale, "七星轨迹")}
                 style={{
                     width: "100%",
                     height: "100%",

@@ -1,5 +1,6 @@
 "use client";
 
+import LocalizedText from "@/i18n/LocalizedText";
 import Image from "next/image";
 
 // 定义卡片数据类型
@@ -40,14 +41,14 @@ export default function Card({ card, onReadMore }: CardProps) {
                 </div>
                 <p className="mt-3 text-gray-300 text-sm line-clamp-2">{card.desc}</p>
                 
-                {/* Read more 行 */}
+                {/* 详情入口 */}
                 <div className="mt-3 flex items-center text-sm">
                     <span className="w-1.5 h-1.5 rounded-full bg-white/70"></span>
                     <button 
                         onClick={handleReadMore}
                         className="mx-3 text-white/90 hover:text-white transition-colors"
                     >
-                        Read more
+                        <LocalizedText text={"查看详情"} />
                     </button>
                     <div className="flex-1 h-px bg-white/40"></div>
                 </div>
