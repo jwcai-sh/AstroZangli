@@ -1,4 +1,4 @@
-const PRODUCTION_BACKEND_ORIGIN = "https://zangli-backend-api.zeabur.app";
+const PRODUCTION_BACKEND_ORIGIN = "https://astrozangli-backend.zeabur.app";
 const DEVELOPMENT_BACKEND_ORIGIN = "http://127.0.0.1:5001";
 
 function trimTrailingSlash(value: string): string {

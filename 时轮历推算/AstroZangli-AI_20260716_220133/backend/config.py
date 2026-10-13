@@ -13,7 +13,10 @@ class Config:
     
     # CORS配置
     # 从环境变量读取，如果没有则使用默认值
-    cors_origins_str = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,https://zangli.zeabur.app')
+    cors_origins_str = os.environ.get(
+        'CORS_ORIGINS',
+        'http://localhost:3000,https://astrozangli.zeabur.app,https://zangli.zeabur.app',
+    )
     CORS_ORIGINS = [origin.strip() for origin in cors_origins_str.split(',') if origin.strip()]
     
     # API配置
@@ -37,7 +40,10 @@ class DevelopmentConfig(Config):
     # 开发环境下，自动添加本地网络地址支持
     # 支持 localhost、127.0.0.1 和所有 192.168.x.x、10.x.x.x、172.16-31.x.x 地址
     # 从环境变量或父类获取基础 origins
-    _cors_origins_str = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,https://zangli.zeabur.app')
+    _cors_origins_str = os.environ.get(
+        'CORS_ORIGINS',
+        'http://localhost:3000,https://astrozangli.zeabur.app,https://zangli.zeabur.app',
+    )
     _base_origins = [origin.strip() for origin in _cors_origins_str.split(',') if origin.strip()]
     # 添加正则表达式匹配本地网络地址（Flask-CORS 支持正则表达式）
     CORS_ORIGINS = _base_origins + [
