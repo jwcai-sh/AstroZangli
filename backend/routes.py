@@ -20,6 +20,7 @@ from astronomy import (
 from five_elements_compare import (
     build_five_elements_month_compare,
     build_five_elements_year_compare,
+    read_local_month,
 )
 from five_elements_compare_store import FiveElementsCompareStore
 from rag_processor_optimized import process_query_with_rag_optimized as process_query_with_rag_and_api
@@ -147,11 +148,11 @@ def find_tibetan_month_dates(tibetan_year, tibetan_month):
 
 def load_python_final_month(year, month):
     """Load the precomputed Python-final month used by the five-elements page."""
-    payload = FiveElementsCompareStore().load_month_source(year, month, 'python_final')
+    store = FiveElementsCompareStore()
+    payload = store.load_month_source(year, month, 'python_final')
     if payload is None:
-        raise FileNotFoundError(
-            f"Python final cache not found for Tibetan month {year}-{month:02d}"
-        )
+        payload = read_local_month(year, month)
+        store.save_month_source(year, month, 'python_final', payload)
 
     summary_shapes = {
         '积月闰余': 2,

@@ -10,10 +10,9 @@
 .viewSwitch button { border:0; background:transparent; color:#8d9eab; padding:9px 16px; border-radius:24px; font-size:12px; }
 .viewSwitch button[aria-pressed=true] { background:#26343e; color:#f0f4f5; }
 .toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:15px; }
-.cities { display:flex; gap:6px; }
-.cities button { color:#9baebf; background:#101c2799; border:1px solid #ffffff12; padding:8px 20px; font-size:13px; border-radius:7px; }
-.cities button[aria-pressed=true] { color:#d5edec; border-color:#6da7aa80; background:#294044; }
-.cities button:hover { background:#294044; }
+.cities { display:flex; min-width:0; gap:6px; }
+.citySelect { color:#dce7ee; background:#101c27; border-color:#ffffff20; }
+.citySelect option { color:#dce7ee; background:#101c27; }
 .dateControls { display:flex; align-items:center; gap:10px; color:#9daeb9; font-size:12px; flex-wrap:wrap; }
 .dateControls input,.dateControls select { background:#101c27; color:#dce6ee; color-scheme:dark; border:1px solid #ffffff20; padding:7px 9px; border-radius:6px; min-width:0; }
 .dateControls button { background:transparent; border:1px solid #ffffff20; color:#d5e1e7; padding:7px 12px; border-radius:6px; }
@@ -74,6 +73,6 @@
   .heading { gap:12px; }.heading h1 { font-size:21px; }.bodyList { gap:5px; }.bodyList button { padding:11px 8px; gap:6px; }.bodyArrow { display:none; }.bodySymbol { font-size:21px; }.gestureHint { display:none; }.sceneFooter { justify-content:center; }.sceneFooter button { position:absolute; right:14px; bottom:56px; }.timelineNote { display:none; }
 }
 @media(max-width:600px) {
-  .heading { align-items:flex-start; flex-direction:column; margin-bottom:16px; }.heading h1 { font-size:22px; }.eyebrow { font-size:9px; }.viewSwitch button { padding:7px 13px; font-size:11px; }.toolbar { gap:12px; }.cities { width:100%; }.cities button { flex:1; padding:8px 12px; font-size:12px; }.dateControls { gap:6px; width:100%; font-size:11px; }.dateControls input { max-width:145px; }.timezone { font-size:9px; }.hourLabel { gap:4px; }.hourLabel select { padding:7px 4px; }.scene { height:510px; border-radius:10px; }.sceneHeader { padding:17px 14px; font-size:11px; gap:8px; }.sceneHeader small { font-size:8px; letter-spacing:0; }.timeReadout { font-size:10px; }.layerTools { left:9px; top:79px; gap:3px; }.layerTools button { padding:6px 8px; font-size:10px; }.cameraTools { right:10px; top:82px; }.cameraTools button { width:31px; height:31px; }.sceneFooter { padding:16px 10px; }.sceneFooter output { font-size:10px; }.sceneFooter i { margin:0 6px; }.timeline { gap:7px; padding:19px 0; }.play { height:32px; width:32px; }.bodyList { display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; }.bodyList button { flex:0 0 105px; padding:11px 10px; }.bodyList small { font-size:8px; }.caption { display:block; }.caption details { text-align:left; margin-top:8px; }.starCard { right:12px; bottom:95px; max-width:240px; }
+  .heading { align-items:flex-start; flex-direction:column; margin-bottom:16px; }.heading h1 { font-size:22px; }.eyebrow { font-size:9px; }.viewSwitch button { padding:7px 13px; font-size:11px; }.toolbar { gap:12px; }.cities { width:100%; }.citySelect { width:100%; }.dateControls { gap:6px; width:100%; font-size:11px; }.dateControls input { max-width:145px; }.timezone { font-size:9px; }.hourLabel { gap:4px; }.hourLabel select { padding:7px 4px; }.scene { height:510px; border-radius:10px; }.sceneHeader { padding:17px 14px; font-size:11px; gap:8px; }.sceneHeader small { font-size:8px; letter-spacing:0; }.timeReadout { font-size:10px; }.layerTools { left:9px; top:79px; gap:3px; }.layerTools button { padding:6px 8px; font-size:10px; }.cameraTools { right:10px; top:82px; }.cameraTools button { width:31px; height:31px; }.sceneFooter { padding:16px 10px; }.sceneFooter output { font-size:10px; }.sceneFooter i { margin:0 6px; }.timeline { gap:7px; padding:19px 0; }.play { height:32px; width:32px; }.bodyList { display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; }.bodyList button { flex:0 0 105px; padding:11px 10px; }.bodyList small { font-size:8px; }.caption { display:block; }.caption details { text-align:left; margin-top:8px; }.starCard { right:12px; bottom:95px; max-width:240px; }
 }
 @media(prefers-reduced-motion:reduce) { .explorer button { transition:none; } }

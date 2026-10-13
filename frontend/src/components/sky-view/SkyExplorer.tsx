@@ -7,6 +7,7 @@ import {
   type BodyId, type CameraView, type Catalog, type SkyData, type SkyLayers, type SkyMode,
 } from "@/features/sky-view/model";
 import SkyCanvas, { type StarSelection } from "./SkyCanvas";
+import SkyCityPicker from "./SkyCityPicker";
 import styles from "./sky-view.module.css";
 import { useLocale } from "@/i18n/LocaleProvider";
 import { appText } from "@/i18n/copy";
@@ -178,11 +179,11 @@ export default function SkyExplorer({ mode }: { mode: SkyMode }) {
     </div>
     {view === "legacy" ? (mode === "annual" ? <LegacyAnnual /> : <LegacyDaily />) : <>
       <div className={styles.toolbar}>
-        <div className={styles.cities} aria-label={t("观测地点")}>{CITIES.map((item) => <button key={item.id} aria-pressed={city === item.id} onClick={() => { setCity(item.id); setStar(null); setMessage(""); }}>{t(item.name)}</button>)}</div>
+        <div className={styles.cities}><SkyCityPicker city={city} className={styles.citySelect} onChange={(nextCity) => { setCity(nextCity); setStar(null); setMessage(""); }} /></div>
         <div className={styles.dateControls}>
           <label><span className={styles.srOnly}>{t("观测日期")}</span><input aria-label={t("观测日期")} type="date" min="1900-01-01" max="2050-12-31" value={displayDate} onChange={(event) => updateDate(event.target.value)} /></label>
           {mode === "annual" && <label className={styles.hourLabel}>{t("每日")} <select aria-label={t("每日采样时刻")} value={hour} onChange={(event) => setHour(Number(event.target.value))}>{Array.from({ length: 24 }, (_, n) => <option key={n} value={n}>{String(n).padStart(2, "0")}:00</option>)}</select></label>}
-          <button onClick={now}>{t("现在")}</button><span className={styles.timezone}>{t("北京时间 UTC+8")}</span>
+          <button onClick={now}>{t("现在")}</button><span className={styles.timezone}>{t("所选城市当地时间")} · {CITIES.find((item) => item.id === city)?.timezone}</span>
         </div>
       </div>
       <div className={styles.scene} ref={sceneRef}>

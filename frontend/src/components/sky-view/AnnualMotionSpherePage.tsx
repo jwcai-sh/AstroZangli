@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import CelestialSphere, { type SphereMarker, type SpherePoint } from "@/components/celestial-sphere/CelestialSphere";
+import SkyCityPicker from "@/components/sky-view/SkyCityPicker";
 import { appText } from "@/i18n/copy";
 import { useLocale } from "@/i18n/LocaleProvider";
-import { BODIES, CITIES, annualIndex, beijingNow, type BodyId, type SkyData, type SkyFrame } from "@/features/sky-view/model";
+import { BODIES, annualIndex, beijingNow, type BodyId, type SkyData, type SkyFrame } from "@/features/sky-view/model";
 
 const control = "rounded-lg border border-white/15 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 hover:border-cyan-300/50 disabled:opacity-40";
 const point = (frame: SkyFrame, body: BodyId): SpherePoint => ({ longitude: frame.bodies[body].azimuth, latitude: frame.bodies[body].altitude });
@@ -85,7 +86,7 @@ export default function AnnualMotionSpherePage() {
   return <main className="mx-auto max-h-[calc(100vh-170px)] w-full max-w-7xl overflow-y-auto rounded-3xl border border-white/10 bg-slate-950/90 p-4 pb-20 text-slate-100 shadow-2xl sm:p-6">
     <header className="mb-5 flex flex-wrap items-end justify-between gap-4">
       <div><p className="text-xs font-semibold tracking-[.24em] text-cyan-300">ANNUAL MOTION · CELESTIAL GLOBE</p><h1 className="mt-2 text-2xl font-semibold sm:text-3xl">{t("周年视运动（地心坐标）")}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">{t("按日期和观测地点查看太阳与行星在天球上的周年视运动。")}</p></div>
-      <div className="flex flex-wrap gap-2">{CITIES.map(item => <button key={item.id} type="button" className={`${control} ${city === item.id ? "border-cyan-300/70 text-cyan-100" : ""}`} onClick={() => setCity(item.id)}>{t(item.name)}</button>)}</div>
+      <SkyCityPicker city={city} onChange={setCity} />
     </header>
     <section className="mb-5 rounded-2xl border border-white/10 bg-white/5 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3"><label className="text-xs text-slate-300">{t("日期")}<input type="date" value={date} onChange={event => changeDate(event.target.value)} className="ml-2 rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white" /></label><label className="text-xs text-slate-300">{t("每日采样时刻")}<select value={hour} onChange={event => setHour(Number(event.target.value))} className="ml-2 rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white">{Array.from({ length: 24 }, (_, value) => <option key={value} value={value}>{String(value).padStart(2, "0")}:00</option>)}</select></label><div className="flex items-center gap-2"><button type="button" className={control} disabled={!data || index === 0} onClick={() => step(-1)}>{t("前一日")}</button><button type="button" className={control} disabled={!data} onClick={() => setPlaying(value => !value)}>{t(playing ? "暂停" : "播放")}</button><button type="button" className={control} disabled={!data || index >= (data?.frames.length ?? 1) - 1} onClick={() => step(1)}>{t("后一日")}</button></div></div>

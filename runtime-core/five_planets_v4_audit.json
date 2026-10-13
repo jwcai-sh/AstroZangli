@@ -1,0 +1,404 @@
+{
+  "engine": "v4-reference-compatible-E1987",
+  "generated_at": "2026-10-07T02:36:11.221796+00:00",
+  "calculator_sha256": "47817a136ec04b8d44f522440fb80b317a607339f95acb7a814999dcc8f1b123",
+  "cache_payload_sha256": "e00ec4cec6888f4e515246a0298502158b74a61c5dacf2cef33bece9d9be1f2f",
+  "counts": {
+    "cached_days": 27287,
+    "compared_days": 27287,
+    "different_days": 0,
+    "missing_field_days": 0,
+    "match_fields": 573027,
+    "invalid_reference_days": 0,
+    "different_fields": 0,
+    "missing_fields": 0,
+    "expected_days": 900000,
+    "not_validated_days": 872713
+  },
+  "differences": {},
+  "years": {
+    "1": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "3": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "4": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "5": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "6": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "7": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "8": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "9": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "10": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "11": {
+      "compared_days": 359,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "12": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "13": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "14": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "15": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "16": {
+      "compared_days": 359,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "17": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "18": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "19": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "20": {
+      "compared_days": 359,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "21": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "22": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "23": {
+      "compared_days": 359,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "24": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "25": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "26": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "27": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "28": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "29": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "30": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "31": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "32": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "33": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "34": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "35": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "36": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "37": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "38": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "39": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "40": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "41": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "42": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "43": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "44": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "45": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "46": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "47": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "48": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "49": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "50": {
+      "compared_days": 359,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "51": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "52": {
+      "compared_days": 358,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "53": {
+      "compared_days": 359,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "54": {
+      "compared_days": 351,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "55": {
+      "compared_days": 359,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "56": {
+      "compared_days": 358,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "57": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "58": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "59": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "60": {
+      "compared_days": 307,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2020": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2021": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2022": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2023": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2024": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2025": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2026": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2027": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2028": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2029": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2030": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2031": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2032": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2033": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2034": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    },
+    "2035": {
+      "compared_days": 360,
+      "different_days": 0,
+      "missing_field_days": 0
+    }
+  },
+  "exceptions": [],
+  "acceptance_passed": true,
+  "scope": "Full arrays of all21groups in available cache; no direction/day-sun; default double_cal=0"
+}
