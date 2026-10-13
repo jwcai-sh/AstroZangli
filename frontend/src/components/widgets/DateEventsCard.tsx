@@ -60,7 +60,7 @@ const DateEventsCard: React.FC<DateEventsCardProps> = ({
   const locale = useLocale();
   const displayText = (text: string) => appText(locale, text);
   return (
-    <div className="frosted-card calendar-gradient-neo widget-card-border px-4 pt-6 pb-4 light-purple-border transparent-purple-blue-gradient text-center shadow-2xl backdrop-blur-xl card-enter hover-lift dateevents-gradient-bg">
+    <div className="frosted-card calendar-gradient-neo widget-card-border px-4 pt-6 pb-4 light-purple-border transparent-purple-blue-gradient text-center shadow-2xl backdrop-blur-xl card-enter hover-lift dateevents-gradient-bg dateevents-six-row-layout">
       {/* 四个卡片的指示器 - 位于卡片内部最上边 */}
       {onPageChange && (
         <div className="flex justify-center space-x-3 mb-4">

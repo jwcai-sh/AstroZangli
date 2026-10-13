@@ -606,6 +606,33 @@ body {
   margin-left: 6px; /* 与图标的间距 */
 }
 
+/* Keep all six text panels in the same column within DateEventsCard. */
+.dateevents-six-row-layout .dateevents-lunar-rect,
+.dateevents-six-row-layout .dateevents-solar-rect,
+.dateevents-six-row-layout .dateevents-tibetan-rect {
+  left: 12%;
+}
+
+.dateevents-six-row-layout .dateevents-row-holiday1,
+.dateevents-six-row-layout .dateevents-row-holiday2,
+.dateevents-six-row-layout .dateevents-row-holiday3 {
+  justify-content: flex-start;
+}
+
+.dateevents-six-row-layout .dateevents-holiday1-bar,
+.dateevents-six-row-layout .dateevents-holiday2-bar,
+.dateevents-six-row-layout .dateevents-holiday3-bar {
+  box-sizing: border-box;
+  width: 88%;
+  margin-left: 12%;
+}
+
+.dateevents-six-row-layout .dateevents-holiday1-text,
+.dateevents-six-row-layout .dateevents-holiday2-text,
+.dateevents-six-row-layout .dateevents-holiday3-text {
+  font-size: clamp(8px, 1.7vw, 14px);
+}
+
 /* 圆角半径变体，用于 AB 对比 */
 .rounded-16 { border-radius: 16px; }
 .rounded-20 { border-radius: 20px; }
