@@ -368,7 +368,7 @@ export default function CalendarPage() {
           </div>
 
           <div className="flex items-center justify-center mt-6 mb-6">{/*上下两个框之间的距离*/}
-            <div className="w-[90%] sm:w-[82%] md:w-[70%] max-w-[520px]">
+            <div className="w-[96%] sm:w-[90%] md:w-[78%] max-w-[680px]">
               {loading ? (
                 <div className="text-center text-gray-300 py-12"><LocalizedText text={"加载中..."} /></div>
               ) : error ? (

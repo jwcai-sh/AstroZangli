@@ -273,21 +273,23 @@ body {
 }
 .dateevents-lunar-rect {
   position: absolute;
-  left: 27%;
-  width: 70%;/*右端到哪里*/
+  left: 18%;
+  right: 0;
+  box-sizing: border-box;
   height: 30px;
   border-radius: 12px;/*四个角圆滑程度*/
   padding: 0 12px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   background-color: rgba(44, 61, 122, 0.8); /* #2C3D7A 80%透明度 */
 }
 .dateevents-lunar-rect-text {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.8); /* FFFFFF 80%透明度 */
+  white-space: nowrap;
 }
 
 /* 第2行：公历信息行 - 圆形标签 + 细长矩形背景 */
@@ -316,21 +318,23 @@ body {
 }
 .dateevents-solar-rect {
   position: absolute;
-  left: 27%;
-  width: 70%;/*右端到哪里*/
+  left: 18%;
+  right: 0;
+  box-sizing: border-box;
   height: 30px;
   border-radius: 12px;/*四个角圆滑程度*/
   padding: 0 12px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   background-color: #5A3369; /* 100%透明度 */
 }
 .dateevents-solar-rect-text {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.8); /* FFFFFF 80%透明度 */
+  white-space: nowrap;
 }
 
 /* 第3行：藏历信息行 - 圆形标签 + 细长矩形背景 */
@@ -475,21 +479,23 @@ body {
 }
 .dateevents-tibetan-rect {
   position: absolute;
-  left: 27%;
-  width: 70%;/*右端到哪里*/
+  left: 18%;
+  right: 0;
+  box-sizing: border-box;
   height: 30px;
   border-radius: 12px;/*四个角圆滑程度*/
   padding: 0 12px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   background-color: rgba(84, 76, 158, 0.8); /* #544C9E 80%透明度 */
 }
 .dateevents-tibetan-rect-text {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.8); /* FFFFFF 80%透明度 */
+  white-space: nowrap;
 }
 
 /* 第4行：第一个节日倒计时 - 细长灰色背景条 */
@@ -501,10 +507,10 @@ body {
   margin-bottom: 15px; /* 灰色框间距：从10px增加到15px，让框之间距离变大一点点 */
 }
 .dateevents-holiday1-bar {
-  width: 95%; /* 灰色框长度：从flex: 1改为85%，让框变短一点点 */
+  width: 100%;
   min-height: 35px;
   border-radius: 5px;
-  padding: 6px 12px;
+  padding: 6px 8px;
   display: flex;
   align-items: center;
   /* 图标固定在最左侧，文字居中显示 */
@@ -517,14 +523,15 @@ body {
   color: white;
 }
 .dateevents-holiday1-text {
-  font-size: 16px;/*节日文字大小*/
+  font-size: clamp(9px, 2.6vw, 14px);
   font-weight: 500;
   color: rgba(255, 255, 255, 0.75); /* 透明度75% */
   flex: 1; /* 占据剩余空间 */
   min-width: 0;
   line-height: 1.35;
-  text-align: center; /* 文字居中显示 */
-  margin-left: 8px; /* 与图标的间距 */
+  white-space: nowrap;
+  text-align: left;
+  margin-left: 6px; /* 与图标的间距 */
 }
 
 /* 第5行：第二个节日倒计时 - 细长灰色背景条 */
@@ -536,10 +543,10 @@ body {
   margin-bottom: 15px; /* 灰色框间距：从10px增加到15px，让框之间距离变大一点点 */
 }
 .dateevents-holiday2-bar {
-  width: 95%; /* 灰色框长度：从flex: 1改为85%，让框变短一点点 */
+  width: 100%;
   min-height: 35px;
   border-radius: 5px;
-  padding: 6px 12px;
+  padding: 6px 8px;
   display: flex;
   align-items: center;
   /* 图标固定在最左侧，文字居中显示 */
@@ -552,14 +559,15 @@ body {
   color: white;
 }
 .dateevents-holiday2-text {
-  font-size: 16px;/*节日文字大小*/
+  font-size: clamp(9px, 2.6vw, 14px);
   font-weight: 500;
   color: rgba(255, 255, 255, 0.75); /* 透明度75% */
   flex: 1; /* 占据剩余空间 */
   min-width: 0;
   line-height: 1.35;
-  text-align: center; /* 文字居中显示 */
-  margin-left: 8px; /* 与图标的间距 */
+  white-space: nowrap;
+  text-align: left;
+  margin-left: 6px; /* 与图标的间距 */
 }
 
 /* 第6行：第三个节日倒计时 - 细长灰色背景条 */
@@ -571,10 +579,10 @@ body {
   margin-bottom: 0px; /* 第六行是最后一行，不需要底部间距 */
 }
 .dateevents-holiday3-bar {
-  width: 95%; /* 灰色框长度：从flex: 1改为85%，让框变短一点点 */
+  width: 100%;
   min-height: 35px;
   border-radius: 5px;
-  padding: 6px 12px;
+  padding: 6px 8px;
   display: flex;
   align-items: center;
   /* 图标固定在最左侧，文字居中显示 */
@@ -587,14 +595,15 @@ body {
   color: white;
 }
 .dateevents-holiday3-text {
-  font-size: 16px;/*节日文字大小*/
+  font-size: clamp(9px, 2.6vw, 14px);
   font-weight: 500;
   color: rgba(255, 255, 255, 0.75); /* 透明度75% */
   flex: 1; /* 占据剩余空间 */
   min-width: 0;
   line-height: 1.35;
-  text-align: center; /* 文字居中显示 */
-  margin-left: 8px; /* 与图标的间距 */
+  white-space: nowrap;
+  text-align: left;
+  margin-left: 6px; /* 与图标的间距 */
 }
 
 /* 圆角半径变体，用于 AB 对比 */

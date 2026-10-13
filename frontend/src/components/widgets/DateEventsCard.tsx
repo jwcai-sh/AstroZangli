@@ -60,7 +60,7 @@ const DateEventsCard: React.FC<DateEventsCardProps> = ({
   const locale = useLocale();
   const displayText = (text: string) => appText(locale, text);
   return (
-    <div className="frosted-card calendar-gradient-neo widget-card-border px-6 pt-6 pb-4 light-purple-border transparent-purple-blue-gradient text-center shadow-2xl backdrop-blur-xl card-enter hover-lift dateevents-gradient-bg">
+    <div className="frosted-card calendar-gradient-neo widget-card-border px-4 pt-6 pb-4 light-purple-border transparent-purple-blue-gradient text-center shadow-2xl backdrop-blur-xl card-enter hover-lift dateevents-gradient-bg">
       {/* 四个卡片的指示器 - 位于卡片内部最上边 */}
       {onPageChange && (
         <div className="flex justify-center space-x-3 mb-4">
@@ -85,9 +85,19 @@ const DateEventsCard: React.FC<DateEventsCardProps> = ({
 
       {/* 顶部大/小字已移除（按需求隐藏） */}
 
-      {/* 纵向排列：农、公、藏分别在小圆背景下纵向排列 */}
+      {/* 纵向排列：藏历日期置顶，其次是农历与公历 */}
       <div className="mb-4"> {/* 从mb-6改为mb-2，减少前三行容器与节日框容器之间的间距 */}
-        {/* 第1行：农历信息行 */}
+        {/* 第1行：藏历信息行 */}
+        <div className="dateevents-row-tibetan">
+          <div className="dateevents-tibetan-circle">
+            <span className="dateevents-tibetan-text">{displayText(counters[2]?.label || '')}</span>
+          </div>
+          <div className="dateevents-tibetan-rect">
+            <span className="dateevents-tibetan-rect-text">{displayText(String(counters[2]?.value || ''))}</span>
+          </div>
+        </div>
+
+        {/* 第2行：农历信息行 */}
         <div className="dateevents-row-lunar">
           <div className="dateevents-lunar-circle">
             <span className="dateevents-lunar-text">{displayText(counters[0]?.label || '')}</span>
@@ -97,7 +107,7 @@ const DateEventsCard: React.FC<DateEventsCardProps> = ({
           </div>
         </div>
 
-        {/* 第2行：公历信息行 */}
+        {/* 第3行：公历信息行 */}
         <div className="dateevents-row-solar">
           <div className="dateevents-solar-circle">
             <span className="dateevents-solar-text">{displayText(counters[1]?.label || '')}</span>
@@ -107,15 +117,6 @@ const DateEventsCard: React.FC<DateEventsCardProps> = ({
           </div>
         </div>
 
-        {/* 第3行：藏历信息行 */}
-        <div className="dateevents-row-tibetan">
-          <div className="dateevents-tibetan-circle">
-            <span className="dateevents-tibetan-text">{displayText(counters[2]?.label || '')}</span>
-          </div>
-          <div className="dateevents-tibetan-rect">
-            <span className="dateevents-tibetan-rect-text">{displayText(String(counters[2]?.value || ''))}</span>
-          </div>
-        </div>
       </div>
 
       {/* 节日倒计时区域：两个灰色长条框 */}
