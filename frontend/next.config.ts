@@ -3,7 +3,8 @@ import { getBackendOrigin } from "./src/lib/backendApi";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  outputFileTracingRoot: process.cwd(),
+  // npm workspaces hoist Next.js into the repository-level node_modules.
+  outputFileTracingRoot: `${process.cwd()}/..`,
   async rewrites() {
     const backendOrigin = getBackendOrigin();
 
