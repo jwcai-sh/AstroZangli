@@ -346,7 +346,7 @@ export default function CalendarPage() {
       <div className="relative z-10 min-h-screen flex flex-col pb-20">
         <div className="flex flex-col p-4">
           <div className="flex items-center justify-center mt-2">{/*日历距离顶部距离*/}
-            <div className="w-[90%] sm:w-[82%] md:w-[70%] max-w-[520px]">
+            <div className="w-[96%] sm:w-[90%] md:w-[78%] max-w-[680px]">
               {ready ? (
                 <CalendarBox
                   currentMonth={currentMonthLabel}
