@@ -616,6 +616,7 @@ body {
 .dateevents-six-row-layout .dateevents-row-holiday1,
 .dateevents-six-row-layout .dateevents-row-holiday2,
 .dateevents-six-row-layout .dateevents-row-holiday3 {
+  position: relative;
   justify-content: flex-start;
 }
 
@@ -625,6 +626,23 @@ body {
   box-sizing: border-box;
   width: 88%;
   margin-left: 12%;
+  padding-left: 12px;
+}
+
+.dateevents-six-row-layout .dateevents-holiday1-icon,
+.dateevents-six-row-layout .dateevents-holiday2-icon,
+.dateevents-six-row-layout .dateevents-holiday3-icon {
+  position: absolute;
+  left: calc(5% + 5px);
+  top: 50%;
+  transform: translateY(-50%);
+  flex: none;
+}
+
+.dateevents-six-row-layout .dateevents-holiday1-text,
+.dateevents-six-row-layout .dateevents-holiday2-text,
+.dateevents-six-row-layout .dateevents-holiday3-text {
+  margin-left: 0;
 }
 
 .dateevents-six-row-layout .dateevents-holiday1-text,

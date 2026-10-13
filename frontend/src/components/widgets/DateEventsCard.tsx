@@ -123,31 +123,31 @@ const DateEventsCard: React.FC<DateEventsCardProps> = ({
       <div>
         {/* 第4行：第一个节日倒计时 */}
         <div className="dateevents-row-holiday1">
+          <svg className="dateevents-holiday1-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="2"/>
+          </svg>
           <div className="dateevents-holiday1-bar bg-custom-gray">
-            <svg className="dateevents-holiday1-icon" width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2"/>
-              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="2"/>
-            </svg>
             <span className="dateevents-holiday1-text">{displayText(events[0]?.label || '')} {displayText(events[0]?.daysLeftText || '')}</span>
           </div>
         </div>
 
         {/* 第5行：第二个节日倒计时 */}
         <div className="dateevents-row-holiday2">
+          <svg className="dateevents-holiday2-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" strokeWidth="2"/>
+          </svg>
           <div className="dateevents-holiday2-bar bg-custom-gray">
-            <svg className="dateevents-holiday2-icon" width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" strokeWidth="2"/>
-            </svg>
             <span className="dateevents-holiday2-text">{displayText(events[1]?.label || '')} {displayText(events[1]?.daysLeftText || '')}</span>
           </div>
         </div>
 
         {/* 第6行：第三个节日倒计时 */}
         <div className="dateevents-row-holiday3">
+          <svg className="dateevents-holiday3-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="2"/>
+          </svg>
           <div className="dateevents-holiday3-bar bg-custom-gray">
-            <svg className="dateevents-holiday3-icon" width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="2"/>
-            </svg>
             <span className="dateevents-holiday3-text">{displayText(events[2]?.label || '')} {displayText(events[2]?.daysLeftText || '')}</span>
           </div>
         </div>
