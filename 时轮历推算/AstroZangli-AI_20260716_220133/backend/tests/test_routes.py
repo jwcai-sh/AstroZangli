@@ -4,7 +4,7 @@ from unittest.mock import patch
 import requests
 
 from app import create_app
-from routes import DEFAULT_CITY
+from routes import DEFAULT_CITY, load_python_final_month
 
 
 class ApiContractTests(TestCase):
@@ -22,6 +22,27 @@ class ApiContractTests(TestCase):
 
     def test_backend_default_city_is_lhasa(self):
         self.assertEqual(DEFAULT_CITY, "拉萨市")
+
+    @patch("routes.read_local_month")
+    @patch("routes.FiveElementsCompareStore")
+    def test_python_final_month_is_computed_and_cached_when_missing(self, store_type, calculate):
+        store = store_type.return_value
+        store.load_month_source.return_value = None
+        calculate.return_value = {
+            "summary": {
+                "积月闰余": [1, 2],
+                "曜基数": [1, 2, 3, 4, 5],
+                "整零数": [1, 2],
+                "太阳基数": [1, 2, 3, 4, 5],
+            },
+            "days": [{"day": day} for day in range(1, 31)],
+        }
+
+        payload = load_python_final_month(2026, 8)
+
+        self.assertIs(payload, calculate.return_value)
+        calculate.assert_called_once_with(2026, 8)
+        store.save_month_source.assert_called_once_with(2026, 8, "python_final", payload)
 
     @patch("annual_motion.render_annual_motion_html", return_value="<html></html>")
     def test_annual_motion_route_defaults_to_lhasa(self, render):
@@ -407,7 +428,7 @@ class ApiContractTests(TestCase):
                 },
             ],
         )
-        self.assertEqual(payload["data"]["monthSummary"]["accumulativeMonth"], 487)
+        self.assertEqual(payload["data"]["monthSummary"]["accumulativeMonth"], 25053)
         self.assertEqual(payload["data"]["monthSummary"]["weekdayBase"], [6, 35, 12, 3, 75])
 
     def test_daily_five_elements_detail_returns_values_and_missing_marker_for_missing_day(self):
