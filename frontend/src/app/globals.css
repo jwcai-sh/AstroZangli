@@ -648,7 +648,7 @@ body {
 .dateevents-six-row-layout .dateevents-holiday1-text,
 .dateevents-six-row-layout .dateevents-holiday2-text,
 .dateevents-six-row-layout .dateevents-holiday3-text {
-  font-size: clamp(8px, 1.7vw, 14px);
+  font-size: 15px;
 }
 
 /* 圆角半径变体，用于 AB 对比 */
