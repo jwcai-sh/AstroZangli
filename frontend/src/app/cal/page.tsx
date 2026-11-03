@@ -113,21 +113,26 @@ export default function CalendarPage() {
       tibetan: { status: "loading" }
     });
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4500);
-
     const post = async (url: string): Promise<HolidayInfo | null> => {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ year: y, month: m, day: d }),
-        signal: controller.signal
-      });
-      if (!res.ok) {
-        throw new Error(`服务状态码 ${res.status}`);
+      const controller = new AbortController();
+      // Mobile networks and cold server starts can exceed the old shared 4.5s timeout.
+      // Keep each prediction independent so one slow endpoint does not cancel the others.
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ year: y, month: m, day: d }),
+          signal: controller.signal
+        });
+        if (!res.ok) {
+          throw new Error(`服务状态码 ${res.status}`);
+        }
+        const json = await res.json();
+        return normalizeHolidayInfo(json);
+      } finally {
+        clearTimeout(timeoutId);
       }
-      const json = await res.json();
-      return normalizeHolidayInfo(json);
     };
 
     Promise.allSettled([
@@ -157,9 +162,6 @@ export default function CalendarPage() {
           lunar: { status: "error", message: e instanceof Error ? e.message : undefined },
           tibetan: { status: "error", message: e instanceof Error ? e.message : undefined }
         });
-      })
-      .finally(() => {
-        clearTimeout(timeoutId);
       });
   };
 
