@@ -255,8 +255,11 @@ export default function CalendarPage() {
     if (!holiday?.name) {
       return { label: "暂无节日", colorClass: "bg-gray-500", daysLeftText: "" };
     }
+    const displayName = holiday.name === "十月社会主义革命纪念日"
+      ? "十月革命纪念日"
+      : holiday.name;
     return {
-      label: `${holiday.name} ${holiday.date}`,
+      label: `${displayName} ${holiday.date}`,
       colorClass: "bg-gray-500",
       daysLeftText: formatDaysLeftText(holiday.daysLeft)
     };

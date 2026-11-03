@@ -648,7 +648,13 @@ body {
 .dateevents-six-row-layout .dateevents-holiday1-text,
 .dateevents-six-row-layout .dateevents-holiday2-text,
 .dateevents-six-row-layout .dateevents-holiday3-text {
+  font-family: inherit;
   font-size: 15px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 圆角半径变体，用于 AB 对比 */
