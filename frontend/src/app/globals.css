@@ -613,6 +613,26 @@ body {
   left: 12%;
 }
 
+.dateevents-six-row-layout .dateevents-lunar-circle,
+.dateevents-six-row-layout .dateevents-solar-circle,
+.dateevents-six-row-layout .dateevents-tibetan-circle {
+  left: calc(5% + 5px);
+  width: 20px;
+  height: 20px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.dateevents-six-row-layout .dateevents-lunar-text,
+.dateevents-six-row-layout .dateevents-solar-text,
+.dateevents-six-row-layout .dateevents-tibetan-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: normal;
+}
+
 .dateevents-six-row-layout .dateevents-row-holiday1,
 .dateevents-six-row-layout .dateevents-row-holiday2,
 .dateevents-six-row-layout .dateevents-row-holiday3 {
