@@ -5,6 +5,7 @@ import LocaleLink from "@/i18n/LocaleLink";
 import { useLocale } from "@/i18n/LocaleProvider";
 import { appText } from "@/i18n/copy";
 import { usePathname } from "next/navigation";
+import LanguageChooserShortcut from "@/components/i18n/LanguageChooserShortcut";
 
 interface NavItem {
   href: string;
@@ -31,7 +32,7 @@ export default function FooterBar(): React.JSX.Element {
     >
       <nav
         aria-label={appText(locale, "主导航")}
-        className="mx-auto grid h-full w-full max-w-md grid-cols-5 items-center px-4"
+        className="mx-auto grid h-full w-full max-w-md grid-cols-6 items-center px-4"
       >
         {NAV_ITEMS.map((item, index) => {
           const isActive = pathname === item.href;
@@ -44,7 +45,7 @@ export default function FooterBar(): React.JSX.Element {
                 key={item.href}
                 aria-label={appText(locale, item.label)}
                 aria-current={isActive ? "page" : undefined}
-                className="mx-auto flex h-[clamp(54px,14vw,62px)] w-[clamp(54px,14vw,62px)] -translate-y-3 items-center justify-center rounded-full bg-[#0051fe] shadow-[0_10px_28px_rgba(0,81,254,0.38)] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                className="mx-auto flex h-[clamp(48px,14vw,62px)] w-[clamp(48px,14vw,62px)] -translate-y-3 items-center justify-center rounded-full bg-[#0051fe] shadow-[0_10px_28px_rgba(0,81,254,0.38)] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
               >
                 <Image
                   src={item.icon}
@@ -77,6 +78,7 @@ export default function FooterBar(): React.JSX.Element {
             </LocaleLink>
           );
         })}
+        <LanguageChooserShortcut inFooter />
       </nav>
     </footer>
   );
