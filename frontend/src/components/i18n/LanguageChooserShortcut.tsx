@@ -14,7 +14,7 @@ export default function LanguageChooserShortcut(): React.JSX.Element | null {
   return (
     <Link
       href="/"
-      className="fixed right-3 top-3 z-[80] rounded-full border border-white/25 bg-slate-950/80 px-3 py-2 text-xs text-white shadow-lg backdrop-blur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
+      className="fixed right-3 bottom-[calc(76px+env(safe-area-inset-bottom))] z-[80] rounded-full border border-white/25 bg-slate-950/80 px-3 py-2 text-xs text-white shadow-lg backdrop-blur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
       aria-label={appText(locale, "返回语言选择")}
     >
       {appText(locale, "语言")}
