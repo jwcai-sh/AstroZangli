@@ -96,7 +96,7 @@ const MoonPhaseCard: React.FC<MoonPhaseCardProps> = ({
       <div className="flex justify-center items-center mb-8">
         {/* 农历信息框 - 居中 */}
         <div className="astro-lunar-rect-centered">
-          <span className="dateevents-lunar-rect-text">{displayText(header.title)}</span>
+          <span className="dateevents-lunar-rect-text">{header.title && `${locale === "bo" ? "ཞིང་ལོ" : "农历"} ${displayText(header.title)}`}</span>
         </div>
       </div>
 
